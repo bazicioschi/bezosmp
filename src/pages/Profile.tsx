@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Save, Loader2 } from 'lucide-react';
+import { User, Save, Loader2, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/lib/auth';
@@ -24,6 +24,8 @@ export default function Profile() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -49,6 +51,60 @@ export default function Profile() {
       setProfile(data);
     }
     setLoading(false);
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Invalid file type',
+        description: 'Please upload an image file',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: 'File too large',
+        description: 'Please upload an image smaller than 2MB',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setUploading(true);
+    
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      setProfile(p => p ? { ...p, avatar_url: publicUrl } : null);
+      
+      toast({ title: 'Avatar uploaded!' });
+    } catch (error: any) {
+      toast({
+        title: 'Upload failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSave = async () => {
@@ -93,15 +149,36 @@ export default function Profile() {
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="minecraft-card glow-border p-6 md:p-8">
           <div className="flex items-center gap-4 mb-8">
-            <Avatar className="h-20 w-20 border-2 border-primary/30">
-              <AvatarImage src={profile?.avatar_url || undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary font-display text-2xl">
-                {profile?.username?.slice(0, 2).toUpperCase() || <User className="h-8 w-8" />}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative group">
+              <Avatar className="h-20 w-20 border-2 border-primary/30">
+                <AvatarImage src={profile?.avatar_url || undefined} />
+                <AvatarFallback className="bg-primary/20 text-primary font-display text-2xl">
+                  {profile?.username?.slice(0, 2).toUpperCase() || <User className="h-8 w-8" />}
+                </AvatarFallback>
+              </Avatar>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              >
+                {uploading ? (
+                  <Loader2 className="h-6 w-6 animate-spin text-white" />
+                ) : (
+                  <Camera className="h-6 w-6 text-white" />
+                )}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+                className="hidden"
+              />
+            </div>
             <div>
               <h1 className="font-display text-2xl font-bold text-foreground">Your Profile</h1>
               <p className="text-muted-foreground">{user?.email}</p>
+              <p className="text-xs text-muted-foreground mt-1">Hover avatar to change</p>
             </div>
           </div>
 
@@ -112,18 +189,6 @@ export default function Profile() {
                 id="username"
                 value={profile?.username || ''}
                 onChange={(e) => setProfile(p => p ? { ...p, username: e.target.value } : null)}
-                className="bg-secondary/50 border-border input-glow"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="avatar">Avatar URL</Label>
-              <Input
-                id="avatar"
-                type="url"
-                value={profile?.avatar_url || ''}
-                onChange={(e) => setProfile(p => p ? { ...p, avatar_url: e.target.value } : null)}
-                placeholder="https://example.com/avatar.png"
                 className="bg-secondary/50 border-border input-glow"
               />
             </div>
