@@ -1,0 +1,145 @@
+import { useState, useEffect } from 'react';
+import { formatDistanceToNow } from 'date-fns';
+import { Send, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuth } from '@/lib/auth';
+import { supabase } from '@/integrations/supabase/client';
+
+interface Comment {
+  id: string;
+  content: string;
+  created_at: string;
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+}
+
+interface CommentSectionProps {
+  postId: string;
+  onCommentAdded: () => void;
+  onCommentDeleted: () => void;
+}
+
+export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: CommentSectionProps) {
+  const { user } = useAuth();
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchComments();
+  }, [postId]);
+
+  const fetchComments = async () => {
+    // Fetch comments
+    const { data: commentsData } = await supabase
+      .from('comments')
+      .select('*')
+      .eq('post_id', postId)
+      .order('created_at', { ascending: true });
+
+    if (!commentsData) return;
+
+    // Fetch profiles for comment authors
+    const userIds = [...new Set(commentsData.map(c => c.user_id))];
+    const { data: profilesData } = await supabase
+      .from('profiles')
+      .select('user_id, username, avatar_url')
+      .in('user_id', userIds);
+
+    const profilesMap = new Map(profilesData?.map(p => [p.user_id, p]) || []);
+
+    const enrichedComments: Comment[] = commentsData.map(comment => {
+      const profile = profilesMap.get(comment.user_id);
+      return {
+        id: comment.id,
+        content: comment.content,
+        created_at: comment.created_at,
+        user_id: comment.user_id,
+        username: profile?.username || 'Unknown',
+        avatar_url: profile?.avatar_url || null,
+      };
+    });
+
+    setComments(enrichedComments);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !newComment.trim() || loading) return;
+
+    setLoading(true);
+    const { error } = await supabase
+      .from('comments')
+      .insert({ post_id: postId, user_id: user.id, content: newComment.trim() });
+
+    if (!error) {
+      setNewComment('');
+      fetchComments();
+      onCommentAdded();
+    }
+    setLoading(false);
+  };
+
+  const handleDelete = async (commentId: string) => {
+    await supabase.from('comments').delete().eq('id', commentId);
+    setComments(comments.filter(c => c.id !== commentId));
+    onCommentDeleted();
+  };
+
+  return (
+    <div className="mt-4 pt-4 border-t border-border/50 space-y-4">
+      {user && (
+        <form onSubmit={handleSubmit} className="flex gap-2">
+          <Input
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Write a comment..."
+            className="flex-1 bg-secondary/50 border-border input-glow"
+          />
+          <Button type="submit" size="icon" disabled={loading || !newComment.trim()}>
+            <Send className="h-4 w-4" />
+          </Button>
+        </form>
+      )}
+
+      <div className="space-y-3">
+        {comments.map((comment) => (
+          <div key={comment.id} className="flex gap-3 p-3 rounded-lg bg-secondary/30">
+            <Avatar className="h-8 w-8 border border-primary/20">
+              <AvatarImage src={comment.avatar_url || undefined} />
+              <AvatarFallback className="bg-primary/10 text-primary text-xs font-display">
+                {comment.username?.slice(0, 2).toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <span className="font-medium text-sm text-foreground">
+                    {comment.username}
+                  </span>
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                  </span>
+                </div>
+                {user?.id === comment.user_id && (
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                    onClick={() => handleDelete(comment.id)}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+              <p className="text-sm text-foreground/90 mt-1">{comment.content}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
