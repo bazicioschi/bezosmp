@@ -1,8 +1,16 @@
+import { useState } from 'react';
+import { MessageSquare, Newspaper } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { ServerInfo } from '@/components/ServerInfo';
 import { Feed } from '@/components/Feed';
+import { NewsFeed } from '@/components/NewsFeed';
+import { Button } from '@/components/ui/button';
+
+type TabType = 'feed' | 'news';
 
 export default function Index() {
+  const [activeTab, setActiveTab] = useState<TabType>('feed');
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -29,18 +37,53 @@ export default function Index() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Feed */}
           <div className="lg:col-span-2 order-2 lg:order-1">
-            <h2 className="font-display text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              Community Feed
-            </h2>
-            <Feed />
+            {/* Tab Navigation */}
+            <div className="flex gap-2 mb-6">
+              <Button
+                variant={activeTab === 'feed' ? 'default' : 'outline'}
+                className={`minecraft-border font-display ${activeTab === 'feed' ? 'glow-border' : ''}`}
+                onClick={() => setActiveTab('feed')}
+              >
+                <MessageSquare className="h-4 w-4 mr-2" />
+                FEED
+              </Button>
+              <Button
+                variant={activeTab === 'news' ? 'default' : 'outline'}
+                className={`minecraft-border font-display ${activeTab === 'news' ? 'glow-border' : ''}`}
+                onClick={() => setActiveTab('news')}
+              >
+                <Newspaper className="h-4 w-4 mr-2" />
+                NEWS
+              </Button>
+            </div>
+
+            {/* Tab Content */}
+            {activeTab === 'feed' && (
+              <>
+                <h2 className="font-display text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                  Community Feed
+                </h2>
+                <Feed />
+              </>
+            )}
+
+            {activeTab === 'news' && (
+              <>
+                <h2 className="font-display text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                  Server News
+                </h2>
+                <NewsFeed />
+              </>
+            )}
           </div>
 
           {/* Sidebar */}
           <div className="order-1 lg:order-2 space-y-6">
             <ServerInfo />
             
-            <div className="minecraft-card p-6">
+            <div className="minecraft-card minecraft-border p-6">
               <h3 className="font-display font-semibold text-foreground mb-3">About</h3>
               <p className="text-sm text-muted-foreground">
                 bezoSMP is a friendly Minecraft Bedrock survival server. Join us for building, exploring, and making new friends!
