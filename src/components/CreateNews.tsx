@@ -1,22 +1,24 @@
 import { useState, useRef } from 'react';
-import { ImagePlus, Send, X, Upload, Loader2 } from 'lucide-react';
+import { Newspaper, Send, Upload, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-interface CreatePostProps {
-  onPostCreated: () => void;
+interface CreateNewsProps {
+  onNewsCreated: () => void;
 }
 
-export function CreatePost({ onPostCreated }: CreatePostProps) {
+export function CreateNews({ onNewsCreated }: CreateNewsProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [imagePreview, setImagePreview] = useState('');
-  const [showImageInput, setShowImageInput] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -25,7 +27,6 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({
         title: 'Error',
@@ -35,7 +36,6 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: 'Error',
@@ -47,12 +47,10 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
 
     setUploading(true);
 
-    // Create preview
     const reader = new FileReader();
     reader.onload = (e) => setImagePreview(e.target?.result as string);
     reader.readAsDataURL(file);
 
-    // Upload to Supabase Storage
     const fileExt = file.name.split('.').pop();
     const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
@@ -79,21 +77,30 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !content.trim() || loading) return;
+    if (!user || !title.trim() || !content.trim() || loading) return;
 
     setLoading(true);
-    const { error } = await supabase.from('posts').insert({
+    const { error } = await supabase.from('news').insert({
       user_id: user.id,
+      title: title.trim(),
       content: content.trim(),
       image_url: imageUrl || null,
     });
 
     if (!error) {
+      setTitle('');
       setContent('');
       setImageUrl('');
       setImagePreview('');
-      setShowImageInput(false);
-      onPostCreated();
+      setShowForm(false);
+      onNewsCreated();
+      toast({ title: 'News posted successfully!' });
+    } else {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
     }
     setLoading(false);
   };
@@ -101,7 +108,6 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
   const clearImage = () => {
     setImageUrl('');
     setImagePreview('');
-    setShowImageInput(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -111,32 +117,62 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     return (
       <div className="minecraft-card minecraft-border p-6 text-center">
         <p className="text-muted-foreground">
-          <a href="/login" className="text-primary hover:underline font-display">Sign in</a> to create posts
+          <a href="/login" className="text-primary hover:underline font-display">Sign in</a> to post news
         </p>
       </div>
     );
   }
 
+  if (!showForm) {
+    return (
+      <Button
+        onClick={() => setShowForm(true)}
+        className="w-full minecraft-border h-12 font-display"
+      >
+        <Newspaper className="h-5 w-5 mr-2" />
+        POST NEWS
+      </Button>
+    );
+  }
+
   return (
     <form onSubmit={handleSubmit} className="minecraft-card minecraft-border glow-border p-4 md:p-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-display font-semibold text-foreground">Post News</h3>
+        <Button type="button" variant="ghost" size="icon" onClick={() => setShowForm(false)}>
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <Input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="News title..."
+        className="bg-secondary/50 border-2 border-border input-glow h-12 font-display"
+        maxLength={100}
+        required
+      />
+
       <Textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="What's happening on the server?"
-        className="min-h-24 bg-secondary/50 border-2 border-border resize-none input-glow"
-        maxLength={500}
+        placeholder="What's the news?"
+        className="min-h-32 bg-secondary/50 border-2 border-border resize-none input-glow"
+        maxLength={2000}
+        required
       />
 
-      {showImageInput && !imagePreview && (
-        <div className="flex gap-2 flex-wrap">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
-            id="post-image-upload"
-          />
+      <div className="space-y-2">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          className="hidden"
+          id="news-image-upload"
+        />
+        
+        {!imagePreview && (
           <Button
             type="button"
             variant="outline"
@@ -149,53 +185,43 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             ) : (
               <Upload className="h-4 w-4 mr-2" />
             )}
-            Upload Image
+            Add Cover Image
           </Button>
-          <Button type="button" variant="ghost" size="icon" onClick={clearImage}>
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
+        )}
 
-      {(imagePreview || imageUrl) && (
-        <div className="relative rounded-lg overflow-hidden border-2 border-border">
-          <img src={imagePreview || imageUrl} alt="Preview" className="w-full max-h-48 object-cover" />
-          <Button
-            type="button"
-            variant="destructive"
-            size="icon"
-            className="absolute top-2 right-2"
-            onClick={clearImage}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-          {uploading && (
-            <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          )}
-        </div>
-      )}
+        {(imagePreview || imageUrl) && (
+          <div className="relative rounded-lg overflow-hidden border-2 border-border">
+            <img src={imagePreview || imageUrl} alt="Preview" className="w-full max-h-48 object-cover" />
+            <Button
+              type="button"
+              variant="destructive"
+              size="icon"
+              className="absolute top-2 right-2"
+              onClick={clearImage}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+            {uploading && (
+              <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       <div className="flex items-center justify-between">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowImageInput(!showImageInput)}
-          className="text-muted-foreground"
-        >
-          <ImagePlus className="h-4 w-4 mr-2" />
-          Add Image
+        <span className="text-xs text-muted-foreground">{content.length}/2000</span>
+        <Button type="submit" disabled={loading || !title.trim() || !content.trim() || uploading} className="minecraft-border">
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <>
+              <Send className="h-4 w-4 mr-2" />
+              Publish
+            </>
+          )}
         </Button>
-
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-muted-foreground">{content.length}/500</span>
-          <Button type="submit" disabled={loading || !content.trim() || uploading} className="minecraft-border">
-            <Send className="h-4 w-4 mr-2" />
-            Post
-          </Button>
-        </div>
       </div>
     </form>
   );
