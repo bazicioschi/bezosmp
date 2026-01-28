@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { Send, Trash2 } from 'lucide-react';
+import { Send, Trash2, Reply, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -27,6 +27,7 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<{ id: string; username: string } | null>(null);
 
   useEffect(() => {
     fetchComments();
@@ -71,12 +72,19 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
     if (!user || !newComment.trim() || loading) return;
 
     setLoading(true);
+    
+    // If replying, prepend the @mention
+    const commentContent = replyingTo 
+      ? `@${replyingTo.username} ${newComment.trim()}`
+      : newComment.trim();
+
     const { error } = await supabase
       .from('comments')
-      .insert({ post_id: postId, user_id: user.id, content: newComment.trim() });
+      .insert({ post_id: postId, user_id: user.id, content: commentContent });
 
     if (!error) {
       setNewComment('');
+      setReplyingTo(null);
       fetchComments();
       onCommentAdded();
     }
@@ -89,25 +97,64 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
     onCommentDeleted();
   };
 
+  const handleReply = (comment: Comment) => {
+    setReplyingTo({ id: comment.id, username: comment.username });
+  };
+
+  const cancelReply = () => {
+    setReplyingTo(null);
+  };
+
+  // Function to render comment content with highlighted mentions
+  const renderCommentContent = (content: string) => {
+    const parts = content.split(/(@\w+)/g);
+    return parts.map((part, index) => {
+      if (part.startsWith('@')) {
+        return (
+          <span key={index} className="text-primary font-medium">
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
   return (
-    <div className="mt-4 pt-4 border-t border-border/50 space-y-4">
+    <div className="mt-4 pt-4 border-t-2 border-border/50 space-y-4">
       {user && (
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <Input
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Write a comment..."
-            className="flex-1 bg-secondary/50 border-border input-glow"
-          />
-          <Button type="submit" size="icon" disabled={loading || !newComment.trim()}>
-            <Send className="h-4 w-4" />
-          </Button>
-        </form>
+        <div className="space-y-2">
+          {replyingTo && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 px-3 py-2 rounded-lg">
+              <Reply className="h-4 w-4" />
+              <span>Replying to <span className="text-primary font-medium">@{replyingTo.username}</span></span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-5 w-5 ml-auto hover:text-destructive"
+                onClick={cancelReply}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
+          <form onSubmit={handleSubmit} className="flex gap-2">
+            <Input
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder={replyingTo ? `Reply to @${replyingTo.username}...` : "Write a comment..."}
+              className="flex-1 bg-secondary/50 border-2 border-border input-glow"
+            />
+            <Button type="submit" size="icon" disabled={loading || !newComment.trim()} className="minecraft-border">
+              <Send className="h-4 w-4" />
+            </Button>
+          </form>
+        </div>
       )}
 
       <div className="space-y-3">
         {comments.map((comment) => (
-          <div key={comment.id} className="flex gap-3 p-3 rounded-lg bg-secondary/30">
+          <div key={comment.id} className="flex gap-3 p-3 rounded-lg bg-secondary/30 border border-border/50 transition-all hover:border-primary/30">
             <Avatar className="h-8 w-8 border border-primary/20">
               <AvatarImage src={comment.avatar_url || undefined} />
               <AvatarFallback className="bg-primary/10 text-primary text-xs font-display">
@@ -117,25 +164,37 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
                 <div>
-                  <span className="font-medium text-sm text-foreground">
+                  <span className="font-display font-medium text-sm text-foreground">
                     {comment.username}
                   </span>
                   <span className="ml-2 text-xs text-muted-foreground">
                     {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
                   </span>
                 </div>
-                {user?.id === comment.user_id && (
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                    onClick={() => handleDelete(comment.id)}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                )}
+                <div className="flex items-center gap-1">
+                  {user && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6 text-muted-foreground hover:text-primary"
+                      onClick={() => handleReply(comment)}
+                    >
+                      <Reply className="h-3 w-3" />
+                    </Button>
+                  )}
+                  {user?.id === comment.user_id && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                      onClick={() => handleDelete(comment.id)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
               </div>
-              <p className="text-sm text-foreground/90 mt-1">{comment.content}</p>
+              <p className="text-sm text-foreground/90 mt-1">{renderCommentContent(comment.content)}</p>
             </div>
           </div>
         ))}

@@ -39,9 +39,14 @@ export function PostCard({
   const { user } = useAuth();
   const [showComments, setShowComments] = useState(false);
   const [localCommentsCount, setLocalCommentsCount] = useState(commentsCount);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const handleLike = async () => {
     if (!user) return;
+
+    // Trigger animation
+    setIsAnimating(true);
+    setTimeout(() => setIsAnimating(false), 400);
 
     if (isLiked) {
       await supabase.from('likes').delete().eq('post_id', id).eq('user_id', user.id);
@@ -58,7 +63,7 @@ export function PostCard({
   };
 
   return (
-    <article className="minecraft-card card-hover p-4 md:p-6">
+    <article className="minecraft-card minecraft-border card-hover p-4 md:p-6">
       <div className="flex gap-3 md:gap-4">
         <Avatar className="h-10 w-10 md:h-12 md:w-12 border-2 border-primary/30">
           <AvatarImage src={avatarUrl || undefined} />
@@ -85,7 +90,7 @@ export function PostCard({
           <p className="mt-2 text-foreground whitespace-pre-wrap break-words">{content}</p>
 
           {imageUrl && (
-            <div className="mt-3 rounded-lg overflow-hidden border border-border">
+            <div className="mt-3 rounded-lg overflow-hidden border-2 border-border">
               <img src={imageUrl} alt="Post image" className="w-full max-h-96 object-cover" />
             </div>
           )}
@@ -96,10 +101,12 @@ export function PostCard({
               size="sm"
               onClick={handleLike}
               disabled={!user}
-              className={`gap-2 ${isLiked ? 'text-primary' : 'text-muted-foreground'}`}
+              className={`gap-2 transition-all duration-200 ${isLiked ? 'text-primary' : 'text-muted-foreground'}`}
             >
-              <Heart className={`h-4 w-4 ${isLiked ? 'fill-primary' : ''}`} />
-              <span>{likesCount}</span>
+              <Heart 
+                className={`h-4 w-4 transition-all duration-200 ${isLiked ? 'fill-primary' : ''} ${isAnimating ? 'animate-like-pop' : ''}`} 
+              />
+              <span className={isAnimating ? 'animate-like-pop' : ''}>{likesCount}</span>
             </Button>
 
             <Button
