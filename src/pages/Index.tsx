@@ -12,20 +12,25 @@ export default function Index() {
   const [activeTab, setActiveTab] = useState<TabType>('feed');
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background minecraft-stone-bg">
       <Header />
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden border-b border-border/50">
+      <section className="relative overflow-hidden border-b-4 border-primary/30 minecraft-grass-top">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
+        
+        {/* Floating Minecraft Blocks */}
+        <div className="absolute top-10 left-10 w-8 h-8 bg-primary/20 border-2 border-primary/30 animate-float minecraft-border" style={{ animationDelay: '0s' }} />
+        <div className="absolute top-20 right-20 w-6 h-6 bg-primary/30 border-2 border-primary/40 animate-float minecraft-border" style={{ animationDelay: '0.5s' }} />
+        <div className="absolute bottom-10 left-1/4 w-10 h-10 bg-primary/15 border-2 border-primary/25 animate-float minecraft-border" style={{ animationDelay: '1s' }} />
         
         <div className="container mx-auto px-4 py-12 md:py-20 relative">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <h1 className="font-display text-4xl md:text-6xl font-bold text-foreground mb-4 glow-text tracking-wide">
               bezo<span className="text-gradient">SMP</span>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground">
+            <p className="text-lg md:text-xl text-muted-foreground font-display tracking-wide">
               Join our Minecraft Bedrock community. Share updates, connect with players, and be part of the adventure.
             </p>
           </div>
