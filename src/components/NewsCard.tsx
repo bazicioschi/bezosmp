@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,7 @@ export function NewsCard({
   onDelete,
 }: NewsCardProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleDelete = async () => {
     if (!user || user.id !== userId) return;
@@ -36,8 +38,12 @@ export function NewsCard({
     onDelete();
   };
 
+  const handleProfileClick = () => {
+    navigate(`/user/${userId}`);
+  };
+
   return (
-    <article className="minecraft-card minecraft-border card-hover overflow-hidden">
+    <article className="minecraft-card minecraft-border minecraft-block-hover minecraft-grass-top card-hover overflow-hidden">
       {imageUrl && (
         <div className="relative h-48 overflow-hidden">
           <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
@@ -58,14 +64,22 @@ export function NewsCard({
         <p className="text-foreground/90 whitespace-pre-wrap mb-4">{content}</p>
 
         <div className="flex items-center gap-3 pt-3 border-t border-border/50">
-          <Avatar className="h-8 w-8 border border-primary/20">
+          <Avatar 
+            className="h-8 w-8 border border-primary/20 cursor-pointer minecraft-avatar hover:scale-105 transition-transform"
+            onClick={handleProfileClick}
+          >
             <AvatarImage src={avatarUrl || undefined} />
             <AvatarFallback className="bg-primary/10 text-primary text-xs font-display">
               {username.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <span className="font-display text-sm font-medium text-foreground">{username}</span>
+            <span 
+              className="font-display text-sm font-medium text-foreground cursor-pointer hover:text-primary transition-colors"
+              onClick={handleProfileClick}
+            >
+              {username}
+            </span>
             <span className="mx-2 text-muted-foreground">•</span>
             <span className="text-sm text-muted-foreground">
               {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}

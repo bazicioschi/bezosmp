@@ -205,4 +205,89 @@
   .minecraft-grass-top {
     border-top: 4px solid hsl(120 40% 35%);
   }
+
+  /* Dirt texture pattern */
+  .minecraft-dirt-bg {
+    background-image: 
+      linear-gradient(135deg, hsl(25 30% 15%) 25%, transparent 25%),
+      linear-gradient(225deg, hsl(25 30% 15%) 25%, transparent 25%),
+      linear-gradient(45deg, hsl(25 30% 15%) 25%, transparent 25%),
+      linear-gradient(315deg, hsl(25 30% 15%) 25%, hsl(25 25% 12%) 25%);
+    background-size: 8px 8px;
+    background-position: 0 0, 4px 0, 4px -4px, 0px 4px;
+  }
+
+  /* Stone texture pattern */
+  .minecraft-stone-bg {
+    background-image: 
+      repeating-linear-gradient(
+        45deg,
+        hsl(0 0% 15%) 0px,
+        hsl(0 0% 15%) 2px,
+        hsl(0 0% 18%) 2px,
+        hsl(0 0% 18%) 4px
+      );
+  }
+
+  /* Pixelated avatar border */
+  .minecraft-avatar {
+    border: 3px solid hsl(var(--border));
+    box-shadow: 
+      3px 3px 0 hsl(0 0% 5%),
+      inset 0 0 0 2px hsl(0 0% 25%);
+    image-rendering: pixelated;
+  }
+
+  /* Block hover effect */
+  .minecraft-block-hover {
+    transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+  }
+
+  .minecraft-block-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      inset 0 0 0 1px hsl(0 0% 20%),
+      inset 2px 2px 0 hsl(0 0% 25%),
+      inset -2px -2px 0 hsl(0 0% 10%),
+      6px 6px 0 hsl(0 0% 5%);
+  }
+
+  .minecraft-block-hover:active {
+    transform: translateY(0);
+    box-shadow: 
+      inset 0 0 0 1px hsl(0 0% 20%),
+      inset 2px 2px 0 hsl(0 0% 25%),
+      inset -2px -2px 0 hsl(0 0% 10%),
+      2px 2px 0 hsl(0 0% 5%);
+  }
+
+  /* Inventory slot style */
+  .minecraft-slot {
+    background: linear-gradient(135deg, hsl(0 0% 10%), hsl(0 0% 8%));
+    border: 2px solid hsl(0 0% 25%);
+    box-shadow: 
+      inset 2px 2px 0 hsl(0 0% 5%),
+      inset -2px -2px 0 hsl(0 0% 15%);
+  }
+
+  /* Tooltip Minecraft style */
+  .minecraft-tooltip {
+    background: hsl(270 60% 20% / 0.95);
+    border: 2px solid hsl(270 40% 40%);
+    box-shadow: 0 0 0 2px hsl(0 0% 0%);
+  }
+
+  /* Health bar style */
+  .minecraft-health {
+    background: linear-gradient(to right, hsl(0 70% 45%), hsl(0 70% 35%));
+    border: 2px solid hsl(0 0% 20%);
+    box-shadow: inset 0 -2px 0 hsl(0 50% 25%);
+  }
+
+  /* Experience bar style */
+  .minecraft-xp {
+    background: linear-gradient(to right, hsl(120 70% 45%), hsl(120 70% 35%));
+    border: 2px solid hsl(0 0% 20%);
+    box-shadow: inset 0 -2px 0 hsl(120 50% 25%);
+  }
 }

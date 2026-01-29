@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Heart, MessageCircle, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
@@ -37,6 +38,7 @@ export function PostCard({
   onDelete,
 }: PostCardProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [showComments, setShowComments] = useState(false);
   const [localCommentsCount, setLocalCommentsCount] = useState(commentsCount);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -62,10 +64,17 @@ export function PostCard({
     onDelete();
   };
 
+  const handleProfileClick = () => {
+    navigate(`/user/${userId}`);
+  };
+
   return (
-    <article className="minecraft-card minecraft-border card-hover p-4 md:p-6">
+    <article className="minecraft-card minecraft-border minecraft-block-hover card-hover p-4 md:p-6">
       <div className="flex gap-3 md:gap-4">
-        <Avatar className="h-10 w-10 md:h-12 md:w-12 border-2 border-primary/30">
+        <Avatar 
+          className="h-10 w-10 md:h-12 md:w-12 border-2 border-primary/30 cursor-pointer minecraft-avatar hover:scale-105 transition-transform"
+          onClick={handleProfileClick}
+        >
           <AvatarImage src={avatarUrl || undefined} />
           <AvatarFallback className="bg-primary/20 text-primary font-display">
             {username.slice(0, 2).toUpperCase()}
@@ -75,7 +84,12 @@ export function PostCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <span className="font-display font-semibold text-foreground">{username}</span>
+              <span 
+                className="font-display font-semibold text-foreground cursor-pointer hover:text-primary transition-colors"
+                onClick={handleProfileClick}
+              >
+                {username}
+              </span>
               <span className="ml-2 text-sm text-muted-foreground">
                 {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
               </span>
