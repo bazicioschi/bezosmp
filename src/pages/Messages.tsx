@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Send, ArrowLeft, Loader2, User } from 'lucide-react';
+import { Send, ArrowLeft, Loader2, User, Sword } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -44,6 +44,7 @@ export default function Messages() {
     if (user && recipientId) {
       fetchRecipientAndMessages();
       setupRealtimeSubscription();
+      markMessagesAsRead();
     }
 
     return () => {
@@ -57,6 +58,17 @@ export default function Messages() {
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const markMessagesAsRead = async () => {
+    if (!user || !recipientId) return;
+
+    await supabase
+      .from('messages')
+      .update({ read: true })
+      .eq('receiver_id', user.id)
+      .eq('sender_id', recipientId)
+      .eq('read', false);
   };
 
   const fetchRecipientAndMessages = async () => {
@@ -142,35 +154,40 @@ export default function Messages() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background minecraft-stone-bg flex flex-col">
       <Header />
 
       <main className="flex-1 container mx-auto px-4 py-4 max-w-3xl flex flex-col">
         {/* Chat Header */}
-        <div className="minecraft-card minecraft-border minecraft-grass-top p-4 mb-4 flex items-center gap-4">
+        <div className="minecraft-card minecraft-border minecraft-grass-top p-4 mb-4 flex items-center gap-4 animate-fade-in">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="shrink-0"
+            className="shrink-0 minecraft-block-hover"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
 
           {recipient && (
             <div
-              className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+              className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity flex-1"
               onClick={() => navigate(`/user/${recipientId}`)}
             >
-              <Avatar className="h-10 w-10 border-2 border-primary/30">
+              <Avatar className="h-10 w-10 minecraft-avatar">
                 <AvatarImage src={recipient.avatar_url || undefined} />
                 <AvatarFallback className="bg-primary/20 text-primary font-display">
                   {recipient.username?.slice(0, 2).toUpperCase() || <User className="h-5 w-5" />}
                 </AvatarFallback>
               </Avatar>
-              <span className="font-display font-semibold text-foreground glow-text">
-                {recipient.username}
-              </span>
+              <div>
+                <span className="font-display font-semibold text-foreground glow-text block">
+                  {recipient.username}
+                </span>
+                <span className="text-xs text-muted-foreground font-display flex items-center gap-1">
+                  <Sword className="h-3 w-3" /> Player
+                </span>
+              </div>
             </div>
           )}
         </div>
