@@ -290,4 +290,69 @@
     border: 2px solid hsl(0 0% 20%);
     box-shadow: inset 0 -2px 0 hsl(120 50% 25%);
   }
+
+  /* Notification badge */
+  .minecraft-notification {
+    animation: notification-bounce 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  @keyframes notification-bounce {
+    0% {
+      transform: scale(0);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  /* Chat bubble styles */
+  .minecraft-chat-sent {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(0 70% 40%));
+    border-radius: 12px 12px 4px 12px;
+  }
+
+  .minecraft-chat-received {
+    background: linear-gradient(135deg, hsl(0 0% 15%), hsl(0 0% 12%));
+    border-radius: 12px 12px 12px 4px;
+  }
+
+  /* Hotbar slot active */
+  .minecraft-slot-active {
+    border-color: hsl(var(--primary));
+    box-shadow: 
+      inset 2px 2px 0 hsl(0 0% 5%),
+      inset -2px -2px 0 hsl(0 0% 15%),
+      0 0 10px hsl(var(--primary) / 0.5);
+  }
+
+  /* Enchant glow effect */
+  .minecraft-enchant {
+    animation: enchant-shimmer 2s ease-in-out infinite;
+  }
+
+  @keyframes enchant-shimmer {
+    0%, 100% {
+      filter: brightness(1);
+    }
+    50% {
+      filter: brightness(1.3) saturate(1.2);
+    }
+  }
+
+  /* Redstone pulse */
+  .minecraft-redstone-pulse {
+    animation: redstone-pulse 1s ease-in-out infinite;
+  }
+
+  @keyframes redstone-pulse {
+    0%, 100% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
 }
