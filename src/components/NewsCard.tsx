@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Trash2, MoreHorizontal } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -43,58 +43,59 @@ export function NewsCard({
   };
 
   return (
-    <article className="px-4 py-3 border-b border-border hover:bg-secondary/30 transition-colors">
+    <article className="px-4 py-3 border-b-2 border-border hover:bg-secondary/20 transition-colors">
       <div className="flex gap-3">
-        <Avatar 
-          className="h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity"
+        {/* Minecraft-style avatar */}
+        <div 
+          className="mc-slot h-11 w-11 p-0.5 cursor-pointer hover:mc-slot-active transition-all shrink-0"
           onClick={handleProfileClick}
         >
-          <AvatarImage src={avatarUrl || undefined} />
-          <AvatarFallback className="bg-secondary text-muted-foreground font-display text-sm">
-            {username.slice(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+          <Avatar className="h-full w-full rounded-none">
+            <AvatarImage src={avatarUrl || undefined} className="object-cover" style={{ imageRendering: 'pixelated' }} />
+            <AvatarFallback className="bg-secondary text-primary mc-text text-lg rounded-none">
+              {username.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
             <span 
-              className="font-semibold text-foreground cursor-pointer hover:underline text-[15px]"
+              className="font-semibold text-foreground cursor-pointer hover:text-primary transition-colors mc-text text-lg"
               onClick={handleProfileClick}
             >
               {username}
             </span>
-            <span className="text-muted-foreground text-[15px]">@{username.toLowerCase()}</span>
+            <span className="text-muted-foreground text-sm">@{username.toLowerCase()}</span>
             <span className="text-muted-foreground">·</span>
-            <span className="text-muted-foreground text-[15px]">
+            <span className="text-muted-foreground text-sm">
               {formatDistanceToNow(new Date(createdAt), { addSuffix: false })}
             </span>
-            <div className="ml-auto flex items-center">
-              {user?.id === userId && (
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={handleDelete} 
-                  className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
+            {user?.id === userId && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleDelete} 
+                className="h-7 w-7 ml-auto text-muted-foreground hover:text-destructive hover:bg-destructive/20"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
           </div>
 
           {/* News Badge */}
-          <div className="mt-1 mb-2">
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/20 text-primary">
-              📰 News
+          <div className="mt-2 mb-2">
+            <span className="mc-slot inline-flex items-center px-2 py-0.5 mc-text text-sm text-primary">
+              📰 SERVER NEWS
             </span>
           </div>
 
-          <h3 className="font-display font-bold text-foreground text-lg mb-1">{title}</h3>
-          <p className="text-[15px] text-foreground/90 whitespace-pre-wrap leading-normal">{content}</p>
+          <h3 className="mc-text text-xl text-foreground glow-text mb-2">{title}</h3>
+          <p className="text-foreground/90 whitespace-pre-wrap leading-relaxed">{content}</p>
 
           {imageUrl && (
-            <div className="mt-3 rounded-2xl overflow-hidden border border-border">
-              <img src={imageUrl} alt={title} className="w-full max-h-[510px] object-cover" />
+            <div className="mt-3 minecraft-card overflow-hidden">
+              <img src={imageUrl} alt={title} className="w-full max-h-[400px] object-cover" />
             </div>
           )}
         </div>

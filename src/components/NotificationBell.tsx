@@ -31,53 +31,54 @@ export function NotificationBell() {
         <Button 
           variant="ghost" 
           size="sm" 
-          className="relative rounded-full"
+          className="relative mc-slot hover:mc-slot-active px-3 h-8"
         >
-          <Bell className="h-5 w-5" />
+          <Bell className="h-4 w-4" />
           {totalUnread > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 h-5 w-5 rounded-full bg-primary flex items-center justify-center text-[11px] font-bold text-primary-foreground minecraft-notification">
+            <span className="absolute -top-1 -right-1 h-5 w-5 bg-primary flex items-center justify-center mc-text text-xs text-primary-foreground minecraft-notification redstone-glow">
               {totalUnread > 9 ? '9+' : totalUnread}
             </span>
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-80 p-0 bg-background border border-border rounded-2xl overflow-hidden" 
+        className="w-80 p-0 minecraft-card overflow-hidden" 
         align="end"
       >
-        <div className="p-4 border-b border-border">
-          <h3 className="font-display font-bold text-foreground">
-            Notifications
+        <div className="h-1 bg-primary redstone-glow" />
+        <div className="p-3 border-b-2 border-border">
+          <h3 className="mc-text text-lg text-foreground glow-text">
+            NOTIFICATIONS
           </h3>
         </div>
         
         <div className="max-h-80 overflow-y-auto">
           {notifications.length === 0 ? (
-            <div className="p-6 text-center">
+            <div className="p-6 text-center mc-dirt">
               <Bell className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
-              <p className="text-sm text-muted-foreground">
+              <p className="mc-text text-muted-foreground">
                 No new notifications
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-border">
+            <div className="divide-y-2 divide-border">
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
                   className="p-3 hover:bg-secondary/50 cursor-pointer transition-colors flex items-start gap-3 group"
                   onClick={() => handleNotificationClick(notification)}
                 >
-                  <div className="h-9 w-9 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                  <div className="mc-slot h-9 w-9 flex items-center justify-center shrink-0">
                     {notification.type === 'message' && (
                       <MessageCircle className="h-4 w-4 text-primary" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm">
-                      <span className="font-semibold text-foreground">{notification.senderName}</span>
+                      <span className="font-semibold text-primary mc-text">{notification.senderName}</span>
                       <span className="text-muted-foreground"> sent you a message</span>
                     </p>
-                    <p className="text-sm text-muted-foreground truncate mt-0.5">
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">
                       {notification.content}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
@@ -87,7 +88,7 @@ export function NotificationBell() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity rounded-full"
+                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={(e) => {
                       e.stopPropagation();
                       clearNotification(notification.id);
@@ -102,16 +103,15 @@ export function NotificationBell() {
         </div>
 
         {unreadMessages > 0 && (
-          <div className="p-3 border-t border-border">
+          <div className="p-3 border-t-2 border-border">
             <Button
-              variant="ghost"
-              className="w-full rounded-full text-primary hover:bg-primary/10"
+              className="w-full mc-btn-primary"
               onClick={() => {
                 navigate('/messages');
                 setOpen(false);
               }}
             >
-              View all messages ({unreadMessages})
+              <span className="mc-text">VIEW ALL ({unreadMessages})</span>
             </Button>
           </div>
         )}

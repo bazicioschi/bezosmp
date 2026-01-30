@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { ImagePlus, X, Loader2 } from 'lucide-react';
+import { ImagePlus, X, Loader2, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -118,41 +118,43 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
 
   if (!user) {
     return (
-      <div className="px-4 py-6 border-b border-border text-center">
-        <p className="text-muted-foreground">
-          <a href="/login" className="text-primary hover:underline">Sign in</a> to post
+      <div className="px-4 py-6 border-b-2 border-border text-center mc-dirt">
+        <p className="text-muted-foreground mc-text text-lg">
+          <a href="/login" className="text-primary hover:underline">LOGIN</a> TO POST
         </p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="px-4 py-3 border-b border-border">
+    <form onSubmit={handleSubmit} className="px-4 py-4 border-b-2 border-border">
       <div className="flex gap-3">
-        <Avatar className="h-10 w-10">
-          <AvatarImage src={profile?.avatar_url || undefined} />
-          <AvatarFallback className="bg-secondary text-muted-foreground font-display text-sm">
-            {profile?.username?.slice(0, 2).toUpperCase() || 'U'}
-          </AvatarFallback>
-        </Avatar>
+        <div className="mc-slot h-11 w-11 p-0.5 shrink-0">
+          <Avatar className="h-full w-full rounded-none">
+            <AvatarImage src={profile?.avatar_url || undefined} style={{ imageRendering: 'pixelated' }} />
+            <AvatarFallback className="bg-secondary text-primary mc-text text-lg rounded-none">
+              {profile?.username?.slice(0, 2).toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
+        </div>
 
         <div className="flex-1">
           <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="What's happening?"
-            className="min-h-[60px] bg-transparent border-0 resize-none text-xl placeholder:text-muted-foreground focus-visible:ring-0 p-0"
+            placeholder="What's happening on the server?"
+            className="min-h-[80px] bg-transparent border-0 resize-none text-lg placeholder:text-muted-foreground focus-visible:ring-0 p-0 mc-text"
             maxLength={280}
           />
 
           {(imagePreview || imageUrl) && (
-            <div className="relative mt-3 rounded-2xl overflow-hidden border border-border">
-              <img src={imagePreview || imageUrl} alt="Preview" className="w-full max-h-80 object-cover" />
+            <div className="relative mt-3 minecraft-card overflow-hidden">
+              <img src={imagePreview || imageUrl} alt="Preview" className="w-full max-h-64 object-cover" />
               <Button
                 type="button"
                 variant="secondary"
                 size="icon"
-                className="absolute top-2 right-2 h-8 w-8 rounded-full bg-background/80 hover:bg-background"
+                className="absolute top-2 right-2 h-8 w-8 mc-slot hover:mc-slot-active"
                 onClick={clearImage}
               >
                 <X className="h-4 w-4" />
@@ -179,7 +181,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 rounded-full text-primary hover:bg-primary/10"
+                className="h-9 w-9 text-primary hover:bg-primary/10 mc-slot hover:mc-slot-active"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
               >
@@ -188,15 +190,16 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             </div>
 
             <div className="flex items-center gap-3">
-              <span className={`text-sm ${content.length > 260 ? 'text-destructive' : 'text-muted-foreground'}`}>
+              <span className={`mc-text text-sm ${content.length > 250 ? 'text-destructive' : 'text-muted-foreground'}`}>
                 {content.length}/280
               </span>
               <Button 
                 type="submit" 
                 disabled={loading || !content.trim() || uploading} 
-                className="rounded-full bg-primary hover:bg-primary/90 font-semibold px-4"
+                className="mc-btn-primary px-4 h-9"
               >
-                Post
+                <Send className="h-4 w-4 mr-2" />
+                <span className="mc-text">POST</span>
               </Button>
             </div>
           </div>
