@@ -4,57 +4,54 @@
 @tailwind components;
 @tailwind utilities;
 
-/* bezoSMP Design System - Bold Gaming Aesthetic */
+/* bezoSMP Design System - X.com inspired with Minecraft theme */
 
 @layer base {
   :root {
-    --background: 0 0% 4%;
-    --foreground: 0 0% 98%;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 93%;
 
-    --card: 0 0% 7%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 0%;
+    --card-foreground: 0 0% 93%;
 
     --popover: 0 0% 7%;
-    --popover-foreground: 0 0% 98%;
+    --popover-foreground: 0 0% 93%;
 
-    --primary: 0 84% 50%;
+    --primary: 199 89% 48%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 0 0% 9%;
+    --secondary-foreground: 0 0% 93%;
 
     --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 60%;
+    --muted-foreground: 0 0% 55%;
 
-    --accent: 0 84% 45%;
+    --accent: 199 89% 48%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 0 84% 50%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 199 89% 48%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
     /* Custom bezoSMP tokens */
-    --glow-red: 0 84% 50%;
-    --glow-red-soft: 0 70% 40%;
-    --surface-elevated: 0 0% 10%;
-    --gradient-red: linear-gradient(135deg, hsl(0, 84%, 50%), hsl(0, 84%, 35%));
-    --gradient-dark: linear-gradient(180deg, hsl(0, 0%, 7%), hsl(0, 0%, 4%));
-    --shadow-glow: 0 0 30px -5px hsl(0 84% 50% / 0.4);
-    --shadow-glow-sm: 0 0 15px -3px hsl(0 84% 50% / 0.3);
+    --glow-primary: 199 89% 48%;
+    --surface-elevated: 0 0% 7%;
+    --shadow-glow: 0 0 30px -5px hsl(199 89% 48% / 0.3);
+    --shadow-glow-sm: 0 0 15px -3px hsl(199 89% 48% / 0.2);
     
-    --sidebar-background: 0 0% 5%;
+    --sidebar-background: 0 0% 0%;
     --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 0 84% 50%;
+    --sidebar-primary: 199 89% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 12%;
-    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-accent: 0 0% 9%;
+    --sidebar-accent-foreground: 0 0% 93%;
     --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 0 84% 50%;
+    --sidebar-ring: 199 89% 48%;
   }
 }
 
@@ -75,40 +72,34 @@
 
 @layer components {
   .glow-text {
-    text-shadow: 0 0 20px hsl(var(--glow-red) / 0.5), 0 0 40px hsl(var(--glow-red) / 0.3);
+    text-shadow: 0 0 20px hsl(var(--glow-primary) / 0.4), 0 0 40px hsl(var(--glow-primary) / 0.2);
   }
 
   .glow-border {
-    box-shadow: 0 0 15px -3px hsl(var(--glow-red) / 0.4), inset 0 0 15px -3px hsl(var(--glow-red) / 0.1);
+    box-shadow: 0 0 15px -3px hsl(var(--glow-primary) / 0.3);
   }
 
   .card-hover {
-    @apply transition-all duration-300;
+    @apply transition-all duration-200;
   }
 
   .card-hover:hover {
-    box-shadow: 0 0 25px -5px hsl(var(--glow-red) / 0.5);
-    border-color: hsl(var(--primary));
-  }
-
-  .gradient-red-bg {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(0, 84%, 35%));
+    background-color: hsl(0 0% 4%);
   }
 
   .text-gradient {
-    background: linear-gradient(135deg, hsl(0, 84%, 55%), hsl(0, 84%, 45%));
+    background: linear-gradient(135deg, hsl(199 89% 55%), hsl(199 89% 45%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .minecraft-card {
-    @apply bg-card border border-border rounded-lg;
-    background-image: linear-gradient(135deg, hsl(0 0% 8% / 0.8), hsl(0 0% 5% / 0.9));
+    @apply bg-card border-b border-border;
   }
 
   .input-glow:focus {
-    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.3), 0 0 20px -5px hsl(var(--primary) / 0.4);
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
   }
 }
 
@@ -119,10 +110,10 @@
 
   @keyframes pulse-glow {
     0%, 100% {
-      box-shadow: 0 0 15px -3px hsl(var(--glow-red) / 0.4);
+      box-shadow: 0 0 15px -3px hsl(var(--glow-primary) / 0.3);
     }
     50% {
-      box-shadow: 0 0 25px -3px hsl(var(--glow-red) / 0.6);
+      box-shadow: 0 0 25px -3px hsl(var(--glow-primary) / 0.5);
     }
   }
 
@@ -180,115 +171,47 @@
 
   @keyframes success-pulse {
     0% {
-      box-shadow: 0 0 0 0 hsl(120 60% 50% / 0.7);
+      box-shadow: 0 0 0 0 hsl(var(--primary) / 0.7);
     }
     70% {
-      box-shadow: 0 0 0 10px hsl(120 60% 50% / 0);
+      box-shadow: 0 0 0 10px hsl(var(--primary) / 0);
     }
     100% {
-      box-shadow: 0 0 0 0 hsl(120 60% 50% / 0);
+      box-shadow: 0 0 0 0 hsl(var(--primary) / 0);
     }
   }
 
   /* Pixelated border effect for Minecraft feel */
   .minecraft-border {
     position: relative;
-    border: 3px solid hsl(var(--border));
+    border: 2px solid hsl(var(--border));
     box-shadow: 
-      inset 0 0 0 1px hsl(0 0% 20%),
-      inset 2px 2px 0 hsl(0 0% 25%),
-      inset -2px -2px 0 hsl(0 0% 10%),
-      4px 4px 0 hsl(0 0% 5%);
-  }
-
-  /* Grass block inspired top border */
-  .minecraft-grass-top {
-    border-top: 4px solid hsl(120 40% 35%);
-  }
-
-  /* Dirt texture pattern */
-  .minecraft-dirt-bg {
-    background-image: 
-      linear-gradient(135deg, hsl(25 30% 15%) 25%, transparent 25%),
-      linear-gradient(225deg, hsl(25 30% 15%) 25%, transparent 25%),
-      linear-gradient(45deg, hsl(25 30% 15%) 25%, transparent 25%),
-      linear-gradient(315deg, hsl(25 30% 15%) 25%, hsl(25 25% 12%) 25%);
-    background-size: 8px 8px;
-    background-position: 0 0, 4px 0, 4px -4px, 0px 4px;
-  }
-
-  /* Stone texture pattern */
-  .minecraft-stone-bg {
-    background-image: 
-      repeating-linear-gradient(
-        45deg,
-        hsl(0 0% 15%) 0px,
-        hsl(0 0% 15%) 2px,
-        hsl(0 0% 18%) 2px,
-        hsl(0 0% 18%) 4px
-      );
+      inset 1px 1px 0 hsl(0 0% 20%),
+      inset -1px -1px 0 hsl(0 0% 8%);
   }
 
   /* Pixelated avatar border */
   .minecraft-avatar {
-    border: 3px solid hsl(var(--border));
-    box-shadow: 
-      3px 3px 0 hsl(0 0% 5%),
-      inset 0 0 0 2px hsl(0 0% 25%);
+    border: 2px solid hsl(var(--border));
     image-rendering: pixelated;
   }
 
   /* Block hover effect */
   .minecraft-block-hover {
-    transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+    transition: background-color 0.15s ease-out;
   }
 
   .minecraft-block-hover:hover {
-    transform: translateY(-2px);
-    box-shadow: 
-      inset 0 0 0 1px hsl(0 0% 20%),
-      inset 2px 2px 0 hsl(0 0% 25%),
-      inset -2px -2px 0 hsl(0 0% 10%),
-      6px 6px 0 hsl(0 0% 5%);
-  }
-
-  .minecraft-block-hover:active {
-    transform: translateY(0);
-    box-shadow: 
-      inset 0 0 0 1px hsl(0 0% 20%),
-      inset 2px 2px 0 hsl(0 0% 25%),
-      inset -2px -2px 0 hsl(0 0% 10%),
-      2px 2px 0 hsl(0 0% 5%);
+    background-color: hsl(0 0% 8%);
   }
 
   /* Inventory slot style */
   .minecraft-slot {
-    background: linear-gradient(135deg, hsl(0 0% 10%), hsl(0 0% 8%));
-    border: 2px solid hsl(0 0% 25%);
+    background: hsl(0 0% 7%);
+    border: 2px solid hsl(0 0% 20%);
     box-shadow: 
-      inset 2px 2px 0 hsl(0 0% 5%),
-      inset -2px -2px 0 hsl(0 0% 15%);
-  }
-
-  /* Tooltip Minecraft style */
-  .minecraft-tooltip {
-    background: hsl(270 60% 20% / 0.95);
-    border: 2px solid hsl(270 40% 40%);
-    box-shadow: 0 0 0 2px hsl(0 0% 0%);
-  }
-
-  /* Health bar style */
-  .minecraft-health {
-    background: linear-gradient(to right, hsl(0 70% 45%), hsl(0 70% 35%));
-    border: 2px solid hsl(0 0% 20%);
-    box-shadow: inset 0 -2px 0 hsl(0 50% 25%);
-  }
-
-  /* Experience bar style */
-  .minecraft-xp {
-    background: linear-gradient(to right, hsl(120 70% 45%), hsl(120 70% 35%));
-    border: 2px solid hsl(0 0% 20%);
-    box-shadow: inset 0 -2px 0 hsl(120 50% 25%);
+      inset 1px 1px 0 hsl(0 0% 5%),
+      inset -1px -1px 0 hsl(0 0% 12%);
   }
 
   /* Notification badge */
@@ -310,49 +233,22 @@
 
   /* Chat bubble styles */
   .minecraft-chat-sent {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(0 70% 40%));
-    border-radius: 12px 12px 4px 12px;
+    background: hsl(var(--primary));
+    border-radius: 20px 20px 4px 20px;
   }
 
   .minecraft-chat-received {
-    background: linear-gradient(135deg, hsl(0 0% 15%), hsl(0 0% 12%));
-    border-radius: 12px 12px 12px 4px;
+    background: hsl(0 0% 15%);
+    border-radius: 20px 20px 20px 4px;
   }
 
-  /* Hotbar slot active */
-  .minecraft-slot-active {
-    border-color: hsl(var(--primary));
-    box-shadow: 
-      inset 2px 2px 0 hsl(0 0% 5%),
-      inset -2px -2px 0 hsl(0 0% 15%),
-      0 0 10px hsl(var(--primary) / 0.5);
+  /* Tab underline active */
+  .tab-active {
+    border-bottom: 2px solid hsl(var(--primary));
   }
 
-  /* Enchant glow effect */
-  .minecraft-enchant {
-    animation: enchant-shimmer 2s ease-in-out infinite;
-  }
-
-  @keyframes enchant-shimmer {
-    0%, 100% {
-      filter: brightness(1);
-    }
-    50% {
-      filter: brightness(1.3) saturate(1.2);
-    }
-  }
-
-  /* Redstone pulse */
-  .minecraft-redstone-pulse {
-    animation: redstone-pulse 1s ease-in-out infinite;
-  }
-
-  @keyframes redstone-pulse {
-    0%, 100% {
-      opacity: 0.6;
-    }
-    50% {
-      opacity: 1;
-    }
+  /* X.com style divider */
+  .x-divider {
+    border-bottom: 1px solid hsl(0 0% 15%);
   }
 }

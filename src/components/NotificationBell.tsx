@@ -31,23 +31,23 @@ export function NotificationBell() {
         <Button 
           variant="ghost" 
           size="sm" 
-          className="relative minecraft-block-hover"
+          className="relative rounded-full"
         >
-          <Bell className="h-4 w-4" />
+          <Bell className="h-5 w-5" />
           {totalUnread > 0 && (
-            <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary flex items-center justify-center text-[10px] font-display font-bold text-primary-foreground animate-pulse-glow minecraft-border">
+            <span className="absolute -top-0.5 -right-0.5 h-5 w-5 rounded-full bg-primary flex items-center justify-center text-[11px] font-bold text-primary-foreground minecraft-notification">
               {totalUnread > 9 ? '9+' : totalUnread}
             </span>
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-80 p-0 minecraft-card minecraft-border" 
+        className="w-80 p-0 bg-background border border-border rounded-2xl overflow-hidden" 
         align="end"
       >
-        <div className="p-3 border-b border-border minecraft-grass-top">
-          <h3 className="font-display font-semibold text-foreground glow-text">
-            NOTIFICATIONS
+        <div className="p-4 border-b border-border">
+          <h3 className="font-display font-bold text-foreground">
+            Notifications
           </h3>
         </div>
         
@@ -55,7 +55,7 @@ export function NotificationBell() {
           {notifications.length === 0 ? (
             <div className="p-6 text-center">
               <Bell className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
-              <p className="text-sm text-muted-foreground font-display">
+              <p className="text-sm text-muted-foreground">
                 No new notifications
               </p>
             </div>
@@ -67,17 +67,17 @@ export function NotificationBell() {
                   className="p-3 hover:bg-secondary/50 cursor-pointer transition-colors flex items-start gap-3 group"
                   onClick={() => handleNotificationClick(notification)}
                 >
-                  <div className="h-8 w-8 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0 minecraft-slot">
+                  <div className="h-9 w-9 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                     {notification.type === 'message' && (
                       <MessageCircle className="h-4 w-4 text-primary" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-display">
-                      <span className="font-semibold text-primary">{notification.senderName}</span>
+                    <p className="text-sm">
+                      <span className="font-semibold text-foreground">{notification.senderName}</span>
                       <span className="text-muted-foreground"> sent you a message</span>
                     </p>
-                    <p className="text-xs text-muted-foreground truncate mt-1">
+                    <p className="text-sm text-muted-foreground truncate mt-0.5">
                       {notification.content}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
@@ -87,7 +87,7 @@ export function NotificationBell() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity rounded-full"
                     onClick={(e) => {
                       e.stopPropagation();
                       clearNotification(notification.id);
@@ -104,14 +104,14 @@ export function NotificationBell() {
         {unreadMessages > 0 && (
           <div className="p-3 border-t border-border">
             <Button
-              variant="outline"
-              className="w-full minecraft-border font-display"
+              variant="ghost"
+              className="w-full rounded-full text-primary hover:bg-primary/10"
               onClick={() => {
                 navigate('/messages');
                 setOpen(false);
               }}
             >
-              VIEW ALL MESSAGES ({unreadMessages})
+              View all messages ({unreadMessages})
             </Button>
           </div>
         )}
