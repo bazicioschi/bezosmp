@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, MessageCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,21 +8,37 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { formatDistanceToNow } from 'date-fns';
 
 export function NotificationBell() {
   const navigate = useNavigate();
   const { unreadMessages, notifications, clearNotification } = useNotifications();
+  const { playClick, playNotification } = useSoundEffects();
   const [open, setOpen] = useState(false);
+  const prevUnreadRef = useRef(unreadMessages);
+
+  // Play notification sound when new messages arrive
+  useEffect(() => {
+    if (unreadMessages > prevUnreadRef.current) {
+      playNotification();
+    }
+    prevUnreadRef.current = unreadMessages;
+  }, [unreadMessages, playNotification]);
 
   const totalUnread = unreadMessages;
 
   const handleNotificationClick = (notification: typeof notifications[0]) => {
+    playClick();
     if (notification.type === 'message') {
       navigate(`/messages/${notification.senderId}`);
     }
     clearNotification(notification.id);
     setOpen(false);
+  };
+
+  const handleBellClick = () => {
+    playClick();
   };
 
   return (
@@ -32,6 +48,7 @@ export function NotificationBell() {
           variant="ghost" 
           size="sm" 
           className="relative mc-slot hover:mc-slot-active px-3 h-8"
+          onClick={handleBellClick}
         >
           <Bell className="h-4 w-4" />
           {totalUnread > 0 && (
@@ -85,15 +102,16 @@ export function NotificationBell() {
                       {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                     </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      clearNotification(notification.id);
-                    }}
-                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        playClick();
+                        clearNotification(notification.id);
+                      }}
+                    >
                     <X className="h-3 w-3" />
                   </Button>
                 </div>
@@ -107,6 +125,7 @@ export function NotificationBell() {
             <Button
               className="w-full mc-btn-primary"
               onClick={() => {
+                playClick();
                 navigate('/messages');
                 setOpen(false);
               }}
