@@ -93,7 +93,7 @@ export function SettingsButton() {
               <div>
                 <p className="mc-text text-sm text-foreground">THEME</p>
                 <p className="text-xs text-muted-foreground">
-                  {isDark ? 'Red & Black' : 'Red & White'}
+                  {isDark ? 'Red & Black (Minecraft)' : 'Red & White (Clean)'}
                 </p>
               </div>
             </div>
