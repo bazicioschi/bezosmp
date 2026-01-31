@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { CommentSection } from './CommentSection';
-
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 interface PostCardProps {
   id: string;
   content: string;
@@ -39,6 +39,7 @@ export function PostCard({
 }: PostCardProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { playClick, playPop, playUnpop } = useSoundEffects();
   const [showComments, setShowComments] = useState(false);
   const [localCommentsCount, setLocalCommentsCount] = useState(commentsCount);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -50,8 +51,10 @@ export function PostCard({
     setTimeout(() => setIsAnimating(false), 300);
 
     if (isLiked) {
+      playUnpop();
       await supabase.from('likes').delete().eq('post_id', id).eq('user_id', user.id);
     } else {
+      playPop();
       await supabase.from('likes').insert({ post_id: id, user_id: user.id });
     }
     onLikeToggle();
@@ -59,6 +62,7 @@ export function PostCard({
 
   const handleDelete = async () => {
     if (!user || user.id !== userId) return;
+    playClick();
     await supabase.from('posts').delete().eq('id', id);
     onDelete();
   };
@@ -121,7 +125,7 @@ export function PostCard({
             <Button
               variant="ghost"
               size="sm"
-              onClick={(e) => { e.stopPropagation(); setShowComments(!showComments); }}
+              onClick={(e) => { e.stopPropagation(); playClick(); setShowComments(!showComments); }}
               className="gap-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 px-3"
             >
               <MessageCircle className="h-4 w-4" />
@@ -144,6 +148,7 @@ export function PostCard({
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => playClick()}
               className="text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 px-3"
             >
               <Bookmark className="h-4 w-4" />
@@ -152,6 +157,7 @@ export function PostCard({
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => playClick()}
               className="text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 px-3"
             >
               <Share className="h-4 w-4" />
