@@ -67,21 +67,52 @@
     image-rendering: auto;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  /* Dark mode (Minecraft) - pixel fonts */
+  .dark-mode h1, .dark-mode h2, .dark-mode h3, .dark-mode h4, .dark-mode h5, .dark-mode h6 {
     font-family: 'VT323', 'Orbitron', monospace;
     letter-spacing: 0.05em;
+  }
+
+  /* Light mode (Clean) - modern fonts */
+  .light-mode h1, .light-mode h2, .light-mode h3, .light-mode h4, .light-mode h5, .light-mode h6 {
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0;
+  }
+
+  /* Light mode text colors - red on white */
+  .light-mode {
+    color: hsl(0 72% 40%);
+  }
+
+  .light-mode .text-foreground {
+    color: hsl(0 72% 35%);
+  }
+
+  .light-mode .text-muted-foreground {
+    color: hsl(0 30% 55%);
   }
 }
 
 @layer components {
-  /* Minecraft pixelated text effect */
-  .mc-text {
+  /* Minecraft pixelated text effect - only in dark mode */
+  .dark-mode .mc-text {
     font-family: 'VT323', monospace;
     text-shadow: 2px 2px 0 hsl(0 0% 0% / 0.5);
   }
 
-  .glow-text {
+  /* Light mode - clean text */
+  .light-mode .mc-text {
+    font-family: 'Inter', sans-serif;
+    text-shadow: none;
+    font-weight: 500;
+  }
+
+  .dark-mode .glow-text {
     text-shadow: 0 0 10px hsl(var(--primary) / 0.6), 0 0 20px hsl(var(--primary) / 0.4), 2px 2px 0 hsl(0 0% 0% / 0.5);
+  }
+
+  .light-mode .glow-text {
+    text-shadow: none;
   }
 
   .text-gradient {
@@ -91,8 +122,8 @@
     background-clip: text;
   }
 
-  /* Minecraft card styles */
-  .minecraft-card {
+  /* Minecraft card styles - only in dark mode */
+  .dark-mode .minecraft-card {
     @apply bg-card border-2 border-border;
     box-shadow: 
       inset 2px 2px 0 hsl(0 0% 25%),
@@ -100,11 +131,17 @@
       4px 4px 0 hsl(0 0% 0%);
   }
 
-  .minecraft-card-hover {
+  /* Light mode cards - clean, modern */
+  .light-mode .minecraft-card {
+    @apply bg-card border border-border rounded-xl;
+    box-shadow: 0 2px 8px hsl(0 0% 0% / 0.08);
+  }
+
+  .dark-mode .minecraft-card-hover {
     @apply transition-all duration-100;
   }
 
-  .minecraft-card-hover:hover {
+  .dark-mode .minecraft-card-hover:hover {
     box-shadow: 
       inset 2px 2px 0 hsl(0 0% 30%),
       inset -2px -2px 0 hsl(0 0% 8%),
@@ -112,8 +149,12 @@
     transform: translate(-2px, -2px);
   }
 
-  /* Minecraft button */
-  .mc-btn {
+  .light-mode .minecraft-card-hover:hover {
+    box-shadow: 0 4px 16px hsl(0 0% 0% / 0.12);
+  }
+
+  /* Minecraft button - only in dark mode */
+  .dark-mode .mc-btn {
     @apply font-display uppercase tracking-wider;
     font-family: 'VT323', monospace;
     font-size: 1.1em;
@@ -125,11 +166,23 @@
       3px 3px 0 hsl(0 0% 0%);
   }
 
-  .mc-btn:hover {
+  .light-mode .mc-btn {
+    @apply rounded-lg font-medium;
+    font-family: 'Inter', sans-serif;
+    background: hsl(0 0% 96%);
+    border: 1px solid hsl(0 20% 88%);
+    box-shadow: none;
+  }
+
+  .dark-mode .mc-btn:hover {
     background: linear-gradient(180deg, hsl(0 0% 45%), hsl(0 0% 35%));
   }
 
-  .mc-btn:active {
+  .light-mode .mc-btn:hover {
+    background: hsl(0 0% 92%);
+  }
+
+  .dark-mode .mc-btn:active {
     box-shadow: 
       inset -2px -2px 0 hsl(0 0% 45%),
       inset 2px 2px 0 hsl(0 0% 15%),
@@ -137,7 +190,7 @@
     transform: translate(2px, 2px);
   }
 
-  .mc-btn-primary {
+  .dark-mode .mc-btn-primary {
     background: linear-gradient(180deg, hsl(0 72% 55%), hsl(0 72% 40%));
     border-color: hsl(0 72% 30%);
     box-shadow: 
@@ -146,8 +199,21 @@
       3px 3px 0 hsl(0 0% 0%);
   }
 
-  .mc-btn-primary:hover {
+  .light-mode .mc-btn-primary {
+    @apply rounded-lg font-medium;
+    font-family: 'Inter', sans-serif;
+    background: hsl(0 72% 51%);
+    border: none;
+    box-shadow: 0 2px 4px hsl(0 72% 40% / 0.3);
+    color: white;
+  }
+
+  .dark-mode .mc-btn-primary:hover {
     background: linear-gradient(180deg, hsl(0 72% 60%), hsl(0 72% 45%));
+  }
+
+  .light-mode .mc-btn-primary:hover {
+    background: hsl(0 72% 45%);
   }
 
   .input-glow:focus {
@@ -156,14 +222,19 @@
 }
 
 @layer utilities {
-  /* Pixelated border */
-  .pixel-border {
+  /* Pixelated border - dark mode only */
+  .dark-mode .pixel-border {
     border: 3px solid;
     border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3' height='3'%3E%3Crect width='3' height='3' fill='%23555'/%3E%3C/svg%3E") 3 stretch;
   }
 
-  /* Minecraft inventory slot */
-  .mc-slot {
+  .light-mode .pixel-border {
+    border: 1px solid hsl(0 20% 88%);
+    border-radius: 0.5rem;
+  }
+
+  /* Minecraft inventory slot - dark mode */
+  .dark-mode .mc-slot {
     background: linear-gradient(135deg, hsl(0 0% 15%), hsl(0 0% 10%));
     border: 2px solid hsl(0 0% 8%);
     box-shadow: 
@@ -171,7 +242,15 @@
       inset -2px -2px 0 hsl(0 0% 20%);
   }
 
-  .mc-slot-active {
+  /* Light mode slots - clean */
+  .light-mode .mc-slot {
+    background: hsl(0 0% 98%);
+    border: 1px solid hsl(0 20% 90%);
+    border-radius: 0.5rem;
+    box-shadow: none;
+  }
+
+  .dark-mode .mc-slot-active {
     border-color: hsl(var(--primary));
     box-shadow: 
       inset 2px 2px 0 hsl(0 0% 5%),
@@ -179,8 +258,13 @@
       0 0 8px hsl(var(--primary) / 0.5);
   }
 
-  /* Dirt texture */
-  .mc-dirt {
+  .light-mode .mc-slot-active {
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+  }
+
+  /* Dirt texture - dark mode only */
+  .dark-mode .mc-dirt {
     background-color: hsl(25 30% 12%);
     background-image: 
       repeating-linear-gradient(
@@ -199,8 +283,12 @@
       );
   }
 
-  /* Stone texture */
-  .mc-stone {
+  .light-mode .mc-dirt {
+    background: none;
+  }
+
+  /* Stone texture - dark mode only */
+  .dark-mode .mc-stone {
     background-color: hsl(0 0% 20%);
     background-image: 
       repeating-linear-gradient(
@@ -212,8 +300,12 @@
       );
   }
 
-  /* Bedrock texture */
-  .mc-bedrock {
+  .light-mode .mc-stone {
+    background: none;
+  }
+
+  /* Bedrock texture - dark mode only */
+  .dark-mode .mc-bedrock {
     background-color: hsl(0 0% 8%);
     background-image: 
       radial-gradient(circle at 20% 30%, hsl(0 0% 12%) 1px, transparent 1px),
@@ -222,10 +314,20 @@
     background-size: 8px 8px;
   }
 
+  .light-mode .mc-bedrock {
+    background: hsl(0 0% 98%);
+    background-image: none;
+  }
+
   /* Heart icon style */
-  .mc-heart {
+  .dark-mode .mc-heart {
     color: hsl(0 72% 50%);
     filter: drop-shadow(1px 1px 0 hsl(0 0% 0%));
+  }
+
+  .light-mode .mc-heart {
+    color: hsl(0 72% 50%);
+    filter: none;
   }
 
   /* Animations */
@@ -258,22 +360,43 @@
     100% { transform: scale(1); }
   }
 
-  /* Chat bubbles */
-  .mc-chat-sent {
+  /* Chat bubbles - dark mode */
+  .dark-mode .mc-chat-sent {
     background: linear-gradient(180deg, hsl(var(--primary)), hsl(0 60% 40%));
     border: 2px solid hsl(0 50% 30%);
     box-shadow: 2px 2px 0 hsl(0 0% 0%);
   }
 
-  .mc-chat-received {
+  .dark-mode .mc-chat-received {
     background: linear-gradient(180deg, hsl(0 0% 25%), hsl(0 0% 18%));
     border: 2px solid hsl(0 0% 15%);
     box-shadow: 2px 2px 0 hsl(0 0% 0%);
   }
 
-  /* Redstone glow */
-  .redstone-glow {
+  /* Chat bubbles - light mode */
+  .light-mode .mc-chat-sent {
+    background: hsl(var(--primary));
+    border: none;
+    border-radius: 1rem 1rem 0.25rem 1rem;
+    box-shadow: 0 1px 2px hsl(0 0% 0% / 0.1);
+  }
+
+  .light-mode .mc-chat-received {
+    background: hsl(0 0% 95%);
+    border: none;
+    border-radius: 1rem 1rem 1rem 0.25rem;
+    box-shadow: 0 1px 2px hsl(0 0% 0% / 0.1);
+    color: hsl(0 72% 35%);
+  }
+
+  /* Redstone glow - dark mode only */
+  .dark-mode .redstone-glow {
     animation: redstone-pulse 1.5s ease-in-out infinite;
+  }
+
+  .light-mode .redstone-glow {
+    animation: none;
+    box-shadow: none;
   }
 
   @keyframes redstone-pulse {
