@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Volume2, VolumeX, Sun, Moon } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Sun, Moon, Bug } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -8,12 +8,12 @@ import {
 } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
-import { useTheme } from '@/hooks/useTheme';
+import { useTheme, ThemeMode } from '@/hooks/useTheme';
 
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
   const { playClick, isEnabled, setEnabled } = useSoundEffects();
-  const { theme, toggleTheme, isDark } = useTheme();
+  const { theme, setTheme, isDark, isLight, isBaziMazi } = useTheme();
   const [soundsEnabled, setSoundsEnabled] = useState(true);
 
   useEffect(() => {
@@ -28,9 +28,21 @@ export function SettingsButton() {
     }
   };
 
-  const handleThemeToggle = () => {
+  const handleThemeChange = (newTheme: ThemeMode) => {
     playClick();
-    toggleTheme();
+    setTheme(newTheme);
+  };
+
+  const getThemeIcon = () => {
+    if (isDark) return <Moon className="h-4 w-4 text-primary" />;
+    if (isBaziMazi) return <Bug className="h-4 w-4 text-primary" />;
+    return <Sun className="h-4 w-4 text-primary" />;
+  };
+
+  const getThemeName = () => {
+    if (isDark) return 'Red & Black (Minecraft)';
+    if (isBaziMazi) return 'BaziMazi (Ladybug)';
+    return 'Red & White (Clean)';
   };
 
   return (
@@ -46,7 +58,7 @@ export function SettingsButton() {
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-72 p-0 minecraft-card overflow-hidden" 
+        className="w-80 p-0 minecraft-card overflow-hidden" 
         align="end"
       >
         <div className="h-1 bg-primary redstone-glow" />
@@ -80,28 +92,56 @@ export function SettingsButton() {
             />
           </div>
 
-          {/* Theme Toggle */}
-          <div className="flex items-center justify-between">
+          {/* Theme Selection */}
+          <div className="space-y-3">
             <div className="flex items-center gap-3">
               <div className="mc-slot h-9 w-9 flex items-center justify-center">
-                {isDark ? (
-                  <Moon className="h-4 w-4 text-primary" />
-                ) : (
-                  <Sun className="h-4 w-4 text-primary" />
-                )}
+                {getThemeIcon()}
               </div>
               <div>
                 <p className="mc-text text-sm text-foreground">THEME</p>
-                <p className="text-xs text-muted-foreground">
-                  {isDark ? 'Red & Black (Minecraft)' : 'Red & White (Clean)'}
-                </p>
+                <p className="text-xs text-muted-foreground">{getThemeName()}</p>
               </div>
             </div>
-            <Switch 
-              checked={!isDark} 
-              onCheckedChange={handleThemeToggle}
-              className="data-[state=checked]:bg-primary"
-            />
+            
+            {/* Theme Options */}
+            <div className="grid grid-cols-3 gap-2 pl-12">
+              <button
+                onClick={() => handleThemeChange('dark')}
+                className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
+                  isDark 
+                    ? 'border-primary bg-primary/10' 
+                    : 'border-border hover:border-primary/50'
+                }`}
+              >
+                <Moon className="h-4 w-4" />
+                <span className="text-xs mc-text">Minecraft</span>
+              </button>
+              
+              <button
+                onClick={() => handleThemeChange('light')}
+                className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
+                  isLight 
+                    ? 'border-primary bg-primary/10' 
+                    : 'border-border hover:border-primary/50'
+                }`}
+              >
+                <Sun className="h-4 w-4" />
+                <span className="text-xs mc-text">Clean</span>
+              </button>
+              
+              <button
+                onClick={() => handleThemeChange('bazimazi')}
+                className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
+                  isBaziMazi 
+                    ? 'border-primary bg-primary/10' 
+                    : 'border-border hover:border-primary/50'
+                }`}
+              >
+                <Bug className="h-4 w-4" />
+                <span className="text-xs mc-text">BaziMazi</span>
+              </button>
+            </div>
           </div>
 
           <div className="pt-2 border-t border-border">

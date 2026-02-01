@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export type ThemeMode = 'dark' | 'light';
+export type ThemeMode = 'dark' | 'light' | 'bazimazi';
 
 export function useTheme() {
   const [theme, setThemeState] = useState<ThemeMode>(() => {
@@ -14,10 +14,12 @@ export function useTheme() {
     
     const root = document.documentElement;
     
+    // Remove all theme classes first
+    root.classList.remove('light-mode', 'dark-mode', 'bazimazi-mode');
+    
     if (newTheme === 'light') {
       // Red and White theme - clean, modern, non-Minecraft
       root.classList.add('light-mode');
-      root.classList.remove('dark-mode');
       root.style.setProperty('--background', '0 0% 98%');
       root.style.setProperty('--foreground', '0 72% 45%');
       root.style.setProperty('--card', '0 0% 100%');
@@ -40,10 +42,34 @@ export function useTheme() {
       root.style.setProperty('--sidebar-accent', '0 72% 96%');
       root.style.setProperty('--sidebar-accent-foreground', '0 72% 40%');
       root.style.setProperty('--sidebar-border', '0 20% 90%');
+    } else if (newTheme === 'bazimazi') {
+      // BaziMazi theme - Ladybug pattern, playful, cute
+      root.classList.add('bazimazi-mode');
+      root.style.setProperty('--background', '0 0% 98%');
+      root.style.setProperty('--foreground', '0 0% 15%');
+      root.style.setProperty('--card', '0 0% 100%');
+      root.style.setProperty('--card-foreground', '0 0% 20%');
+      root.style.setProperty('--popover', '0 0% 100%');
+      root.style.setProperty('--popover-foreground', '0 0% 20%');
+      root.style.setProperty('--primary', '0 72% 51%');
+      root.style.setProperty('--primary-foreground', '0 0% 100%');
+      root.style.setProperty('--secondary', '0 85% 97%');
+      root.style.setProperty('--secondary-foreground', '0 72% 40%');
+      root.style.setProperty('--muted', '0 0% 92%');
+      root.style.setProperty('--muted-foreground', '0 0% 45%');
+      root.style.setProperty('--accent', '0 72% 95%');
+      root.style.setProperty('--accent-foreground', '0 72% 40%');
+      root.style.setProperty('--border', '0 30% 85%');
+      root.style.setProperty('--input', '0 0% 95%');
+      root.style.setProperty('--ring', '0 72% 51%');
+      root.style.setProperty('--sidebar-background', '0 0% 100%');
+      root.style.setProperty('--sidebar-foreground', '0 0% 20%');
+      root.style.setProperty('--sidebar-accent', '0 72% 96%');
+      root.style.setProperty('--sidebar-accent-foreground', '0 72% 40%');
+      root.style.setProperty('--sidebar-border', '0 30% 90%');
     } else {
       // Red and Black theme - Minecraft style
       root.classList.add('dark-mode');
-      root.classList.remove('light-mode');
       root.style.setProperty('--background', '0 0% 5%');
       root.style.setProperty('--foreground', '0 0% 93%');
       root.style.setProperty('--card', '0 0% 8%');
@@ -75,7 +101,10 @@ export function useTheme() {
   }, []);
 
   const toggleTheme = useCallback(() => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
+    const themes: ThemeMode[] = ['dark', 'light', 'bazimazi'];
+    const currentIndex = themes.indexOf(theme);
+    const nextIndex = (currentIndex + 1) % themes.length;
+    setTheme(themes[nextIndex]);
   }, [theme, setTheme]);
 
   return {
@@ -83,5 +112,7 @@ export function useTheme() {
     setTheme,
     toggleTheme,
     isDark: theme === 'dark',
+    isLight: theme === 'light',
+    isBaziMazi: theme === 'bazimazi',
   };
 }

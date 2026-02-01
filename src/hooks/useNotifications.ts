@@ -104,6 +104,19 @@ export function useNotifications() {
     fetchUnreadCount();
   };
 
+  const markAllMessagesAsRead = async () => {
+    if (!user) return;
+
+    await supabase
+      .from('messages')
+      .update({ read: true })
+      .eq('receiver_id', user.id)
+      .eq('read', false);
+
+    setUnreadMessages(0);
+    setNotifications([]);
+  };
+
   const clearNotification = (id: string) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
@@ -112,6 +125,7 @@ export function useNotifications() {
     unreadMessages,
     notifications,
     markMessagesAsRead,
+    markAllMessagesAsRead,
     clearNotification,
     refreshCount: fetchUnreadCount,
   };

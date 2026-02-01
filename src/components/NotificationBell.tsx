@@ -13,7 +13,7 @@ import { formatDistanceToNow } from 'date-fns';
 
 export function NotificationBell() {
   const navigate = useNavigate();
-  const { unreadMessages, notifications, clearNotification } = useNotifications();
+  const { unreadMessages, notifications, clearNotification, markAllMessagesAsRead } = useNotifications();
   const { playClick, playNotification } = useSoundEffects();
   const [open, setOpen] = useState(false);
   const prevUnreadRef = useRef(unreadMessages);
@@ -121,7 +121,7 @@ export function NotificationBell() {
         </div>
 
         {unreadMessages > 0 && (
-          <div className="p-3 border-t-2 border-border">
+          <div className="p-3 border-t-2 border-border space-y-2">
             <Button
               className="w-full mc-btn-primary"
               onClick={() => {
@@ -131,6 +131,16 @@ export function NotificationBell() {
               }}
             >
               <span className="mc-text">VIEW ALL ({unreadMessages})</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full mc-btn"
+              onClick={() => {
+                playClick();
+                markAllMessagesAsRead();
+              }}
+            >
+              <span className="mc-text">MARK ALL AS READ</span>
             </Button>
           </div>
         )}
