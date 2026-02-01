@@ -557,7 +557,46 @@
     box-shadow: 0 2px 8px hsl(0 72% 50% / 0.3);
   }
 
-  /* Ladybug spots decorations */
+  /* ===== BaziMazi Playful Animations ===== */
+  
+  /* Bouncing ladybug spots keyframes */
+  @keyframes ladybug-bounce {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-4px) scale(1.1); }
+  }
+
+  @keyframes ladybug-bounce-delayed {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-3px) scale(1.05); }
+  }
+
+  @keyframes ladybug-wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-3deg); }
+    75% { transform: rotate(3deg); }
+  }
+
+  @keyframes ladybug-float {
+    0%, 100% { transform: translateY(0) translateX(0); }
+    25% { transform: translateY(-6px) translateX(2px); }
+    50% { transform: translateY(-3px) translateX(-2px); }
+    75% { transform: translateY(-8px) translateX(1px); }
+  }
+
+  @keyframes ladybug-pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 0.9; transform: scale(1.15); }
+  }
+
+  @keyframes ladybug-crawl {
+    0% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(3px) rotate(5deg); }
+    50% { transform: translateX(0) rotate(0deg); }
+    75% { transform: translateX(-3px) rotate(-5deg); }
+    100% { transform: translateX(0) rotate(0deg); }
+  }
+
+  /* Ladybug spots decorations with animations */
   .bazimazi-mode .ladybug-spots {
     position: relative;
   }
@@ -572,6 +611,7 @@
     background: hsl(0 0% 10%);
     border-radius: 50%;
     opacity: 0.6;
+    animation: ladybug-bounce 2s ease-in-out infinite;
   }
 
   .bazimazi-mode .ladybug-spots::after {
@@ -584,5 +624,97 @@
     background: hsl(0 0% 10%);
     border-radius: 50%;
     opacity: 0.4;
+    animation: ladybug-bounce-delayed 2.5s ease-in-out infinite 0.3s;
+  }
+
+  /* Floating card animation for BaziMazi */
+  .bazimazi-mode .minecraft-card {
+    animation: ladybug-float 6s ease-in-out infinite;
+  }
+
+  .bazimazi-mode .minecraft-card:nth-child(odd) {
+    animation-delay: -2s;
+  }
+
+  .bazimazi-mode .minecraft-card:nth-child(even) {
+    animation-delay: -4s;
+  }
+
+  /* Wiggle effect on hover for buttons */
+  .bazimazi-mode .mc-btn:hover,
+  .bazimazi-mode .mc-btn-primary:hover {
+    animation: ladybug-wiggle 0.4s ease-in-out;
+  }
+
+  /* Pulsing spots effect for avatars */
+  .bazimazi-mode .mc-slot {
+    position: relative;
+    overflow: visible;
+  }
+
+  .bazimazi-mode .mc-slot::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 6px;
+    height: 6px;
+    background: hsl(0 0% 15%);
+    border-radius: 50%;
+    animation: ladybug-pulse 2s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .bazimazi-mode .mc-slot::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: -2px;
+    width: 5px;
+    height: 5px;
+    background: hsl(0 0% 20%);
+    border-radius: 50%;
+    animation: ladybug-pulse 2.3s ease-in-out infinite 0.5s;
+    pointer-events: none;
+  }
+
+  /* Crawling effect for notification badge */
+  .bazimazi-mode .minecraft-notification {
+    animation: ladybug-crawl 3s ease-in-out infinite;
+  }
+
+  /* Heart bounce animation for likes */
+  .bazimazi-mode .mc-heart {
+    transition: transform 0.2s ease;
+  }
+
+  .bazimazi-mode .mc-heart:hover {
+    animation: ladybug-bounce 0.5s ease-in-out;
+  }
+
+  /* Floating effect for header logo/brand */
+  .bazimazi-mode header .text-primary {
+    animation: ladybug-float 4s ease-in-out infinite;
+  }
+
+  /* Tab underline wiggle */
+  .bazimazi-mode .redstone-glow {
+    animation: ladybug-wiggle 2s ease-in-out infinite !important;
+    box-shadow: 0 2px 8px hsl(0 72% 50% / 0.3);
+  }
+
+  /* Reduce motion for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    .bazimazi-mode .ladybug-spots::before,
+    .bazimazi-mode .ladybug-spots::after,
+    .bazimazi-mode .minecraft-card,
+    .bazimazi-mode .mc-slot::before,
+    .bazimazi-mode .mc-slot::after,
+    .bazimazi-mode .minecraft-notification,
+    .bazimazi-mode .mc-heart,
+    .bazimazi-mode header .text-primary,
+    .bazimazi-mode .redstone-glow {
+      animation: none !important;
+    }
   }
 }
