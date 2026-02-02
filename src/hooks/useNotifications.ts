@@ -67,6 +67,25 @@ export function useNotifications() {
           fetchSenderInfo(newMsg);
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver_id=eq.${user.id}`,
+        },
+        (payload) => {
+          // Message was updated (likely marked as read)
+          const oldMsg = payload.old as { read: boolean };
+          const newMsg = payload.new as { read: boolean };
+          
+          // If message was marked as read, refresh the count
+          if (!oldMsg.read && newMsg.read) {
+            fetchUnreadCount();
+          }
+        }
+      )
       .subscribe();
   };
 
