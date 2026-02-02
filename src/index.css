@@ -620,4 +620,19 @@
   .bazimazi-mode .border-t-2 {
     background: hsl(0 0% 100%);
   }
+
+  /* BaziMazi notification text - black */
+  .bazimazi-mode .minecraft-notification {
+    color: hsl(0 0% 100%);
+  }
+
+  .bazimazi-mode [data-radix-popper-content-wrapper] p,
+  .bazimazi-mode [data-radix-popper-content-wrapper] span,
+  .bazimazi-mode [data-radix-popper-content-wrapper] h3 {
+    color: hsl(0 0% 0%);
+  }
+
+  .bazimazi-mode [data-radix-popper-content-wrapper] .text-primary {
+    color: hsl(0 72% 45%);
+  }
 }
