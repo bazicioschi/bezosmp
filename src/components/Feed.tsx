@@ -9,6 +9,7 @@ interface Post {
   id: string;
   content: string;
   image_url: string | null;
+  video_url: string | null;
   created_at: string;
   user_id: string;
   username: string;
@@ -63,6 +64,7 @@ export function Feed() {
         id: post.id,
         content: post.content,
         image_url: post.image_url,
+        video_url: post.video_url,
         created_at: post.created_at,
         user_id: post.user_id,
         username: profile?.username || 'Unknown',
@@ -115,6 +117,7 @@ export function Feed() {
             id={post.id}
             content={post.content}
             imageUrl={post.image_url}
+            videoUrl={post.video_url}
             createdAt={post.created_at}
             userId={post.user_id}
             username={post.username}

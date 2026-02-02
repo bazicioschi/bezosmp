@@ -12,6 +12,7 @@ interface PostCardProps {
   id: string;
   content: string;
   imageUrl?: string | null;
+  videoUrl?: string | null;
   createdAt: string;
   userId: string;
   username: string;
@@ -27,6 +28,7 @@ export function PostCard({
   id,
   content,
   imageUrl,
+  videoUrl,
   createdAt,
   userId,
   username,
@@ -117,6 +119,25 @@ export function PostCard({
           {imageUrl && (
             <div className="mt-3 minecraft-card overflow-hidden">
               <img src={imageUrl} alt="Post image" className="w-full max-h-[400px] object-cover" />
+            </div>
+          )}
+
+          {videoUrl && (
+            <div className="mt-3 minecraft-card overflow-hidden">
+              <video 
+                src={videoUrl} 
+                className="w-full max-h-[400px] object-contain bg-black"
+                controls
+                playsInline
+                preload="metadata"
+                controlsList="nodownload"
+              >
+                {/* Fallback for cross-platform compatibility */}
+                <source src={videoUrl} type="video/mp4" />
+                <source src={videoUrl} type="video/webm" />
+                <source src={videoUrl} type="video/quicktime" />
+                Your browser does not support the video tag.
+              </video>
             </div>
           )}
 
