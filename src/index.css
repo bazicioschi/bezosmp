@@ -84,6 +84,23 @@
     background-attachment: fixed;
   }
 
+  /* Cato body background */
+  .cato-mode body,
+  body.cato-mode,
+  html.cato-mode body {
+    background-image: url('/src/assets/cato-pattern.png');
+    background-repeat: repeat;
+    background-size: 300px;
+    background-attachment: fixed;
+  }
+
+  html.cato-mode {
+    background-image: url('/src/assets/cato-pattern.png');
+    background-repeat: repeat;
+    background-size: 300px;
+    background-attachment: fixed;
+  }
+
   /* Dark mode (Minecraft) - pixel fonts */
   .dark-mode h1, .dark-mode h2, .dark-mode h3, .dark-mode h4, .dark-mode h5, .dark-mode h6 {
     font-family: 'VT323', 'Orbitron', monospace;
@@ -126,6 +143,25 @@
 
   .bazimazi-mode .text-muted-foreground {
     color: hsl(0 0% 45%);
+  }
+
+  /* Cato mode - rat themed with black accents */
+  .cato-mode {
+    color: hsl(0 0% 15%);
+  }
+
+  .cato-mode h1, .cato-mode h2, .cato-mode h3, .cato-mode h4, .cato-mode h5, .cato-mode h6 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .cato-mode .text-foreground {
+    color: hsl(0 0% 10%);
+  }
+
+  .cato-mode .text-muted-foreground {
+    color: hsl(0 0% 40%);
   }
 }
 
@@ -634,5 +670,181 @@
 
   .bazimazi-mode [data-radix-popper-content-wrapper] .text-primary {
     color: hsl(0 72% 45%);
+  }
+
+  /* Cato Theme Styles - Black accents like BaziMazi but with black instead of red */
+  .cato-mode .mc-text {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    text-shadow: none;
+    color: hsl(0 0% 10%);
+  }
+
+  .cato-mode .glow-text {
+    text-shadow: none;
+    color: hsl(0 0% 15%);
+  }
+
+  /* Cato cards - solid white */
+  .cato-mode .minecraft-card {
+    @apply border border-border rounded-2xl;
+    background: hsl(0 0% 100%);
+    box-shadow: 0 4px 12px hsl(0 0% 0% / 0.08);
+  }
+
+  .cato-mode .minecraft-card-hover:hover {
+    box-shadow: 0 6px 20px hsl(0 0% 0% / 0.15);
+    transform: translateY(-2px);
+  }
+
+  .cato-mode .mc-btn {
+    @apply rounded-full font-semibold;
+    font-family: 'Inter', sans-serif;
+    background: hsl(0 0% 100%);
+    border: 2px solid hsl(0 0% 75%);
+    box-shadow: none;
+    transition: all 0.2s ease;
+    color: hsl(0 0% 15%);
+  }
+
+  .cato-mode .mc-btn:hover {
+    background: hsl(0 0% 95%);
+    border-color: hsl(0 0% 20%);
+  }
+
+  .cato-mode .mc-btn-primary {
+    @apply rounded-full font-semibold;
+    font-family: 'Inter', sans-serif;
+    background: hsl(0 0% 10%);
+    border: none;
+    box-shadow: 0 4px 8px hsl(0 0% 0% / 0.3);
+    color: white;
+  }
+
+  .cato-mode .mc-btn-primary:hover {
+    background: hsl(0 0% 20%);
+    box-shadow: 0 6px 12px hsl(0 0% 0% / 0.4);
+  }
+
+  .cato-mode .mc-slot {
+    background: hsl(0 0% 100%);
+    border: 2px solid hsl(0 0% 80%);
+    border-radius: 1rem;
+    box-shadow: none;
+  }
+
+  .cato-mode .mc-slot-active {
+    border-color: hsl(0 0% 20%);
+    background: hsl(0 0% 95%);
+  }
+
+  .cato-mode .pixel-border {
+    border: 2px solid hsl(0 0% 75%);
+    border-radius: 1rem;
+  }
+
+  /* No textures in Cato - clear background visible */
+  .cato-mode .mc-dirt,
+  .cato-mode .mc-stone,
+  .cato-mode .mc-bedrock {
+    background: transparent;
+  }
+
+  .cato-mode .mc-heart {
+    color: hsl(0 0% 20%);
+    filter: none;
+  }
+
+  .cato-mode .mc-chat-sent {
+    background: hsl(0 0% 15%);
+    border: none;
+    border-radius: 1.25rem 1.25rem 0.25rem 1.25rem;
+    box-shadow: 0 2px 6px hsl(0 0% 0% / 0.25);
+  }
+
+  .cato-mode .mc-chat-received {
+    background: hsl(0 0% 100%);
+    border: none;
+    border-radius: 1.25rem 1.25rem 1.25rem 0.25rem;
+    box-shadow: 0 2px 6px hsl(0 0% 0% / 0.08);
+    color: hsl(0 0% 15%);
+  }
+
+  .cato-mode .redstone-glow {
+    animation: none;
+    box-shadow: 0 2px 8px hsl(0 0% 0% / 0.3);
+  }
+
+  /* Cato header, sidebars, and content areas - solid white */
+  .cato-mode header,
+  .cato-mode .bg-card {
+    background: hsl(0 0% 100%) !important;
+  }
+
+  .cato-mode .bg-background {
+    background: transparent !important;
+  }
+
+  .cato-mode .bg-secondary {
+    background: hsl(0 0% 100%) !important;
+  }
+
+  .cato-mode .bg-secondary\/50,
+  .cato-mode .bg-secondary\/30,
+  .cato-mode .bg-secondary\/20 {
+    background: hsl(0 0% 100%) !important;
+  }
+
+  /* Cato post content areas - solid white */
+  .cato-mode article {
+    background: hsl(0 0% 100%);
+  }
+
+  .cato-mode .border-b-2 {
+    border-color: hsl(0 0% 85%) !important;
+  }
+
+  .cato-mode .border-x-2 {
+    border-color: hsl(0 0% 85%) !important;
+    background: hsl(0 0% 100%);
+  }
+
+  /* Cato input fields - solid white */
+  .cato-mode input,
+  .cato-mode textarea {
+    background: hsl(0 0% 100%) !important;
+    border-color: hsl(0 0% 75%);
+    color: hsl(0 0% 15%);
+  }
+
+  .cato-mode input::placeholder,
+  .cato-mode textarea::placeholder {
+    color: hsl(0 0% 55%);
+  }
+
+  /* Cato popover and dialog - solid white */
+  .cato-mode [data-radix-popper-content-wrapper] > div,
+  .cato-mode [role="dialog"] {
+    background: hsl(0 0% 100%) !important;
+  }
+
+  /* Cato comment sections - solid white */
+  .cato-mode .border-t-2 {
+    background: hsl(0 0% 100%);
+  }
+
+  /* Cato notification text - black */
+  .cato-mode .minecraft-notification {
+    color: hsl(0 0% 100%);
+  }
+
+  .cato-mode [data-radix-popper-content-wrapper] p,
+  .cato-mode [data-radix-popper-content-wrapper] span,
+  .cato-mode [data-radix-popper-content-wrapper] h3 {
+    color: hsl(0 0% 0%);
+  }
+
+  .cato-mode [data-radix-popper-content-wrapper] .text-primary {
+    color: hsl(0 0% 15%);
   }
 }
