@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Gamepad2, LogIn, Loader2, Pickaxe } from 'lucide-react';
+import { Gamepad2, LogIn, Loader2, Pickaxe, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,6 +13,7 @@ export default function Login() {
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formState, setFormState] = useState<'idle' | 'error' | 'success'>('idle');
 
@@ -80,17 +81,28 @@ export default function Login() {
 
             <div className="space-y-2">
               <Label htmlFor="password" className="font-display text-sm tracking-wide">PASSWORD</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                className={`bg-secondary/50 border-2 border-border input-glow h-12 font-body ${
-                  formState === 'error' ? 'border-destructive' : ''
-                } ${formState === 'success' ? 'border-green-500' : ''}`}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  className={`bg-secondary/50 border-2 border-border input-glow h-12 font-body pr-12 ${
+                    formState === 'error' ? 'border-destructive' : ''
+                  } ${formState === 'success' ? 'border-green-500' : ''}`}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
             </div>
 
             <div className="text-right">
