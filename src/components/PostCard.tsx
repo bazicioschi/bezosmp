@@ -129,13 +129,20 @@ export function PostCard({
                 className="w-full max-h-[400px] object-contain bg-black"
                 controls
                 playsInline
+                webkit-playsinline="true"
+                x-webkit-airplay="allow"
                 preload="metadata"
                 controlsList="nodownload"
+                style={{ WebkitTransform: 'translateZ(0)' }}
               >
-                {/* Fallback for cross-platform compatibility */}
+                {/* Cross-platform compatibility including iPad/iOS */}
+                <source src={videoUrl} type="video/mp4; codecs=avc1.42E01E,mp4a.40.2" />
                 <source src={videoUrl} type="video/mp4" />
+                <source src={videoUrl} type="video/webm; codecs=vp9,opus" />
                 <source src={videoUrl} type="video/webm" />
                 <source src={videoUrl} type="video/quicktime" />
+                <source src={videoUrl} type="video/ogg" />
+                <source src={videoUrl} type="video/3gpp" />
                 Your browser does not support the video tag.
               </video>
             </div>

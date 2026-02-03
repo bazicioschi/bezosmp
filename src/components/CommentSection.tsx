@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { Send, Trash2, Reply, X } from 'lucide-react';
+import { Send, Trash2, Reply, X, Heart, Pencil, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 
 interface Comment {
   id: string;
@@ -14,6 +15,8 @@ interface Comment {
   user_id: string;
   username: string;
   avatar_url: string | null;
+  likes_count: number;
+  is_liked: boolean;
 }
 
 interface CommentSectionProps {
@@ -24,10 +27,12 @@ interface CommentSectionProps {
 
 export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: CommentSectionProps) {
   const { user } = useAuth();
+  const { playClick, playPop, playUnpop } = useSoundEffects();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
   const [replyingTo, setReplyingTo] = useState<{ id: string; username: string } | null>(null);
+  const [editingComment, setEditingComment] = useState<{ id: string; content: string } | null>(null);
 
   useEffect(() => {
     fetchComments();
@@ -50,6 +55,29 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
       .select('user_id, username, avatar_url')
       .in('user_id', userIds);
 
+    // Fetch likes for comments if user is logged in
+    let userLikes: string[] = [];
+    if (user) {
+      const { data: likesData } = await supabase
+        .from('comment_likes')
+        .select('comment_id')
+        .eq('user_id', user.id)
+        .in('comment_id', commentsData.map(c => c.id));
+      userLikes = likesData?.map(l => l.comment_id) || [];
+    }
+
+    // Fetch likes count for each comment
+    const commentIds = commentsData.map(c => c.id);
+    const { data: likesCountData } = await supabase
+      .from('comment_likes')
+      .select('comment_id')
+      .in('comment_id', commentIds);
+
+    const likesCountMap = new Map<string, number>();
+    likesCountData?.forEach(like => {
+      likesCountMap.set(like.comment_id, (likesCountMap.get(like.comment_id) || 0) + 1);
+    });
+
     const profilesMap = new Map(profilesData?.map(p => [p.user_id, p]) || []);
 
     const enrichedComments: Comment[] = commentsData.map(comment => {
@@ -61,6 +89,8 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
         user_id: comment.user_id,
         username: profile?.username || 'Unknown',
         avatar_url: profile?.avatar_url || null,
+        likes_count: likesCountMap.get(comment.id) || 0,
+        is_liked: userLikes.includes(comment.id),
       };
     });
 
@@ -92,6 +122,8 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
   };
 
   const handleDelete = async (commentId: string) => {
+    playClick();
+    await supabase.from('comment_likes').delete().eq('comment_id', commentId);
     await supabase.from('comments').delete().eq('id', commentId);
     setComments(comments.filter(c => c.id !== commentId));
     onCommentDeleted();
@@ -103,6 +135,58 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
 
   const cancelReply = () => {
     setReplyingTo(null);
+  };
+
+  const handleLikeComment = async (commentId: string, isLiked: boolean) => {
+    if (!user) return;
+
+    if (isLiked) {
+      playUnpop();
+      await supabase.from('comment_likes').delete().eq('comment_id', commentId).eq('user_id', user.id);
+    } else {
+      playPop();
+      await supabase.from('comment_likes').insert({ comment_id: commentId, user_id: user.id });
+    }
+    
+    // Update local state
+    setComments(comments.map(c => {
+      if (c.id === commentId) {
+        return {
+          ...c,
+          is_liked: !isLiked,
+          likes_count: isLiked ? c.likes_count - 1 : c.likes_count + 1,
+        };
+      }
+      return c;
+    }));
+  };
+
+  const startEditing = (comment: Comment) => {
+    setEditingComment({ id: comment.id, content: comment.content });
+  };
+
+  const cancelEditing = () => {
+    setEditingComment(null);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingComment || !editingComment.content.trim()) return;
+
+    playClick();
+    const { error } = await supabase
+      .from('comments')
+      .update({ content: editingComment.content.trim() })
+      .eq('id', editingComment.id);
+
+    if (!error) {
+      setComments(comments.map(c => {
+        if (c.id === editingComment.id) {
+          return { ...c, content: editingComment.content.trim() };
+        }
+        return c;
+      }));
+      setEditingComment(null);
+    }
   };
 
   // Function to render comment content with highlighted mentions
@@ -173,28 +257,68 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
                 </div>
                 <div className="flex items-center gap-1">
                   {user && (
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-6 w-6 text-muted-foreground hover:text-primary"
-                      onClick={() => handleReply(comment)}
-                    >
-                      <Reply className="h-3 w-3" />
-                    </Button>
+                    <>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className={`h-6 w-6 ${comment.is_liked ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
+                        onClick={() => handleLikeComment(comment.id, comment.is_liked)}
+                      >
+                        <Heart className={`h-3 w-3 ${comment.is_liked ? 'fill-primary' : ''}`} />
+                      </Button>
+                      {comment.likes_count > 0 && (
+                        <span className="text-xs text-muted-foreground mr-1">{comment.likes_count}</span>
+                      )}
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6 text-muted-foreground hover:text-primary"
+                        onClick={() => handleReply(comment)}
+                      >
+                        <Reply className="h-3 w-3" />
+                      </Button>
+                    </>
                   )}
                   {user?.id === comment.user_id && (
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                      onClick={() => handleDelete(comment.id)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+                    <>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6 text-muted-foreground hover:text-primary"
+                        onClick={() => startEditing(comment)}
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                        onClick={() => handleDelete(comment.id)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>
-              <p className="text-sm text-foreground/90 mt-1">{renderCommentContent(comment.content)}</p>
+              {editingComment?.id === comment.id ? (
+                <div className="flex gap-2 mt-2">
+                  <Input
+                    value={editingComment.content}
+                    onChange={(e) => setEditingComment({ ...editingComment, content: e.target.value })}
+                    className="flex-1 bg-secondary/50 border-2 border-border input-glow text-sm"
+                    autoFocus
+                  />
+                  <Button size="icon" className="h-8 w-8" onClick={handleSaveEdit}>
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={cancelEditing}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-sm text-foreground/90 mt-1">{renderCommentContent(comment.content)}</p>
+              )}
             </div>
           </div>
         ))}
