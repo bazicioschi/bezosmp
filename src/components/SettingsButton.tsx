@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Volume2, VolumeX, Sun, Moon, Bug } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -13,7 +13,7 @@ import { useTheme, ThemeMode } from '@/hooks/useTheme';
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
   const { playClick, isEnabled, setEnabled } = useSoundEffects();
-  const { theme, setTheme, isDark, isLight, isBaziMazi } = useTheme();
+  const { theme, setTheme, isDark, isLight, isBaziMazi, isCato } = useTheme();
   const [soundsEnabled, setSoundsEnabled] = useState(true);
 
   useEffect(() => {
@@ -36,12 +36,14 @@ export function SettingsButton() {
   const getThemeIcon = () => {
     if (isDark) return <Moon className="h-4 w-4 text-primary" />;
     if (isBaziMazi) return <Bug className="h-4 w-4 text-primary" />;
+    if (isCato) return <Rat className="h-4 w-4 text-primary" />;
     return <Sun className="h-4 w-4 text-primary" />;
   };
 
   const getThemeName = () => {
     if (isDark) return 'Red & Black (Minecraft)';
     if (isBaziMazi) return 'BaziMazi (Ladybug)';
+    if (isCato) return 'Cato (Rat)';
     return 'Red & White (Clean)';
   };
 
@@ -105,7 +107,7 @@ export function SettingsButton() {
             </div>
             
             {/* Theme Options */}
-            <div className="grid grid-cols-3 gap-2 pl-12">
+            <div className="grid grid-cols-4 gap-2 pl-12">
               <button
                 onClick={() => handleThemeChange('dark')}
                 className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
@@ -115,7 +117,7 @@ export function SettingsButton() {
                 }`}
               >
                 <Moon className="h-4 w-4" />
-                <span className="text-xs mc-text">Minecraft</span>
+                <span className="text-xs mc-text">MC</span>
               </button>
               
               <button
@@ -139,7 +141,19 @@ export function SettingsButton() {
                 }`}
               >
                 <Bug className="h-4 w-4" />
-                <span className="text-xs mc-text">BaziMazi</span>
+                <span className="text-xs mc-text">Bazi</span>
+              </button>
+              
+              <button
+                onClick={() => handleThemeChange('cato')}
+                className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
+                  isCato 
+                    ? 'border-primary bg-primary/10' 
+                    : 'border-border hover:border-primary/50'
+                }`}
+              >
+                <Rat className="h-4 w-4" />
+                <span className="text-xs mc-text">Cato</span>
               </button>
             </div>
           </div>
