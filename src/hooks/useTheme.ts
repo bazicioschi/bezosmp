@@ -93,7 +93,7 @@ export function useTheme() {
       root.style.setProperty('--sidebar-accent-foreground', '0 0% 15%');
       root.style.setProperty('--sidebar-border', '0 0% 85%');
     } else if (newTheme === 'pizza') {
-      // Pizza theme - Black background, green accents, white text
+      // Pizza theme - Black background, olive green accents, white text
       root.classList.add('pizza-mode');
       root.style.setProperty('--background', '0 0% 5%');
       root.style.setProperty('--foreground', '0 0% 100%');
@@ -101,17 +101,17 @@ export function useTheme() {
       root.style.setProperty('--card-foreground', '0 0% 100%');
       root.style.setProperty('--popover', '0 0% 10%');
       root.style.setProperty('--popover-foreground', '0 0% 100%');
-      root.style.setProperty('--primary', '142 70% 45%');
+      root.style.setProperty('--primary', '75 45% 40%');
       root.style.setProperty('--primary-foreground', '0 0% 100%');
       root.style.setProperty('--secondary', '0 0% 12%');
       root.style.setProperty('--secondary-foreground', '0 0% 100%');
       root.style.setProperty('--muted', '0 0% 18%');
       root.style.setProperty('--muted-foreground', '0 0% 60%');
-      root.style.setProperty('--accent', '142 70% 40%');
+      root.style.setProperty('--accent', '75 45% 35%');
       root.style.setProperty('--accent-foreground', '0 0% 100%');
       root.style.setProperty('--border', '0 0% 20%');
       root.style.setProperty('--input', '0 0% 15%');
-      root.style.setProperty('--ring', '142 70% 45%');
+      root.style.setProperty('--ring', '75 45% 40%');
       root.style.setProperty('--sidebar-background', '0 0% 5%');
       root.style.setProperty('--sidebar-foreground', '0 0% 100%');
       root.style.setProperty('--sidebar-accent', '0 0% 12%');
