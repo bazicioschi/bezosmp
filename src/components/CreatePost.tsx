@@ -118,10 +118,10 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
       return;
     }
 
-    if (file.size > 100 * 1024 * 1024) {
+    if (file.size > 1024 * 1024 * 1024) {
       toast({
         title: 'Error',
-        description: 'Video must be less than 100MB',
+        description: 'Video must be less than 1GB',
         variant: 'destructive',
       });
       return;

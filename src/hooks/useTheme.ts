@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export type ThemeMode = 'dark' | 'light' | 'bazimazi' | 'cato';
+export type ThemeMode = 'dark' | 'light' | 'bazimazi' | 'cato' | 'pizza';
 
 export function useTheme() {
   const [theme, setThemeState] = useState<ThemeMode>(() => {
@@ -15,7 +15,7 @@ export function useTheme() {
     const root = document.documentElement;
     
     // Remove all theme classes first
-    root.classList.remove('light-mode', 'dark-mode', 'bazimazi-mode', 'cato-mode');
+    root.classList.remove('light-mode', 'dark-mode', 'bazimazi-mode', 'cato-mode', 'pizza-mode');
     
     if (newTheme === 'light') {
       // Red and White theme - clean, modern, non-Minecraft
@@ -92,6 +92,31 @@ export function useTheme() {
       root.style.setProperty('--sidebar-accent', '0 0% 95%');
       root.style.setProperty('--sidebar-accent-foreground', '0 0% 15%');
       root.style.setProperty('--sidebar-border', '0 0% 85%');
+    } else if (newTheme === 'pizza') {
+      // Pizza theme - Black background, green accents, white text
+      root.classList.add('pizza-mode');
+      root.style.setProperty('--background', '0 0% 5%');
+      root.style.setProperty('--foreground', '0 0% 100%');
+      root.style.setProperty('--card', '0 0% 8%');
+      root.style.setProperty('--card-foreground', '0 0% 100%');
+      root.style.setProperty('--popover', '0 0% 10%');
+      root.style.setProperty('--popover-foreground', '0 0% 100%');
+      root.style.setProperty('--primary', '142 70% 45%');
+      root.style.setProperty('--primary-foreground', '0 0% 100%');
+      root.style.setProperty('--secondary', '0 0% 12%');
+      root.style.setProperty('--secondary-foreground', '0 0% 100%');
+      root.style.setProperty('--muted', '0 0% 18%');
+      root.style.setProperty('--muted-foreground', '0 0% 60%');
+      root.style.setProperty('--accent', '142 70% 40%');
+      root.style.setProperty('--accent-foreground', '0 0% 100%');
+      root.style.setProperty('--border', '0 0% 20%');
+      root.style.setProperty('--input', '0 0% 15%');
+      root.style.setProperty('--ring', '142 70% 45%');
+      root.style.setProperty('--sidebar-background', '0 0% 5%');
+      root.style.setProperty('--sidebar-foreground', '0 0% 100%');
+      root.style.setProperty('--sidebar-accent', '0 0% 12%');
+      root.style.setProperty('--sidebar-accent-foreground', '0 0% 100%');
+      root.style.setProperty('--sidebar-border', '0 0% 20%');
     } else {
       // Red and Black theme - Minecraft style
       root.classList.add('dark-mode');
@@ -126,7 +151,7 @@ export function useTheme() {
   }, []);
 
   const toggleTheme = useCallback(() => {
-    const themes: ThemeMode[] = ['dark', 'light', 'bazimazi', 'cato'];
+    const themes: ThemeMode[] = ['dark', 'light', 'bazimazi', 'cato', 'pizza'];
     const currentIndex = themes.indexOf(theme);
     const nextIndex = (currentIndex + 1) % themes.length;
     setTheme(themes[nextIndex]);
@@ -140,5 +165,6 @@ export function useTheme() {
     isLight: theme === 'light',
     isBaziMazi: theme === 'bazimazi',
     isCato: theme === 'cato',
+    isPizza: theme === 'pizza',
   };
 }
