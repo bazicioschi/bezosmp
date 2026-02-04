@@ -890,12 +890,12 @@
     font-family: 'Inter', sans-serif;
     font-weight: 600;
     text-shadow: none;
-    color: hsl(142 70% 45%);
+    color: hsl(75 45% 40%);
   }
 
   .pizza-mode .glow-text {
-    text-shadow: 0 0 10px hsl(142 70% 45% / 0.5);
-    color: hsl(142 70% 50%);
+    text-shadow: 0 0 10px hsl(75 45% 40% / 0.5);
+    color: hsl(75 45% 45%);
   }
 
   /* Pizza cards - dark background */
@@ -906,7 +906,7 @@
   }
 
   .pizza-mode .minecraft-card-hover:hover {
-    box-shadow: 0 6px 20px hsl(142 70% 45% / 0.2);
+    box-shadow: 0 6px 20px hsl(75 45% 40% / 0.2);
     transform: translateY(-2px);
   }
 
@@ -922,21 +922,21 @@
 
   .pizza-mode .mc-btn:hover {
     background: hsl(0 0% 20%);
-    border-color: hsl(142 70% 45%);
+    border-color: hsl(75 45% 40%);
   }
 
   .pizza-mode .mc-btn-primary {
     @apply rounded-full font-semibold;
     font-family: 'Inter', sans-serif;
-    background: hsl(142 70% 45%);
+    background: hsl(75 45% 40%);
     border: none;
-    box-shadow: 0 4px 8px hsl(142 70% 30% / 0.4);
+    box-shadow: 0 4px 8px hsl(75 45% 25% / 0.4);
     color: white;
   }
 
   .pizza-mode .mc-btn-primary:hover {
-    background: hsl(142 70% 40%);
-    box-shadow: 0 6px 12px hsl(142 70% 30% / 0.5);
+    background: hsl(75 45% 35%);
+    box-shadow: 0 6px 12px hsl(75 45% 25% / 0.5);
   }
 
   .pizza-mode .mc-slot {
@@ -947,8 +947,8 @@
   }
 
   .pizza-mode .mc-slot-active {
-    border-color: hsl(142 70% 45%);
-    background: hsl(142 70% 45% / 0.1);
+    border-color: hsl(75 45% 40%);
+    background: hsl(75 45% 40% / 0.1);
   }
 
   .pizza-mode .pixel-border {
@@ -964,15 +964,15 @@
   }
 
   .pizza-mode .mc-heart {
-    color: hsl(142 70% 50%);
+    color: hsl(75 45% 45%);
     filter: none;
   }
 
   .pizza-mode .mc-chat-sent {
-    background: hsl(142 70% 45%);
+    background: hsl(75 45% 40%);
     border: none;
     border-radius: 1.25rem 1.25rem 0.25rem 1.25rem;
-    box-shadow: 0 2px 6px hsl(142 70% 30% / 0.4);
+    box-shadow: 0 2px 6px hsl(75 45% 25% / 0.4);
   }
 
   .pizza-mode .mc-chat-received {
@@ -985,16 +985,16 @@
 
   .pizza-mode .redstone-glow {
     animation: pizza-glow 1.5s ease-in-out infinite;
-    box-shadow: 0 2px 8px hsl(142 70% 45% / 0.4);
+    box-shadow: 0 2px 8px hsl(75 45% 40% / 0.4);
   }
 
   @keyframes pizza-glow {
     0%, 100% { 
-      box-shadow: 0 0 5px hsl(142 70% 45% / 0.5);
+      box-shadow: 0 0 5px hsl(75 45% 40% / 0.5);
       opacity: 0.8;
     }
     50% { 
-      box-shadow: 0 0 15px hsl(142 70% 45% / 0.8);
+      box-shadow: 0 0 15px hsl(75 45% 40% / 0.8);
       opacity: 1;
     }
   }
@@ -1069,7 +1069,7 @@
   }
 
   .pizza-mode [data-radix-popper-content-wrapper] .text-primary {
-    color: hsl(142 70% 50%);
+    color: hsl(75 45% 45%);
   }
 
   .pizza-mode [data-radix-popper-content-wrapper] .text-muted-foreground {
