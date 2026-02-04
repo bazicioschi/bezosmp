@@ -847,4 +847,232 @@
   .cato-mode [data-radix-popper-content-wrapper] .text-primary {
     color: hsl(0 0% 15%);
   }
+
+  /* Pizza Theme Styles - Black background, green accents, white text */
+  .pizza-mode body,
+  body.pizza-mode,
+  html.pizza-mode body {
+    background-image: url('/src/assets/pizza-pattern.png');
+    background-repeat: repeat;
+    background-size: 300px;
+    background-attachment: fixed;
+    background-color: hsl(0 0% 5%);
+  }
+
+  html.pizza-mode {
+    background-image: url('/src/assets/pizza-pattern.png');
+    background-repeat: repeat;
+    background-size: 300px;
+    background-attachment: fixed;
+    background-color: hsl(0 0% 5%);
+  }
+
+  .pizza-mode {
+    color: hsl(0 0% 100%);
+  }
+
+  .pizza-mode h1, .pizza-mode h2, .pizza-mode h3, .pizza-mode h4, .pizza-mode h5, .pizza-mode h6 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0;
+    color: hsl(0 0% 100%);
+  }
+
+  .pizza-mode .text-foreground {
+    color: hsl(0 0% 100%);
+  }
+
+  .pizza-mode .text-muted-foreground {
+    color: hsl(0 0% 60%);
+  }
+
+  .pizza-mode .mc-text {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    text-shadow: none;
+    color: hsl(142 70% 45%);
+  }
+
+  .pizza-mode .glow-text {
+    text-shadow: 0 0 10px hsl(142 70% 45% / 0.5);
+    color: hsl(142 70% 50%);
+  }
+
+  /* Pizza cards - dark background */
+  .pizza-mode .minecraft-card {
+    @apply border border-border rounded-2xl;
+    background: hsl(0 0% 10%);
+    box-shadow: 0 4px 12px hsl(0 0% 0% / 0.3);
+  }
+
+  .pizza-mode .minecraft-card-hover:hover {
+    box-shadow: 0 6px 20px hsl(142 70% 45% / 0.2);
+    transform: translateY(-2px);
+  }
+
+  .pizza-mode .mc-btn {
+    @apply rounded-full font-semibold;
+    font-family: 'Inter', sans-serif;
+    background: hsl(0 0% 15%);
+    border: 2px solid hsl(0 0% 25%);
+    box-shadow: none;
+    transition: all 0.2s ease;
+    color: hsl(0 0% 100%);
+  }
+
+  .pizza-mode .mc-btn:hover {
+    background: hsl(0 0% 20%);
+    border-color: hsl(142 70% 45%);
+  }
+
+  .pizza-mode .mc-btn-primary {
+    @apply rounded-full font-semibold;
+    font-family: 'Inter', sans-serif;
+    background: hsl(142 70% 45%);
+    border: none;
+    box-shadow: 0 4px 8px hsl(142 70% 30% / 0.4);
+    color: white;
+  }
+
+  .pizza-mode .mc-btn-primary:hover {
+    background: hsl(142 70% 40%);
+    box-shadow: 0 6px 12px hsl(142 70% 30% / 0.5);
+  }
+
+  .pizza-mode .mc-slot {
+    background: hsl(0 0% 12%);
+    border: 2px solid hsl(0 0% 25%);
+    border-radius: 1rem;
+    box-shadow: none;
+  }
+
+  .pizza-mode .mc-slot-active {
+    border-color: hsl(142 70% 45%);
+    background: hsl(142 70% 45% / 0.1);
+  }
+
+  .pizza-mode .pixel-border {
+    border: 2px solid hsl(0 0% 25%);
+    border-radius: 1rem;
+  }
+
+  /* No Minecraft textures in Pizza */
+  .pizza-mode .mc-dirt,
+  .pizza-mode .mc-stone,
+  .pizza-mode .mc-bedrock {
+    background: transparent;
+  }
+
+  .pizza-mode .mc-heart {
+    color: hsl(142 70% 50%);
+    filter: none;
+  }
+
+  .pizza-mode .mc-chat-sent {
+    background: hsl(142 70% 45%);
+    border: none;
+    border-radius: 1.25rem 1.25rem 0.25rem 1.25rem;
+    box-shadow: 0 2px 6px hsl(142 70% 30% / 0.4);
+  }
+
+  .pizza-mode .mc-chat-received {
+    background: hsl(0 0% 15%);
+    border: none;
+    border-radius: 1.25rem 1.25rem 1.25rem 0.25rem;
+    box-shadow: 0 2px 6px hsl(0 0% 0% / 0.3);
+    color: hsl(0 0% 100%);
+  }
+
+  .pizza-mode .redstone-glow {
+    animation: pizza-glow 1.5s ease-in-out infinite;
+    box-shadow: 0 2px 8px hsl(142 70% 45% / 0.4);
+  }
+
+  @keyframes pizza-glow {
+    0%, 100% { 
+      box-shadow: 0 0 5px hsl(142 70% 45% / 0.5);
+      opacity: 0.8;
+    }
+    50% { 
+      box-shadow: 0 0 15px hsl(142 70% 45% / 0.8);
+      opacity: 1;
+    }
+  }
+
+  /* Pizza header, sidebars, and content areas - dark */
+  .pizza-mode header,
+  .pizza-mode .bg-card {
+    background: hsl(0 0% 8%) !important;
+  }
+
+  .pizza-mode .bg-background {
+    background: transparent !important;
+  }
+
+  .pizza-mode .bg-secondary {
+    background: hsl(0 0% 12%) !important;
+  }
+
+  .pizza-mode .bg-secondary\/50,
+  .pizza-mode .bg-secondary\/30,
+  .pizza-mode .bg-secondary\/20 {
+    background: hsl(0 0% 12%) !important;
+  }
+
+  /* Pizza post content areas - dark */
+  .pizza-mode article {
+    background: hsl(0 0% 10%);
+  }
+
+  .pizza-mode .border-b-2 {
+    border-color: hsl(0 0% 20%) !important;
+  }
+
+  .pizza-mode .border-x-2 {
+    border-color: hsl(0 0% 20%) !important;
+    background: hsl(0 0% 10%);
+  }
+
+  /* Pizza input fields - dark */
+  .pizza-mode input,
+  .pizza-mode textarea {
+    background: hsl(0 0% 12%) !important;
+    border-color: hsl(0 0% 25%);
+    color: hsl(0 0% 100%);
+  }
+
+  .pizza-mode input::placeholder,
+  .pizza-mode textarea::placeholder {
+    color: hsl(0 0% 50%);
+  }
+
+  /* Pizza popover and dialog - dark */
+  .pizza-mode [data-radix-popper-content-wrapper] > div,
+  .pizza-mode [role="dialog"] {
+    background: hsl(0 0% 10%) !important;
+  }
+
+  /* Pizza comment sections - dark */
+  .pizza-mode .border-t-2 {
+    background: hsl(0 0% 10%);
+  }
+
+  /* Pizza notification and popover text - white */
+  .pizza-mode .minecraft-notification {
+    color: hsl(0 0% 100%);
+  }
+
+  .pizza-mode [data-radix-popper-content-wrapper] p,
+  .pizza-mode [data-radix-popper-content-wrapper] span,
+  .pizza-mode [data-radix-popper-content-wrapper] h3 {
+    color: hsl(0 0% 100%);
+  }
+
+  .pizza-mode [data-radix-popper-content-wrapper] .text-primary {
+    color: hsl(142 70% 50%);
+  }
+
+  .pizza-mode [data-radix-popper-content-wrapper] .text-muted-foreground {
+    color: hsl(0 0% 60%);
+  }
 }
