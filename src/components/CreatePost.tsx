@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { ImagePlus, Video, X, Loader2, Send } from 'lucide-react';
+import { ImagePlus, Video, X, Loader2, Send, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
+import { Progress } from '@/components/ui/progress';
 
 interface CreatePostProps {
   onPostCreated: () => void;
@@ -34,6 +35,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
   const [videoPreview, setVideoPreview] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
@@ -130,6 +132,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     // Clear image if adding video
     clearImage();
     setUploading(true);
+    setUploadProgress(0);
 
     // Create video preview
     const previewUrl = URL.createObjectURL(file);
@@ -138,16 +141,45 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     const fileExt = file.name.split('.').pop()?.toLowerCase() || 'mp4';
     const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from('post-videos')
-      .upload(fileName, file, {
-        contentType: file.type,
+    // Use XMLHttpRequest for progress tracking and faster uploads
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    const uploadPromise = new Promise<{ error: Error | null }>((resolve) => {
+      const xhr = new XMLHttpRequest();
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/post-videos/${fileName}`;
+      
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(percent);
+        }
       });
+      
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve({ error: null });
+        } else {
+          resolve({ error: new Error(`Upload failed with status ${xhr.status}`) });
+        }
+      });
+      
+      xhr.addEventListener('error', () => {
+        resolve({ error: new Error('Network error during upload') });
+      });
+      
+      xhr.open('POST', url);
+      xhr.setRequestHeader('Authorization', `Bearer ${session?.access_token}`);
+      xhr.setRequestHeader('Content-Type', file.type);
+      xhr.setRequestHeader('x-upsert', 'true');
+      xhr.send(file);
+    });
+    
+    const { error: uploadError } = await uploadPromise;
 
     if (uploadError) {
       toast({
         title: 'Upload failed',
-        description: uploadError.message,
+        description: uploadError.message || 'Failed to upload video',
         variant: 'destructive',
       });
       setVideoPreview('');
@@ -157,9 +189,14 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
         .from('post-videos')
         .getPublicUrl(fileName);
       setVideoUrl(urlData.publicUrl);
+      toast({
+        title: 'Upload complete!',
+        description: 'Your video has been uploaded successfully.',
+      });
     }
 
     setUploading(false);
+    setUploadProgress(0);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -253,8 +290,12 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                 <X className="h-4 w-4" />
               </Button>
               {uploading && (
-                <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center gap-3 p-4">
+                  <Upload className="h-8 w-8 text-primary animate-pulse" />
+                  <div className="w-full max-w-xs">
+                    <Progress value={uploadProgress} className="h-3" />
+                    <p className="text-center mt-2 mc-text text-sm text-primary">{uploadProgress}% uploaded</p>
+                  </div>
                 </div>
               )}
             </div>
