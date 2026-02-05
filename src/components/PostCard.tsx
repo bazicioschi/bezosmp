@@ -4,6 +4,17 @@ import { Heart, MessageCircle, Trash2, Share, Bookmark } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { CommentSection } from './CommentSection';
@@ -45,6 +56,7 @@ export function PostCard({
   const [showComments, setShowComments] = useState(false);
   const [localCommentsCount, setLocalCommentsCount] = useState(commentsCount);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleLike = async () => {
     if (!user) return;
@@ -64,9 +76,11 @@ export function PostCard({
 
   const handleDelete = async () => {
     if (!user || user.id !== userId) return;
+    setIsDeleting(true);
     playClick();
     await supabase.from('posts').delete().eq('id', id);
     onDelete();
+    setIsDeleting(false);
   };
 
   const handleProfileClick = () => {
@@ -103,14 +117,36 @@ export function PostCard({
               {formatDistanceToNow(new Date(createdAt), { addSuffix: false })}
             </span>
             {user?.id === userId && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={(e) => { e.stopPropagation(); handleDelete(); }} 
-                className="h-7 w-7 ml-auto text-muted-foreground hover:text-destructive hover:bg-destructive/20"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={(e) => e.stopPropagation()}
+                    className="h-7 w-7 ml-auto text-muted-foreground hover:text-destructive hover:bg-destructive/20"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="minecraft-card minecraft-border">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="mc-text text-xl">Delete Post?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this post? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="mc-btn">No, Cancel</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                      className="mc-btn-primary bg-destructive hover:bg-destructive/90"
+                    >
+                      {isDeleting ? 'Deleting...' : 'Yes, Delete'}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
           </div>
 
