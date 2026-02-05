@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Trash2, Share, Bookmark } from 'lucide-react';
+import { Heart, MessageCircle, Trash2, Share, Bookmark, Pencil, X, Check } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Textarea } from '@/components/ui/textarea';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +20,8 @@ import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { CommentSection } from './CommentSection';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { useToast } from '@/hooks/use-toast';
+
 interface PostCardProps {
   id: string;
   content: string;
@@ -33,6 +36,7 @@ interface PostCardProps {
   isLiked: boolean;
   onLikeToggle: () => void;
   onDelete: () => void;
+  onEdit?: () => void;
 }
 
 export function PostCard({
@@ -49,14 +53,19 @@ export function PostCard({
   isLiked,
   onLikeToggle,
   onDelete,
+  onEdit,
 }: PostCardProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { playClick, playPop, playUnpop } = useSoundEffects();
   const [showComments, setShowComments] = useState(false);
   const [localCommentsCount, setLocalCommentsCount] = useState(commentsCount);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(content);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleLike = async () => {
     if (!user) return;
@@ -85,6 +94,47 @@ export function PostCard({
 
   const handleProfileClick = () => {
     navigate(`/user/${userId}`);
+  };
+
+  const handleEdit = () => {
+    setEditContent(content);
+    setIsEditing(true);
+    playClick();
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditContent(content);
+    playClick();
+  };
+
+  const handleSaveEdit = async () => {
+    if (!user || user.id !== userId || !editContent.trim()) return;
+    
+    setIsSaving(true);
+    playClick();
+    
+    const { error } = await supabase
+      .from('posts')
+      .update({ content: editContent.trim() })
+      .eq('id', id);
+    
+    if (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update post. Please try again.',
+        variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Post updated',
+        description: 'Your post has been updated successfully.',
+      });
+      setIsEditing(false);
+      onEdit?.();
+    }
+    
+    setIsSaving(false);
   };
 
   return (
@@ -116,41 +166,83 @@ export function PostCard({
             <span className="text-muted-foreground text-sm">
               {formatDistanceToNow(new Date(createdAt), { addSuffix: false })}
             </span>
-            {user?.id === userId && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={(e) => e.stopPropagation()}
-                    className="h-7 w-7 ml-auto text-muted-foreground hover:text-destructive hover:bg-destructive/20"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="minecraft-card minecraft-border">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="mc-text text-xl">Delete Post?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to delete this post? This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel className="mc-btn">No, Cancel</AlertDialogCancel>
-                    <AlertDialogAction 
-                      onClick={handleDelete}
-                      disabled={isDeleting}
-                      className="mc-btn-primary bg-destructive hover:bg-destructive/90"
+            {user?.id === userId && !isEditing && (
+              <div className="flex items-center gap-1 ml-auto">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={(e) => { e.stopPropagation(); handleEdit(); }}
+                  className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/20"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={(e) => e.stopPropagation()}
+                      className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/20"
                     >
-                      {isDeleting ? 'Deleting...' : 'Yes, Delete'}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="minecraft-card minecraft-border">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="mc-text text-xl">Delete Post?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete this post? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="mc-btn">No, Cancel</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="mc-btn-primary bg-destructive hover:bg-destructive/90"
+                      >
+                        {isDeleting ? 'Deleting...' : 'Yes, Delete'}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             )}
           </div>
 
-          <p className="mt-2 text-foreground whitespace-pre-wrap break-words leading-relaxed">{content}</p>
+          {isEditing ? (
+            <div className="mt-2 space-y-2">
+              <Textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="minecraft-input min-h-[80px] resize-none"
+                placeholder="What's on your mind?"
+              />
+              <div className="flex items-center gap-2 justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCancelEdit}
+                  disabled={isSaving}
+                  className="mc-btn h-8 gap-1"
+                >
+                  <X className="h-4 w-4" />
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSaveEdit}
+                  disabled={isSaving || !editContent.trim()}
+                  className="mc-btn-primary h-8 gap-1"
+                >
+                  <Check className="h-4 w-4" />
+                  {isSaving ? 'Saving...' : 'Save'}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="mt-2 text-foreground whitespace-pre-wrap break-words leading-relaxed">{content}</p>
+          )}
 
           {imageUrl && (
             <div className="mt-3 minecraft-card overflow-hidden">

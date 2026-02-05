@@ -127,6 +127,7 @@ export function Feed() {
             isLiked={post.user_liked}
             onLikeToggle={fetchPosts}
             onDelete={fetchPosts}
+            onEdit={fetchPosts}
           />
         ))
       )}

@@ -37,7 +37,6 @@ export function Header() {
           {user ? (
             <>
               <NotificationBell />
-              <ChatPopup />
               <Button variant="ghost" size="sm" asChild className="mc-slot hover:mc-slot-active px-3 h-8" onClick={() => playClick()}>
                 <Link to="/profile" className="flex items-center gap-2">
                   <User className="h-4 w-4" />
@@ -45,6 +44,7 @@ export function Header() {
                 </Link>
               </Button>
               <SettingsButton />
+              <ChatPopup />
               <Button 
                 variant="ghost" 
                 size="sm" 
