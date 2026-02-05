@@ -38,6 +38,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  const uploadXhrRef = useRef<XMLHttpRequest | null>(null);
 
   const { data: profile } = useQuery({
     queryKey: ['profile', user?.id],
@@ -146,6 +147,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     
     const uploadPromise = new Promise<{ error: Error | null }>((resolve) => {
       const xhr = new XMLHttpRequest();
+      uploadXhrRef.current = xhr;
       const url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/post-videos/${fileName}`;
       
       xhr.upload.addEventListener('progress', (event) => {
@@ -156,6 +158,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
       });
       
       xhr.addEventListener('load', () => {
+        uploadXhrRef.current = null;
         if (xhr.status >= 200 && xhr.status < 300) {
           resolve({ error: null });
         } else {
@@ -164,7 +167,13 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
       });
       
       xhr.addEventListener('error', () => {
+        uploadXhrRef.current = null;
         resolve({ error: new Error('Network error during upload') });
+      });
+      
+      xhr.addEventListener('abort', () => {
+        uploadXhrRef.current = null;
+        resolve({ error: new Error('Upload cancelled') });
       });
       
       xhr.open('POST', url);
@@ -197,6 +206,27 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
 
     setUploading(false);
     setUploadProgress(0);
+  };
+
+  const cancelUpload = () => {
+    if (uploadXhrRef.current) {
+      uploadXhrRef.current.abort();
+      uploadXhrRef.current = null;
+    }
+    if (videoPreview) {
+      URL.revokeObjectURL(videoPreview);
+    }
+    setVideoPreview('');
+    setVideoUrl('');
+    setUploading(false);
+    setUploadProgress(0);
+    if (videoInputRef.current) {
+      videoInputRef.current.value = '';
+    }
+    toast({
+      title: 'Upload cancelled',
+      description: 'Video upload has been cancelled.',
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -320,8 +350,22 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                 <X className="h-4 w-4" />
               </Button>
               {uploading && (
-                <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <div className="absolute inset-0 bg-background/90 flex flex-col items-center justify-center gap-3 p-4">
+                  <Upload className="h-8 w-8 text-primary animate-pulse" />
+                  <div className="w-full max-w-xs">
+                    <Progress value={uploadProgress} className="h-3" />
+                    <p className="text-center mt-2 mc-text text-sm text-primary">{uploadProgress}% uploaded</p>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      onClick={cancelUpload}
+                      className="mt-3 w-full mc-btn"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Cancel Upload
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
