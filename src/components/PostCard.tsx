@@ -244,11 +244,29 @@ export function PostCard({
             <p className="mt-2 text-foreground whitespace-pre-wrap break-words leading-relaxed">{content}</p>
           )}
 
-          {imageUrl && (
-            <div className="mt-3 minecraft-card overflow-hidden">
-              <img src={imageUrl} alt="Post image" className="w-full max-h-[400px] object-cover" />
-            </div>
-          )}
+          {imageUrl && (() => {
+            // Handle multiple images stored as JSON array or single image URL
+            let images: string[] = [];
+            try {
+              if (imageUrl.startsWith('[')) {
+                images = JSON.parse(imageUrl);
+              } else {
+                images = [imageUrl];
+              }
+            } catch {
+              images = [imageUrl];
+            }
+            
+            return (
+              <div className={`mt-3 gap-2 ${images.length === 1 ? '' : images.length === 2 ? 'grid grid-cols-2' : 'grid grid-cols-3'}`}>
+                {images.map((img, index) => (
+                  <div key={index} className="minecraft-card overflow-hidden">
+                    <img src={img} alt={`Post image ${index + 1}`} className={`w-full object-cover ${images.length === 1 ? 'max-h-[400px]' : 'aspect-square'}`} />
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
 
           {videoUrl && (
             <div className="mt-3 minecraft-card overflow-hidden">

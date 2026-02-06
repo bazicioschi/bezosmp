@@ -112,6 +112,7 @@ export function NewsFeed() {
               username={item.username}
               avatarUrl={item.avatar_url}
               onDelete={() => handleDelete(item.id)}
+              onEdit={fetchNews}
             />
           ))}
         </div>
