@@ -25,12 +25,14 @@ const SUPPORTED_VIDEO_TYPES = [
   'video/3gpp2',
 ];
 
+const MAX_IMAGES = 10;
+
 export function CreatePost({ onPostCreated }: CreatePostProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [content, setContent] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
-  const [imagePreview, setImagePreview] = useState('');
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [videoUrl, setVideoUrl] = useState('');
   const [videoPreview, setVideoPreview] = useState('');
   const [loading, setLoading] = useState(false);
@@ -55,57 +57,78 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
   });
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
+    const files = e.target.files;
+    if (!files || !user) return;
 
-    if (!file.type.startsWith('image/')) {
+    const remainingSlots = MAX_IMAGES - imageUrls.length;
+    if (remainingSlots <= 0) {
       toast({
-        title: 'Error',
-        description: 'Please select an image file',
+        title: 'Maximum images reached',
+        description: `You can only upload up to ${MAX_IMAGES} images per post`,
         variant: 'destructive',
       });
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: 'Error',
-        description: 'Image must be less than 5MB',
-        variant: 'destructive',
-      });
-      return;
-    }
+    const filesToUpload = Array.from(files).slice(0, remainingSlots);
 
-    // Clear video if adding image
-    clearVideo();
-    setUploading(true);
+    for (const file of filesToUpload) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: 'Error',
+          description: `${file.name} is not an image file`,
+          variant: 'destructive',
+        });
+        continue;
+      }
 
-    const reader = new FileReader();
-    reader.onload = (e) => setImagePreview(e.target?.result as string);
-    reader.readAsDataURL(file);
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: 'Error',
+          description: `${file.name} must be less than 5MB`,
+          variant: 'destructive',
+        });
+        continue;
+      }
 
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      // Clear video if adding images
+      clearVideo();
+      setUploading(true);
 
-    const { error: uploadError } = await supabase.storage
-      .from('post-images')
-      .upload(fileName, file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreviews(prev => [...prev, e.target?.result as string]);
+      };
+      reader.readAsDataURL(file);
 
-    if (uploadError) {
-      toast({
-        title: 'Upload failed',
-        description: uploadError.message,
-        variant: 'destructive',
-      });
-      setImagePreview('');
-    } else {
-      const { data: urlData } = supabase.storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
         .from('post-images')
-        .getPublicUrl(fileName);
-      setImageUrl(urlData.publicUrl);
+        .upload(fileName, file);
+
+      if (uploadError) {
+        toast({
+          title: 'Upload failed',
+          description: uploadError.message,
+          variant: 'destructive',
+        });
+        setImagePreviews(prev => prev.slice(0, -1));
+      } else {
+        const { data: urlData } = supabase.storage
+          .from('post-images')
+          .getPublicUrl(fileName);
+        setImageUrls(prev => [...prev, urlData.publicUrl]);
+      }
+
+      setUploading(false);
     }
 
-    setUploading(false);
+    // Reset file input to allow selecting same files again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,8 +153,8 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
       return;
     }
 
-    // Clear image if adding video
-    clearImage();
+    // Clear images if adding video
+    clearAllImages();
     setUploading(true);
     setUploadProgress(0);
 
@@ -234,17 +257,18 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     if (!user || !content.trim() || loading) return;
 
     setLoading(true);
+    // Store first image in image_url for backward compatibility, store all as JSON if multiple
     const { error } = await supabase.from('posts').insert({
       user_id: user.id,
       content: content.trim(),
-      image_url: imageUrl || null,
+      image_url: imageUrls.length > 0 ? (imageUrls.length === 1 ? imageUrls[0] : JSON.stringify(imageUrls)) : null,
       video_url: videoUrl || null,
     });
 
     if (!error) {
       setContent('');
-      setImageUrl('');
-      setImagePreview('');
+      setImageUrls([]);
+      setImagePreviews([]);
       setVideoUrl('');
       setVideoPreview('');
       onPostCreated();
@@ -252,9 +276,14 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     setLoading(false);
   };
 
-  const clearImage = () => {
-    setImageUrl('');
-    setImagePreview('');
+  const clearImage = (index: number) => {
+    setImageUrls(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const clearAllImages = () => {
+    setImageUrls([]);
+    setImagePreviews([]);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -272,7 +301,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
   };
 
   const clearMedia = () => {
-    clearImage();
+    clearAllImages();
     clearVideo();
   };
 
@@ -307,25 +336,44 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             maxLength={280}
           />
 
-          {(imagePreview || imageUrl) && (
-            <div className="relative mt-3 minecraft-card overflow-hidden">
-              <img src={imagePreview || imageUrl} alt="Preview" className="w-full max-h-64 object-cover" />
-              <Button
-                type="button"
-                variant="secondary"
-                size="icon"
-                className="absolute top-2 right-2 h-8 w-8 mc-slot hover:mc-slot-active"
-                onClick={clearImage}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-              {uploading && (
-                <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center gap-3 p-4">
-                  <Upload className="h-8 w-8 text-primary animate-pulse" />
-                  <div className="w-full max-w-xs">
-                    <Progress value={uploadProgress} className="h-3" />
-                    <p className="text-center mt-2 mc-text text-sm text-primary">{uploadProgress}% uploaded</p>
+          {imagePreviews.length > 0 && (
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground mc-text">
+                  {imagePreviews.length}/{MAX_IMAGES} images
+                </span>
+                {imagePreviews.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-xs text-muted-foreground hover:text-destructive"
+                    onClick={clearAllImages}
+                  >
+                    Clear all
+                  </Button>
+                )}
+              </div>
+              <div className={`grid gap-2 ${imagePreviews.length === 1 ? 'grid-cols-1' : imagePreviews.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                {imagePreviews.map((preview, index) => (
+                  <div key={index} className="relative minecraft-card overflow-hidden aspect-square">
+                    <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="icon"
+                      className="absolute top-1 right-1 h-6 w-6 mc-slot hover:mc-slot-active"
+                      onClick={() => clearImage(index)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
                   </div>
+                ))}
+              </div>
+              {uploading && (
+                <div className="bg-background/80 flex items-center justify-center gap-3 p-2 rounded">
+                  <Upload className="h-4 w-4 text-primary animate-pulse" />
+                  <span className="text-sm mc-text text-primary">Uploading...</span>
                 </div>
               )}
             </div>
@@ -376,6 +424,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
               <input
                 ref={fileInputRef}
                 type="file"
+                multiple
                 accept="image/*"
                 onChange={handleImageUpload}
                 className="hidden"
@@ -395,7 +444,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                 size="icon"
                 className="h-9 w-9 text-primary hover:bg-primary/10 mc-slot hover:mc-slot-active"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={uploading || !!videoUrl || !!videoPreview}
+                disabled={uploading || !!videoUrl || !!videoPreview || imageUrls.length >= MAX_IMAGES}
               >
                 <ImagePlus className="h-5 w-5" />
               </Button>
@@ -403,9 +452,9 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 text-primary hover:bg-primary/10 mc-slot hover:mc-slot-active"
+                className={`h-9 w-9 text-primary hover:bg-primary/10 mc-slot hover:mc-slot-active ${imageUrls.length >= MAX_IMAGES ? 'opacity-50' : ''}`}
                 onClick={() => videoInputRef.current?.click()}
-                disabled={uploading || !!imageUrl || !!imagePreview}
+                disabled={uploading || imageUrls.length > 0}
               >
                 <Video className="h-5 w-5" />
               </Button>
