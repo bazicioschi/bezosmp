@@ -1075,4 +1075,296 @@
   .pizza-mode [data-radix-popper-content-wrapper] .text-muted-foreground {
     color: hsl(0 0% 60%);
   }
+
+  /* ============================== */
+  /* GHAST THEME - Minecraft Ghostly */
+  /* ============================== */
+
+  /* Ghast body background */
+  .ghast-mode body,
+  body.ghast-mode,
+  html.ghast-mode body {
+    background-image: url('/src/assets/ghast-pattern.png');
+    background-repeat: repeat;
+    background-size: 150px;
+    background-attachment: fixed;
+    background-color: hsl(0 0% 92%);
+  }
+
+  html.ghast-mode {
+    background-image: url('/src/assets/ghast-pattern.png');
+    background-repeat: repeat;
+    background-size: 150px;
+    background-attachment: fixed;
+    background-color: hsl(0 0% 92%);
+  }
+
+  /* Ghast mode - Minecraft pixelated style like dark mode */
+  .ghast-mode {
+    color: hsl(0 0% 10%);
+  }
+
+  .ghast-mode h1, .ghast-mode h2, .ghast-mode h3, .ghast-mode h4, .ghast-mode h5, .ghast-mode h6 {
+    font-family: 'VT323', 'Orbitron', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  .ghast-mode .text-foreground {
+    color: hsl(0 0% 10%);
+  }
+
+  .ghast-mode .text-muted-foreground {
+    color: hsl(0 0% 45%);
+  }
+
+  .ghast-mode .mc-text {
+    font-family: 'VT323', monospace;
+    text-shadow: 2px 2px 0 hsl(0 0% 80% / 0.8);
+    color: hsl(0 0% 15%);
+  }
+
+  .ghast-mode .glow-text {
+    text-shadow: 0 0 10px hsl(0 0% 50% / 0.4), 0 0 20px hsl(0 0% 60% / 0.3), 2px 2px 0 hsl(0 0% 80% / 0.5);
+    color: hsl(0 0% 10%);
+  }
+
+  /* Ghast cards - Minecraft pixelated style */
+  .ghast-mode .minecraft-card {
+    background: hsl(var(--card));
+    border: 2px solid hsl(var(--border));
+    box-shadow: 
+      inset 2px 2px 0 hsl(0 0% 100%),
+      inset -2px -2px 0 hsl(0 0% 70%),
+      4px 4px 0 hsl(0 0% 50%);
+  }
+
+  .ghast-mode .minecraft-card-hover {
+    transition: all 0.1s ease;
+  }
+
+  .ghast-mode .minecraft-card-hover:hover {
+    box-shadow: 
+      inset 2px 2px 0 hsl(0 0% 100%),
+      inset -2px -2px 0 hsl(0 0% 75%),
+      6px 6px 0 hsl(0 0% 45%);
+    transform: translate(-2px, -2px);
+  }
+
+  /* Ghast buttons - Minecraft pixelated style */
+  .ghast-mode .mc-btn {
+    font-family: 'VT323', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: linear-gradient(180deg, hsl(0 0% 95%), hsl(0 0% 85%));
+    border: 2px solid hsl(0 0% 60%);
+    box-shadow: 
+      inset 2px 2px 0 hsl(0 0% 100%),
+      inset -2px -2px 0 hsl(0 0% 70%),
+      3px 3px 0 hsl(0 0% 50%);
+    color: hsl(0 0% 15%);
+  }
+
+  .ghast-mode .mc-btn:hover {
+    background: linear-gradient(180deg, hsl(0 0% 100%), hsl(0 0% 90%));
+  }
+
+  .ghast-mode .mc-btn:active {
+    box-shadow: 
+      inset -2px -2px 0 hsl(0 0% 100%),
+      inset 2px 2px 0 hsl(0 0% 70%),
+      1px 1px 0 hsl(0 0% 50%);
+    transform: translate(2px, 2px);
+  }
+
+  .ghast-mode .mc-btn-primary {
+    background: linear-gradient(180deg, hsl(0 0% 30%), hsl(0 0% 15%));
+    border-color: hsl(0 0% 10%);
+    box-shadow: 
+      inset 2px 2px 0 hsl(0 0% 45%),
+      inset -2px -2px 0 hsl(0 0% 5%),
+      3px 3px 0 hsl(0 0% 50%);
+    color: white;
+  }
+
+  .ghast-mode .mc-btn-primary:hover {
+    background: linear-gradient(180deg, hsl(0 0% 40%), hsl(0 0% 25%));
+  }
+
+  /* Ghast inventory slots - Minecraft style */
+  .ghast-mode .mc-slot {
+    background: linear-gradient(135deg, hsl(0 0% 85%), hsl(0 0% 75%));
+    border: 2px solid hsl(0 0% 60%);
+    box-shadow: 
+      inset 2px 2px 0 hsl(0 0% 90%),
+      inset -2px -2px 0 hsl(0 0% 65%);
+  }
+
+  .ghast-mode .mc-slot-active {
+    border-color: hsl(0 0% 20%);
+    box-shadow: 
+      inset 2px 2px 0 hsl(0 0% 90%),
+      inset -2px -2px 0 hsl(0 0% 65%),
+      0 0 8px hsl(0 0% 30% / 0.5);
+  }
+
+  .ghast-mode .pixel-border {
+    border: 3px solid;
+    border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3' height='3'%3E%3Crect width='3' height='3' fill='%23888'/%3E%3C/svg%3E") 3 stretch;
+  }
+
+  /* Ghast textures - light stone/ghost like */
+  .ghast-mode .mc-dirt {
+    background-color: hsl(0 0% 88%);
+    background-image: 
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 4px,
+        hsl(0 0% 82%) 4px,
+        hsl(0 0% 82%) 8px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 4px,
+        hsl(0 0% 85%) 4px,
+        hsl(0 0% 85%) 8px
+      );
+  }
+
+  .ghast-mode .mc-stone {
+    background-color: hsl(0 0% 80%);
+    background-image: 
+      repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 2px,
+        hsl(0 0% 75%) 2px,
+        hsl(0 0% 75%) 4px
+      );
+  }
+
+  .ghast-mode .mc-bedrock {
+    background-color: hsl(0 0% 92%);
+    background-image: 
+      radial-gradient(circle at 20% 30%, hsl(0 0% 85%) 1px, transparent 1px),
+      radial-gradient(circle at 80% 70%, hsl(0 0% 88%) 1px, transparent 1px),
+      radial-gradient(circle at 50% 50%, hsl(0 0% 82%) 2px, transparent 2px);
+    background-size: 8px 8px;
+  }
+
+  .ghast-mode .mc-heart {
+    color: hsl(0 0% 25%);
+    filter: drop-shadow(1px 1px 0 hsl(0 0% 70%));
+  }
+
+  /* Ghast chat bubbles - pixelated style */
+  .ghast-mode .mc-chat-sent {
+    background: linear-gradient(180deg, hsl(0 0% 25%), hsl(0 0% 15%));
+    border: 2px solid hsl(0 0% 10%);
+    box-shadow: 2px 2px 0 hsl(0 0% 50%);
+    color: white;
+  }
+
+  .ghast-mode .mc-chat-received {
+    background: linear-gradient(180deg, hsl(0 0% 95%), hsl(0 0% 85%));
+    border: 2px solid hsl(0 0% 70%);
+    box-shadow: 2px 2px 0 hsl(0 0% 50%);
+    color: hsl(0 0% 15%);
+  }
+
+  /* Ghast redstone glow - ghostly white pulse */
+  .ghast-mode .redstone-glow {
+    animation: ghast-pulse 2s ease-in-out infinite;
+    background: linear-gradient(90deg, hsl(0 0% 30%), hsl(0 0% 20%));
+  }
+
+  @keyframes ghast-pulse {
+    0%, 100% { 
+      box-shadow: 0 0 5px hsl(0 0% 50% / 0.5);
+      opacity: 0.8;
+    }
+    50% { 
+      box-shadow: 0 0 15px hsl(0 0% 70% / 0.8);
+      opacity: 1;
+    }
+  }
+
+  /* Ghast header, sidebars, and content areas */
+  .ghast-mode header,
+  .ghast-mode .bg-card {
+    background: hsl(0 0% 95%) !important;
+  }
+
+  .ghast-mode .bg-background {
+    background: transparent !important;
+  }
+
+  .ghast-mode .bg-secondary {
+    background: hsl(0 0% 90%) !important;
+  }
+
+  .ghast-mode .bg-secondary\/50,
+  .ghast-mode .bg-secondary\/30,
+  .ghast-mode .bg-secondary\/20 {
+    background: hsl(0 0% 92% / 0.8) !important;
+  }
+
+  /* Ghast post content areas */
+  .ghast-mode article {
+    background: hsl(0 0% 96%);
+  }
+
+  .ghast-mode .border-b-2 {
+    border-color: hsl(0 0% 75%) !important;
+  }
+
+  .ghast-mode .border-x-2 {
+    border-color: hsl(0 0% 75%) !important;
+    background: hsl(0 0% 95%);
+  }
+
+  /* Ghast input fields */
+  .ghast-mode input,
+  .ghast-mode textarea {
+    background: hsl(0 0% 98%) !important;
+    border-color: hsl(0 0% 70%);
+    color: hsl(0 0% 15%);
+  }
+
+  .ghast-mode input::placeholder,
+  .ghast-mode textarea::placeholder {
+    color: hsl(0 0% 50%);
+  }
+
+  /* Ghast popover and dialog */
+  .ghast-mode [data-radix-popper-content-wrapper] > div,
+  .ghast-mode [role="dialog"] {
+    background: hsl(0 0% 96%) !important;
+  }
+
+  /* Ghast comment sections */
+  .ghast-mode .border-t-2 {
+    background: hsl(0 0% 95%);
+  }
+
+  /* Ghast notification and popover text */
+  .ghast-mode .minecraft-notification {
+    color: hsl(0 0% 100%);
+    animation: mc-bounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  .ghast-mode [data-radix-popper-content-wrapper] p,
+  .ghast-mode [data-radix-popper-content-wrapper] span,
+  .ghast-mode [data-radix-popper-content-wrapper] h3 {
+    color: hsl(0 0% 15%);
+  }
+
+  .ghast-mode [data-radix-popper-content-wrapper] .text-primary {
+    color: hsl(0 0% 20%);
+  }
+
+  .ghast-mode [data-radix-popper-content-wrapper] .text-muted-foreground {
+    color: hsl(0 0% 45%);
+  }
 }
