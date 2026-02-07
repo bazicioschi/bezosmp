@@ -3,6 +3,9 @@ import { Header } from '@/components/Header';
 import { ServerInfo } from '@/components/ServerInfo';
 import { Feed } from '@/components/Feed';
 import { NewsFeed } from '@/components/NewsFeed';
+import { MinecraftParticles } from '@/components/MinecraftParticles';
+import { TrendingSection } from '@/components/TrendingSection';
+import { WelcomeBanner } from '@/components/WelcomeBanner';
 
 type TabType = 'feed' | 'news';
 
@@ -11,14 +14,16 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background mc-bedrock">
+      <MinecraftParticles />
       <Header />
       
       {/* Main Content */}
-      <main className="max-w-[1300px] mx-auto flex">
+      <main className="max-w-[1300px] mx-auto flex relative z-10">
         {/* Left Sidebar */}
         <aside className="hidden lg:block w-[280px] shrink-0 p-4">
-          <div className="sticky top-20">
+          <div className="sticky top-20 space-y-4">
             <ServerInfo />
+            <TrendingSection />
           </div>
         </aside>
 
@@ -60,6 +65,11 @@ export default function Index() {
             </div>
           </div>
 
+          {/* Welcome Banner */}
+          <div className="p-4 pb-0">
+            <WelcomeBanner />
+          </div>
+
           {/* Tab Content */}
           <div>
             {activeTab === 'feed' && <Feed />}
@@ -71,7 +81,7 @@ export default function Index() {
         <aside className="hidden xl:block w-[350px] shrink-0 p-4">
           <div className="sticky top-20 space-y-4">
             {/* About Card */}
-            <div className="minecraft-card p-4">
+            <div className="minecraft-card minecraft-card-shine p-4">
               <h3 className="mc-text text-xl text-primary mb-2 glow-text">ABOUT BEZOSMP</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 A friendly Minecraft Bedrock survival server. Join us for building, exploring, and making new friends!
@@ -87,6 +97,14 @@ export default function Index() {
                   <span className="text-primary mc-text">⛏️ BUILD</span>
                 </div>
               </div>
+            </div>
+
+            {/* Daily Tip */}
+            <div className="minecraft-card p-4">
+              <h3 className="mc-text text-lg text-primary mb-2 glow-text">💡 DAILY TIP</h3>
+              <p className="text-sm text-muted-foreground">
+                Hold shift while crafting to craft the maximum amount instantly!
+              </p>
             </div>
           </div>
         </aside>
