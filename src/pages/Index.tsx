@@ -6,6 +6,11 @@ import { NewsFeed } from '@/components/NewsFeed';
 import { MinecraftParticles } from '@/components/MinecraftParticles';
 import { TrendingSection } from '@/components/TrendingSection';
 import { WelcomeBanner } from '@/components/WelcomeBanner';
+import { BackToTop } from '@/components/BackToTop';
+import { WhoToFollow } from '@/components/WhoToFollow';
+import { ServerStats } from '@/components/ServerStats';
+import { DailyChallenge } from '@/components/DailyChallenge';
+import { Footer } from '@/components/Footer';
 
 type TabType = 'feed' | 'news';
 
@@ -24,6 +29,7 @@ export default function Index() {
           <div className="sticky top-20 space-y-4">
             <ServerInfo />
             <TrendingSection />
+            <ServerStats />
           </div>
         </aside>
 
@@ -99,6 +105,12 @@ export default function Index() {
               </div>
             </div>
 
+            {/* Who to Follow */}
+            <WhoToFollow />
+
+            {/* Daily Challenge */}
+            <DailyChallenge />
+
             {/* Daily Tip */}
             <div className="minecraft-card p-4">
               <h3 className="mc-text text-lg text-primary mb-2 glow-text">💡 DAILY TIP</h3>
@@ -109,6 +121,9 @@ export default function Index() {
           </div>
         </aside>
       </main>
+
+      <Footer />
+      <BackToTop />
     </div>
   );
 }
