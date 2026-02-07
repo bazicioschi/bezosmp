@@ -319,6 +319,23 @@ export function PostCard({
               <span className={`mc-text text-sm ${isAnimating ? 'animate-like-pop' : ''}`}>{likesCount || ''}</span>
             </Button>
 
+            {/* Quick Reactions */}
+            <div className="hidden sm:flex items-center gap-0.5 ml-1">
+              {['⚔️', '💎', '🔥'].map((emoji) => (
+                <Button
+                  key={emoji}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => playPop()}
+                  className="h-7 px-1.5 text-base hover:bg-secondary/50 hover:scale-110 transition-all"
+                >
+                  {emoji}
+                </Button>
+              ))}
+            </div>
+
+            <div className="flex-1" />
+
             <Button
               variant="ghost"
               size="sm"
