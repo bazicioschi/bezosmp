@@ -1,13 +1,13 @@
 import { useState, useRef } from 'react';
 import { ImagePlus, Video, X, Loader2, Send, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
 import { Progress } from '@/components/ui/progress';
+import { MentionInput } from './MentionInput';
 
 interface CreatePostProps {
   onPostCreated: () => void;
@@ -328,10 +328,10 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
         </div>
 
         <div className="flex-1">
-          <Textarea
+          <MentionInput
             value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="What's happening on the server?"
+            onChange={setContent}
+            placeholder="What's happening on the server? Use @username to mention"
             className="min-h-[80px] bg-transparent border-0 resize-none text-lg placeholder:text-muted-foreground focus-visible:ring-0 p-0 mc-text"
             maxLength={280}
           />
