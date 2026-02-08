@@ -1416,4 +1416,58 @@
   .ghast-mode [data-radix-popper-content-wrapper] .text-muted-foreground {
     color: hsl(0 0% 45%);
   }
+
+  /* Theme-specific Switch Styles */
+  
+  /* Pizza theme - green bar with black dot */
+  .pizza-mode [role="switch"] {
+    background-color: hsl(0 0% 30%) !important;
+  }
+  
+  .pizza-mode [role="switch"][data-state="checked"] {
+    background-color: hsl(100 60% 35%) !important;
+  }
+  
+  .pizza-mode [role="switch"] > span {
+    background-color: hsl(0 0% 5%) !important;
+  }
+
+  /* Ghast theme - gray bar with white dot */
+  .ghast-mode [role="switch"] {
+    background-color: hsl(0 0% 70%) !important;
+  }
+  
+  .ghast-mode [role="switch"][data-state="checked"] {
+    background-color: hsl(0 0% 20%) !important;
+  }
+  
+  .ghast-mode [role="switch"] > span {
+    background-color: hsl(0 0% 100%) !important;
+  }
+
+  /* BaziMazi theme - red bar with black dot */
+  .bazimazi-mode [role="switch"] {
+    background-color: hsl(0 0% 80%) !important;
+  }
+  
+  .bazimazi-mode [role="switch"][data-state="checked"] {
+    background-color: hsl(0 72% 51%) !important;
+  }
+  
+  .bazimazi-mode [role="switch"] > span {
+    background-color: hsl(0 0% 5%) !important;
+  }
+
+  /* Cato theme - gray bar with white dot */
+  .cato-mode [role="switch"] {
+    background-color: hsl(0 0% 60%) !important;
+  }
+  
+  .cato-mode [role="switch"][data-state="checked"] {
+    background-color: hsl(0 0% 20%) !important;
+  }
+  
+  .cato-mode [role="switch"] > span {
+    background-color: hsl(0 0% 100%) !important;
+  }
 }

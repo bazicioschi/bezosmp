@@ -21,6 +21,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { CommentSection } from './CommentSection';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useToast } from '@/hooks/use-toast';
+import { ImageLightbox } from './ImageLightbox';
 
 interface PostCardProps {
   id: string;
@@ -66,6 +67,34 @@ export function PostCard({
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(content);
   const [isSaving, setIsSaving] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  // Function to render content with clickable mentions
+  const renderContentWithMentions = (text: string) => {
+    const mentionRegex = /@(\w+)/g;
+    const parts = text.split(mentionRegex);
+    
+    return parts.map((part, index) => {
+      // Every odd index is a username (captured group)
+      if (index % 2 === 1) {
+        return (
+          <span
+            key={index}
+            className="text-primary cursor-pointer hover:underline font-semibold"
+            onClick={(e) => {
+              e.stopPropagation();
+              // Find user by username and navigate to their profile
+              navigate(`/user/${part}`);
+            }}
+          >
+            @{part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
 
   const handleLike = async () => {
     if (!user) return;
@@ -241,7 +270,7 @@ export function PostCard({
               </div>
             </div>
           ) : (
-            <p className="mt-2 text-foreground whitespace-pre-wrap break-words leading-relaxed">{content}</p>
+            <p className="mt-2 text-foreground whitespace-pre-wrap break-words leading-relaxed">{renderContentWithMentions(content)}</p>
           )}
 
           {imageUrl && (() => {
@@ -258,13 +287,28 @@ export function PostCard({
             }
             
             return (
-              <div className={`mt-3 gap-2 ${images.length === 1 ? '' : images.length === 2 ? 'grid grid-cols-2' : 'grid grid-cols-3'}`}>
-                {images.map((img, index) => (
-                  <div key={index} className="minecraft-card overflow-hidden">
-                    <img src={img} alt={`Post image ${index + 1}`} className={`w-full object-cover ${images.length === 1 ? 'max-h-[400px]' : 'aspect-square'}`} />
-                  </div>
-                ))}
-              </div>
+              <>
+                <div className={`mt-3 gap-2 ${images.length === 1 ? '' : images.length === 2 ? 'grid grid-cols-2' : 'grid grid-cols-3'}`}>
+                  {images.map((img, index) => (
+                    <div 
+                      key={index} 
+                      className="minecraft-card overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => {
+                        setLightboxIndex(index);
+                        setLightboxOpen(true);
+                      }}
+                    >
+                      <img src={img} alt={`Post image ${index + 1}`} className={`w-full object-cover ${images.length === 1 ? 'max-h-[400px]' : 'aspect-square'}`} />
+                    </div>
+                  ))}
+                </div>
+                <ImageLightbox
+                  images={images}
+                  initialIndex={lightboxIndex}
+                  isOpen={lightboxOpen}
+                  onClose={() => setLightboxOpen(false)}
+                />
+              </>
             );
           })()}
 
