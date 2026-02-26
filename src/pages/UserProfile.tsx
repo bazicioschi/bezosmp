@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { User, Loader2, MessageCircle, ArrowLeft } from 'lucide-react';
+import { User, Loader2, MessageCircle, ArrowLeft, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { PostCard } from '@/components/PostCard';
+import { useFollows } from '@/hooks/useFollows';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 
 interface Profile {
   id: string;
@@ -32,6 +34,8 @@ export default function UserProfile() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isFollowing, toggleFollow } = useFollows();
+  const { playPop } = useSoundEffects();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -160,13 +164,24 @@ export default function UserProfile() {
               </div>
 
               {!isOwnProfile && user && (
-                <Button
-                  onClick={handleStartChat}
-                  className="minecraft-border font-display"
-                >
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  SEND MESSAGE
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => { playPop(); toggleFollow(userId!); }}
+                    variant={isFollowing(userId!) ? "outline" : "default"}
+                    className="minecraft-border font-display"
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    {isFollowing(userId!) ? 'FOLLOWING' : 'FOLLOW'}
+                  </Button>
+                  <Button
+                    onClick={handleStartChat}
+                    variant="outline"
+                    className="minecraft-border font-display"
+                  >
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    MESSAGE
+                  </Button>
+                </div>
               )}
 
               {isOwnProfile && (

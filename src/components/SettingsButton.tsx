@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -13,7 +13,7 @@ import { useTheme, ThemeMode } from '@/hooks/useTheme';
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
   const { playClick, isEnabled, setEnabled } = useSoundEffects();
-  const { theme, setTheme, isDark, isLight, isBaziMazi, isCato, isPizza, isGhast } = useTheme();
+  const { theme, setTheme, isDark, isLight, isBaziMazi, isCato, isPizza, isGhast, isBuzzy } = useTheme();
   const [soundsEnabled, setSoundsEnabled] = useState(true);
 
   useEffect(() => {
@@ -39,6 +39,7 @@ export function SettingsButton() {
     if (isCato) return <Rat className="h-4 w-4 text-primary" />;
     if (isPizza) return <Pizza className="h-4 w-4 text-primary" />;
     if (isGhast) return <Ghost className="h-4 w-4 text-primary" />;
+    if (isBuzzy) return <Flower className="h-4 w-4 text-primary" />;
     return <Sun className="h-4 w-4 text-primary" />;
   };
 
@@ -48,6 +49,7 @@ export function SettingsButton() {
     if (isCato) return 'Cato (Rat)';
     if (isPizza) return 'Pizza (Green)';
     if (isGhast) return 'Ghast (Minecraft)';
+    if (isBuzzy) return 'Buzzy (Bee)';
     return 'Red & White (Clean)';
   };
 
@@ -182,6 +184,18 @@ export function SettingsButton() {
               >
                 <Pizza className="h-4 w-4" />
                 <span className="text-xs mc-text">Pizza</span>
+              </button>
+              
+              <button
+                onClick={() => handleThemeChange('buzzy')}
+                className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
+                  isBuzzy 
+                    ? 'border-primary bg-primary/10' 
+                    : 'border-border hover:border-primary/50'
+                }`}
+              >
+                <Flower className="h-4 w-4" />
+                <span className="text-xs mc-text">Buzzy</span>
               </button>
             </div>
           </div>

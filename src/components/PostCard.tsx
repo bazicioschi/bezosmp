@@ -82,10 +82,17 @@ export function PostCard({
           <span
             key={index}
             className="text-primary cursor-pointer hover:underline font-semibold"
-            onClick={(e) => {
+            onClick={async (e) => {
               e.stopPropagation();
-              // Find user by username and navigate to their profile
-              navigate(`/user/${part}`);
+              // Look up user by username and navigate to their profile
+              const { data } = await supabase
+                .from('profiles')
+                .select('user_id')
+                .eq('username', part)
+                .maybeSingle();
+              if (data) {
+                navigate(`/user/${data.user_id}`);
+              }
             }}
           >
             @{part}
