@@ -101,6 +101,42 @@
     background-attachment: fixed;
   }
 
+  /* Buzzy body background */
+  .buzzy-mode body,
+  body.buzzy-mode,
+  html.buzzy-mode body {
+    background-image: url('/src/assets/buzzy-pattern.webp');
+    background-repeat: repeat;
+    background-size: 200px;
+    background-attachment: fixed;
+  }
+
+  html.buzzy-mode {
+    background-image: url('/src/assets/buzzy-pattern.webp');
+    background-repeat: repeat;
+    background-size: 200px;
+    background-attachment: fixed;
+  }
+
+  /* Buzzy mode - bee themed */
+  .buzzy-mode {
+    color: hsl(0 0% 15%);
+  }
+
+  .buzzy-mode h1, .buzzy-mode h2, .buzzy-mode h3, .buzzy-mode h4, .buzzy-mode h5, .buzzy-mode h6 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .buzzy-mode .text-foreground {
+    color: hsl(0 0% 10%);
+  }
+
+  .buzzy-mode .text-muted-foreground {
+    color: hsl(0 0% 40%);
+  }
+
   /* Dark mode (Minecraft) - pixel fonts */
   .dark-mode h1, .dark-mode h2, .dark-mode h3, .dark-mode h4, .dark-mode h5, .dark-mode h6 {
     font-family: 'VT323', 'Orbitron', monospace;

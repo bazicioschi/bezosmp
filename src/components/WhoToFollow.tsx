@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { OnlineStatus } from './OnlineStatus';
+import { useFollows } from '@/hooks/useFollows';
 
 interface SuggestedUser {
   user_id: string;
@@ -18,7 +19,7 @@ export function WhoToFollow() {
   const { user } = useAuth();
   const { playClick, playPop } = useSoundEffects();
   const [users, setUsers] = useState<SuggestedUser[]>([]);
-  const [following, setFollowing] = useState<Set<string>>(new Set());
+  const { isFollowing, toggleFollow } = useFollows();
 
   useEffect(() => {
     fetchSuggestedUsers();
@@ -38,15 +39,7 @@ export function WhoToFollow() {
 
   const handleFollow = (userId: string) => {
     playPop();
-    setFollowing(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(userId)) {
-        newSet.delete(userId);
-      } else {
-        newSet.add(userId);
-      }
-      return newSet;
-    });
+    toggleFollow(userId);
   };
 
   if (users.length === 0) return null;
@@ -97,13 +90,13 @@ export function WhoToFollow() {
 
             <Button
               size="sm"
-              variant={following.has(suggestedUser.user_id) ? "outline" : "default"}
+              variant={isFollowing(suggestedUser.user_id) ? "outline" : "default"}
               onClick={() => handleFollow(suggestedUser.user_id)}
-              className={following.has(suggestedUser.user_id) ? "mc-btn h-8" : "mc-btn-primary h-8"}
+              className={isFollowing(suggestedUser.user_id) ? "mc-btn h-8" : "mc-btn-primary h-8"}
             >
               <UserPlus className="h-3 w-3 mr-1" />
               <span className="mc-text text-xs">
-                {following.has(suggestedUser.user_id) ? 'FOLLOWING' : 'FOLLOW'}
+                {isFollowing(suggestedUser.user_id) ? 'FOLLOWING' : 'FOLLOW'}
               </span>
             </Button>
           </div>
