@@ -7,6 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { useRestrictions } from '@/hooks/useRestrictions';
+import { useAdmin } from '@/hooks/useAdmin';
 
 interface Comment {
   id: string;
@@ -28,6 +30,8 @@ interface CommentSectionProps {
 export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: CommentSectionProps) {
   const { user } = useAuth();
   const { playClick, playPop, playUnpop } = useSoundEffects();
+  const { canComment } = useRestrictions();
+  const { isAdmin } = useAdmin();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
@@ -206,7 +210,7 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
 
   return (
     <div className="mt-4 pt-4 border-t-2 border-border/50 space-y-4">
-      {user && (
+      {user && canComment && (
         <div className="space-y-2">
           {replyingTo && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 px-3 py-2 rounded-lg">
@@ -279,7 +283,7 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
                       </Button>
                     </>
                   )}
-                  {user?.id === comment.user_id && (
+                  {(user?.id === comment.user_id || isAdmin) && (
                     <>
                       <Button 
                         variant="ghost" 

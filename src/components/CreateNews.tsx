@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAdmin } from '@/hooks/useAdmin';
 
 interface CreateNewsProps {
   onNewsCreated: () => void;
@@ -14,6 +15,7 @@ interface CreateNewsProps {
 export function CreateNews({ onNewsCreated }: CreateNewsProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { isAdmin } = useAdmin();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -113,14 +115,8 @@ export function CreateNews({ onNewsCreated }: CreateNewsProps) {
     }
   };
 
-  if (!user) {
-    return (
-      <div className="minecraft-card minecraft-border p-6 text-center">
-        <p className="text-muted-foreground">
-          <a href="/login" className="text-primary hover:underline font-display">Sign in</a> to post news
-        </p>
-      </div>
-    );
+  if (!user || !isAdmin) {
+    return null;
   }
 
   if (!showForm) {

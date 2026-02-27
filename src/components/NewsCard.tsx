@@ -21,6 +21,7 @@ import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useToast } from '@/hooks/use-toast';
+import { useAdmin } from '@/hooks/useAdmin';
 
 interface NewsCardProps {
   id: string;
@@ -51,6 +52,7 @@ export function NewsCard({
   const navigate = useNavigate();
   const { toast } = useToast();
   const { playClick } = useSoundEffects();
+  const { isAdmin } = useAdmin();
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(title);
@@ -58,7 +60,7 @@ export function NewsCard({
   const [isSaving, setIsSaving] = useState(false);
 
   const handleDelete = async () => {
-    if (!user || user.id !== userId) return;
+    if (!user || (user.id !== userId && !isAdmin)) return;
     setIsDeleting(true);
     playClick();
     await supabase.from('news').delete().eq('id', id);
@@ -142,7 +144,7 @@ export function NewsCard({
             <span className="text-muted-foreground text-sm">
               {formatDistanceToNow(new Date(createdAt), { addSuffix: false })}
             </span>
-            {user?.id === userId && !isEditing && (
+            {(user?.id === userId || isAdmin) && !isEditing && (
               <div className="flex items-center gap-1 ml-auto">
                 <Button 
                   variant="ghost" 

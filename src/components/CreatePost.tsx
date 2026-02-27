@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
 import { Progress } from '@/components/ui/progress';
 import { MentionInput } from './MentionInput';
+import { useRestrictions } from '@/hooks/useRestrictions';
 
 interface CreatePostProps {
   onPostCreated: () => void;
@@ -30,6 +31,7 @@ const MAX_IMAGES = 10;
 export function CreatePost({ onPostCreated }: CreatePostProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { canPost } = useRestrictions();
   const [content, setContent] = useState('');
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -310,6 +312,16 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
       <div className="px-4 py-6 border-b-2 border-border text-center mc-dirt">
         <p className="text-muted-foreground mc-text text-lg">
           <a href="/login" className="text-primary hover:underline">LOGIN</a> TO POST
+        </p>
+      </div>
+    );
+  }
+
+  if (!canPost) {
+    return (
+      <div className="px-4 py-6 border-b-2 border-border text-center">
+        <p className="text-destructive mc-text text-lg">
+          ⚠️ Your posting privileges have been restricted.
         </p>
       </div>
     );

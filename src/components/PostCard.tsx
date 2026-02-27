@@ -22,6 +22,7 @@ import { CommentSection } from './CommentSection';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useToast } from '@/hooks/use-toast';
 import { ImageLightbox } from './ImageLightbox';
+import { useAdmin } from '@/hooks/useAdmin';
 
 interface PostCardProps {
   id: string;
@@ -60,6 +61,7 @@ export function PostCard({
   const navigate = useNavigate();
   const { toast } = useToast();
   const { playClick, playPop, playUnpop } = useSoundEffects();
+  const { isAdmin } = useAdmin();
   const [showComments, setShowComments] = useState(false);
   const [localCommentsCount, setLocalCommentsCount] = useState(commentsCount);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -120,7 +122,7 @@ export function PostCard({
   };
 
   const handleDelete = async () => {
-    if (!user || user.id !== userId) return;
+    if (!user || (user.id !== userId && !isAdmin)) return;
     setIsDeleting(true);
     playClick();
     await supabase.from('posts').delete().eq('id', id);
@@ -202,7 +204,7 @@ export function PostCard({
             <span className="text-muted-foreground text-sm">
               {formatDistanceToNow(new Date(createdAt), { addSuffix: false })}
             </span>
-            {user?.id === userId && !isEditing && (
+            {(user?.id === userId || isAdmin) && !isEditing && (
               <div className="flex items-center gap-1 ml-auto">
                 <Button 
                   variant="ghost" 
