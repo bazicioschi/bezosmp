@@ -1,15 +1,17 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { Gamepad2, LogOut, User, Home } from 'lucide-react';
+import { Gamepad2, LogOut, User, Home, HelpCircle, Shield } from 'lucide-react';
 import { NotificationBell } from './NotificationBell';
 import { SettingsButton } from './SettingsButton';
 import { ChatPopup } from './ChatPopup';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { useAdmin } from '@/hooks/useAdmin';
 
 export function Header() {
   const { playClick } = useSoundEffects();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
 
   return (
     <header className="sticky top-0 z-50 border-b-2 border-border bg-card/95 backdrop-blur-sm">
@@ -43,9 +45,23 @@ export function Header() {
                   <span className="hidden md:inline mc-text text-sm">PROFILE</span>
                 </Link>
               </Button>
+              <Button variant="ghost" size="sm" asChild className="mc-slot hover:mc-slot-active px-3 h-8" onClick={() => playClick()}>
+                <Link to="/support" className="flex items-center gap-2">
+                  <HelpCircle className="h-4 w-4" />
+                  <span className="hidden md:inline mc-text text-sm">SUPPORT</span>
+                </Link>
+              </Button>
+              {isAdmin && (
+                <Button variant="ghost" size="sm" asChild className="mc-slot hover:mc-slot-active px-3 h-8" onClick={() => playClick()}>
+                  <Link to="/admin" className="flex items-center gap-2">
+                    <Shield className="h-4 w-4" />
+                    <span className="hidden md:inline mc-text text-sm">ADMIN</span>
+                  </Link>
+                </Button>
+              )}
               <SettingsButton />
               <ChatPopup />
-              <Button 
+              <Button
                 variant="ghost" 
                 size="sm" 
                 onClick={() => { playClick(); signOut(); }} 

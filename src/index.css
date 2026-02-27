@@ -1506,4 +1506,198 @@
   .cato-mode [role="switch"] > span {
     background-color: hsl(0 0% 100%) !important;
   }
+
+  /* ============================== */
+  /* BUZZY THEME - Bee Themed */
+  /* ============================== */
+
+  .buzzy-mode .mc-text {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    text-shadow: none;
+    color: hsl(45 100% 30%);
+  }
+
+  .buzzy-mode .glow-text {
+    text-shadow: none;
+    color: hsl(45 100% 25%);
+  }
+
+  /* Buzzy cards */
+  .buzzy-mode .minecraft-card {
+    @apply border border-border rounded-2xl;
+    background: hsl(45 70% 98%);
+    box-shadow: 0 4px 12px hsl(45 50% 50% / 0.1);
+  }
+
+  .buzzy-mode .minecraft-card-hover:hover {
+    box-shadow: 0 6px 20px hsl(45 100% 50% / 0.2);
+    transform: translateY(-2px);
+  }
+
+  .buzzy-mode .mc-btn {
+    @apply rounded-full font-semibold;
+    font-family: 'Inter', sans-serif;
+    background: hsl(45 70% 98%);
+    border: 2px solid hsl(45 50% 70%);
+    box-shadow: none;
+    transition: all 0.2s ease;
+    color: hsl(0 0% 10%);
+  }
+
+  .buzzy-mode .mc-btn:hover {
+    background: hsl(45 80% 92%);
+    border-color: hsl(45 100% 50%);
+  }
+
+  .buzzy-mode .mc-btn-primary {
+    @apply rounded-full font-semibold;
+    font-family: 'Inter', sans-serif;
+    background: hsl(45 100% 50%);
+    border: none;
+    box-shadow: 0 4px 8px hsl(45 100% 40% / 0.3);
+    color: hsl(0 0% 5%);
+  }
+
+  .buzzy-mode .mc-btn-primary:hover {
+    background: hsl(45 100% 45%);
+    box-shadow: 0 6px 12px hsl(45 100% 40% / 0.4);
+  }
+
+  .buzzy-mode .mc-slot {
+    background: hsl(45 70% 98%);
+    border: 2px solid hsl(45 50% 75%);
+    border-radius: 1rem;
+    box-shadow: none;
+  }
+
+  .buzzy-mode .mc-slot-active {
+    border-color: hsl(45 100% 50%);
+    background: hsl(45 80% 92%);
+  }
+
+  .buzzy-mode .pixel-border {
+    border: 2px solid hsl(45 50% 70%);
+    border-radius: 1rem;
+  }
+
+  /* No textures in Buzzy */
+  .buzzy-mode .mc-dirt,
+  .buzzy-mode .mc-stone,
+  .buzzy-mode .mc-bedrock {
+    background: transparent;
+  }
+
+  .buzzy-mode .mc-heart {
+    color: hsl(45 100% 50%);
+    filter: none;
+  }
+
+  .buzzy-mode .mc-chat-sent {
+    background: hsl(45 100% 50%);
+    border: none;
+    border-radius: 1.25rem 1.25rem 0.25rem 1.25rem;
+    box-shadow: 0 2px 6px hsl(45 100% 40% / 0.25);
+    color: hsl(0 0% 5%);
+  }
+
+  .buzzy-mode .mc-chat-received {
+    background: hsl(45 70% 98%);
+    border: none;
+    border-radius: 1.25rem 1.25rem 1.25rem 0.25rem;
+    box-shadow: 0 2px 6px hsl(0 0% 0% / 0.08);
+    color: hsl(0 0% 10%);
+  }
+
+  .buzzy-mode .redstone-glow {
+    animation: none;
+    box-shadow: 0 2px 8px hsl(45 100% 50% / 0.3);
+    background: hsl(45 100% 50%);
+  }
+
+  /* Buzzy header, sidebars, and content areas */
+  .buzzy-mode header,
+  .buzzy-mode .bg-card {
+    background: hsl(45 70% 98%) !important;
+  }
+
+  .buzzy-mode .bg-background {
+    background: transparent !important;
+  }
+
+  .buzzy-mode .bg-secondary {
+    background: hsl(45 70% 98%) !important;
+  }
+
+  .buzzy-mode .bg-secondary\/50,
+  .buzzy-mode .bg-secondary\/30,
+  .buzzy-mode .bg-secondary\/20 {
+    background: hsl(45 70% 98%) !important;
+  }
+
+  /* Buzzy post content areas */
+  .buzzy-mode article {
+    background: hsl(45 70% 98%);
+  }
+
+  .buzzy-mode .border-b-2 {
+    border-color: hsl(45 40% 80%) !important;
+  }
+
+  .buzzy-mode .border-x-2 {
+    border-color: hsl(45 40% 80%) !important;
+    background: hsl(45 70% 98%);
+  }
+
+  /* Buzzy input fields */
+  .buzzy-mode input,
+  .buzzy-mode textarea {
+    background: hsl(45 70% 98%) !important;
+    border-color: hsl(45 50% 70%);
+    color: hsl(0 0% 10%);
+  }
+
+  .buzzy-mode input::placeholder,
+  .buzzy-mode textarea::placeholder {
+    color: hsl(45 30% 50%);
+  }
+
+  /* Buzzy popover and dialog */
+  .buzzy-mode [data-radix-popper-content-wrapper] > div,
+  .buzzy-mode [role="dialog"] {
+    background: hsl(45 70% 98%) !important;
+  }
+
+  /* Buzzy comment sections */
+  .buzzy-mode .border-t-2 {
+    background: hsl(45 70% 98%);
+  }
+
+  /* Buzzy notification */
+  .buzzy-mode .minecraft-notification {
+    color: hsl(0 0% 5%);
+  }
+
+  .buzzy-mode [data-radix-popper-content-wrapper] p,
+  .buzzy-mode [data-radix-popper-content-wrapper] span,
+  .buzzy-mode [data-radix-popper-content-wrapper] h3 {
+    color: hsl(0 0% 10%);
+  }
+
+  .buzzy-mode [data-radix-popper-content-wrapper] .text-primary {
+    color: hsl(45 100% 30%);
+  }
+
+  /* Buzzy theme - yellow bar with black dot */
+  .buzzy-mode [role="switch"] {
+    background-color: hsl(45 30% 70%) !important;
+  }
+  
+  .buzzy-mode [role="switch"][data-state="checked"] {
+    background-color: hsl(45 100% 50%) !important;
+  }
+  
+  .buzzy-mode [role="switch"] > span {
+    background-color: hsl(0 0% 5%) !important;
+  }
 }
