@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Ban, UserX, MessageSquareOff, PenOff, Loader2, Trash2 } from 'lucide-react';
+import { Shield, Ban, UserX, MessageSquareOff, PenOff, Loader2, Crown, ShieldCheck } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ interface UserWithRestrictions {
   user_id: string;
   username: string;
   restrictions: string[];
+  roles: string[];
 }
 
 export default function AdminPanel() {
@@ -43,10 +44,11 @@ export default function AdminPanel() {
 
     if (profiles) {
       const userIds = profiles.map(p => p.user_id);
-      const { data: restrictions } = await supabase
-        .from('user_restrictions')
-        .select('user_id, restriction_type')
-        .in('user_id', userIds);
+
+      const [{ data: restrictions }, { data: roles }] = await Promise.all([
+        supabase.from('user_restrictions').select('user_id, restriction_type').in('user_id', userIds),
+        supabase.from('user_roles').select('user_id, role').in('user_id', userIds),
+      ]);
 
       const restrictionsMap = new Map<string, string[]>();
       restrictions?.forEach(r => {
@@ -55,44 +57,50 @@ export default function AdminPanel() {
         restrictionsMap.set(r.user_id, existing);
       });
 
+      const rolesMap = new Map<string, string[]>();
+      roles?.forEach(r => {
+        const existing = rolesMap.get(r.user_id) || [];
+        existing.push(r.role);
+        rolesMap.set(r.user_id, existing);
+      });
+
       setUsers(profiles.map(p => ({
         user_id: p.user_id,
         username: p.username,
         restrictions: restrictionsMap.get(p.user_id) || [],
+        roles: rolesMap.get(p.user_id) || [],
       })));
     }
     setLoading(false);
   };
 
+  const toggleRole = async (userId: string, role: 'admin' | 'moderator') => {
+    if (!user) return;
+    const targetUser = users.find(u => u.user_id === userId);
+    if (!targetUser) return;
+
+    if (targetUser.roles.includes(role)) {
+      await supabase.from('user_roles').delete().eq('user_id', userId).eq('role', role);
+      toast({ title: 'Role removed', description: `Removed ${role} from @${targetUser.username}` });
+    } else {
+      await supabase.from('user_roles').insert({ user_id: userId, role });
+      toast({ title: 'Role granted', description: `Granted ${role} to @${targetUser.username}` });
+    }
+    searchUsers();
+  };
+
   const toggleRestriction = async (userId: string, type: string) => {
     if (!user) return;
-
     const targetUser = users.find(u => u.user_id === userId);
     if (!targetUser) return;
 
     if (targetUser.restrictions.includes(type)) {
-      // Remove restriction
-      await supabase
-        .from('user_restrictions')
-        .delete()
-        .eq('user_id', userId)
-        .eq('restriction_type', type);
-
-      toast({ title: `Restriction removed`, description: `Removed ${type} from @${targetUser.username}` });
+      await supabase.from('user_restrictions').delete().eq('user_id', userId).eq('restriction_type', type);
+      toast({ title: 'Restriction removed', description: `Removed ${type} from @${targetUser.username}` });
     } else {
-      // Add restriction
-      await supabase
-        .from('user_restrictions')
-        .insert({
-          user_id: userId,
-          restriction_type: type,
-          created_by: user.id,
-        });
-
-      toast({ title: `Restriction added`, description: `Added ${type} to @${targetUser.username}` });
+      await supabase.from('user_restrictions').insert({ user_id: userId, restriction_type: type, created_by: user.id });
+      toast({ title: 'Restriction added', description: `Added ${type} to @${targetUser.username}` });
     }
-
-    // Refresh
     searchUsers();
   };
 
@@ -115,7 +123,7 @@ export default function AdminPanel() {
             <Shield className="h-6 w-6" />
             ADMIN PANEL
           </h1>
-          <p className="text-muted-foreground text-sm">Manage user restrictions and roles.</p>
+          <p className="text-muted-foreground text-sm">Manage user roles and restrictions.</p>
         </div>
 
         {/* Search users */}
@@ -139,48 +147,86 @@ export default function AdminPanel() {
           {users.map(u => (
             <div key={u.user_id} className="minecraft-card p-4">
               <div className="flex items-center justify-between mb-3">
-                <span className="font-semibold text-foreground mc-text text-lg">@{u.username}</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-foreground mc-text text-lg">@{u.username}</span>
+                  {u.roles.includes('admin') && (
+                    <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded font-bold">ADMIN</span>
+                  )}
+                  {u.roles.includes('moderator') && (
+                    <span className="text-xs bg-accent/20 text-accent-foreground px-2 py-0.5 rounded font-bold">MOD</span>
+                  )}
+                </div>
                 {u.restrictions.length > 0 && (
                   <span className="text-xs text-destructive">{u.restrictions.length} restriction(s)</span>
                 )}
               </div>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant={u.restrictions.includes('no_posting') ? 'destructive' : 'outline'}
-                  size="sm"
-                  onClick={() => toggleRestriction(u.user_id, 'no_posting')}
-                  className="gap-1"
-                >
-                  <PenOff className="h-3 w-3" />
-                  No Posting
-                </Button>
-                <Button
-                  variant={u.restrictions.includes('no_commenting') ? 'destructive' : 'outline'}
-                  size="sm"
-                  onClick={() => toggleRestriction(u.user_id, 'no_commenting')}
-                  className="gap-1"
-                >
-                  <MessageSquareOff className="h-3 w-3" />
-                  No Comments
-                </Button>
-                <Button
-                  variant={u.restrictions.includes('no_messaging') ? 'destructive' : 'outline'}
-                  size="sm"
-                  onClick={() => toggleRestriction(u.user_id, 'no_messaging')}
-                  className="gap-1"
-                >
-                  <UserX className="h-3 w-3" />
-                  No Messages
-                </Button>
-                <Button
-                  variant={u.restrictions.includes('banned') ? 'destructive' : 'outline'}
-                  size="sm"
-                  onClick={() => toggleRestriction(u.user_id, 'banned')}
-                  className="gap-1"
-                >
-                  <Ban className="h-3 w-3" />
-                  Ban
-                </Button>
+
+              {/* Role management */}
+              <div className="mb-3">
+                <p className="text-xs text-muted-foreground mb-1.5 font-semibold uppercase">Roles</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant={u.roles.includes('admin') ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => toggleRole(u.user_id, 'admin')}
+                    className="gap-1"
+                  >
+                    <Crown className="h-3 w-3" />
+                    Admin
+                  </Button>
+                  <Button
+                    variant={u.roles.includes('moderator') ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => toggleRole(u.user_id, 'moderator')}
+                    className="gap-1"
+                  >
+                    <ShieldCheck className="h-3 w-3" />
+                    Moderator
+                  </Button>
+                </div>
+              </div>
+
+              {/* Restrictions */}
+              <div>
+                <p className="text-xs text-muted-foreground mb-1.5 font-semibold uppercase">Restrictions</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant={u.restrictions.includes('no_posting') ? 'destructive' : 'outline'}
+                    size="sm"
+                    onClick={() => toggleRestriction(u.user_id, 'no_posting')}
+                    className="gap-1"
+                  >
+                    <PenOff className="h-3 w-3" />
+                    No Posting
+                  </Button>
+                  <Button
+                    variant={u.restrictions.includes('no_commenting') ? 'destructive' : 'outline'}
+                    size="sm"
+                    onClick={() => toggleRestriction(u.user_id, 'no_commenting')}
+                    className="gap-1"
+                  >
+                    <MessageSquareOff className="h-3 w-3" />
+                    No Comments
+                  </Button>
+                  <Button
+                    variant={u.restrictions.includes('no_messaging') ? 'destructive' : 'outline'}
+                    size="sm"
+                    onClick={() => toggleRestriction(u.user_id, 'no_messaging')}
+                    className="gap-1"
+                  >
+                    <UserX className="h-3 w-3" />
+                    No Messages
+                  </Button>
+                  <Button
+                    variant={u.restrictions.includes('banned') ? 'destructive' : 'outline'}
+                    size="sm"
+                    onClick={() => toggleRestriction(u.user_id, 'banned')}
+                    className="gap-1"
+                  >
+                    <Ban className="h-3 w-3" />
+                    Ban
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
