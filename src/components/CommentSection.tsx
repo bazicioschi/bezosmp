@@ -31,7 +31,7 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
   const { user } = useAuth();
   const { playClick, playPop, playUnpop } = useSoundEffects();
   const { canComment } = useRestrictions();
-  const { isAdmin } = useAdmin();
+  const { canModerate } = useAdmin();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
@@ -283,7 +283,7 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
                       </Button>
                     </>
                   )}
-                  {(user?.id === comment.user_id || isAdmin) && (
+                  {(user?.id === comment.user_id || canModerate) && (
                     <>
                       <Button 
                         variant="ghost" 

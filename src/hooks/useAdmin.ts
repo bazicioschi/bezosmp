@@ -5,29 +5,34 @@ import { useAuth } from '@/lib/auth';
 export function useAdmin() {
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isModerator, setIsModerator] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // True if user is admin OR moderator (both can moderate content)
+  const canModerate = isAdmin || isModerator;
 
   useEffect(() => {
     if (!user) {
       setIsAdmin(false);
+      setIsModerator(false);
       setLoading(false);
       return;
     }
 
-    const checkAdmin = async () => {
+    const checkRoles = async () => {
       const { data } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .maybeSingle();
+        .eq('user_id', user.id);
 
-      setIsAdmin(!!data);
+      const roles = data?.map(r => r.role) || [];
+      setIsAdmin(roles.includes('admin'));
+      setIsModerator(roles.includes('moderator'));
       setLoading(false);
     };
 
-    checkAdmin();
+    checkRoles();
   }, [user]);
 
-  return { isAdmin, loading };
+  return { isAdmin, isModerator, canModerate, loading };
 }

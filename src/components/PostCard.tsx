@@ -61,7 +61,7 @@ export function PostCard({
   const navigate = useNavigate();
   const { toast } = useToast();
   const { playClick, playPop, playUnpop } = useSoundEffects();
-  const { isAdmin } = useAdmin();
+  const { canModerate } = useAdmin();
   const [showComments, setShowComments] = useState(false);
   const [localCommentsCount, setLocalCommentsCount] = useState(commentsCount);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -122,7 +122,7 @@ export function PostCard({
   };
 
   const handleDelete = async () => {
-    if (!user || (user.id !== userId && !isAdmin)) return;
+    if (!user || (user.id !== userId && !canModerate)) return;
     setIsDeleting(true);
     playClick();
     await supabase.from('posts').delete().eq('id', id);
@@ -204,7 +204,7 @@ export function PostCard({
             <span className="text-muted-foreground text-sm">
               {formatDistanceToNow(new Date(createdAt), { addSuffix: false })}
             </span>
-            {(user?.id === userId || isAdmin) && !isEditing && (
+            {(user?.id === userId || canModerate) && !isEditing && (
               <div className="flex items-center gap-1 ml-auto">
                 <Button 
                   variant="ghost" 

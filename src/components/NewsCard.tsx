@@ -52,7 +52,7 @@ export function NewsCard({
   const navigate = useNavigate();
   const { toast } = useToast();
   const { playClick } = useSoundEffects();
-  const { isAdmin } = useAdmin();
+  const { canModerate } = useAdmin();
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(title);
@@ -60,7 +60,7 @@ export function NewsCard({
   const [isSaving, setIsSaving] = useState(false);
 
   const handleDelete = async () => {
-    if (!user || (user.id !== userId && !isAdmin)) return;
+    if (!user || (user.id !== userId && !canModerate)) return;
     setIsDeleting(true);
     playClick();
     await supabase.from('news').delete().eq('id', id);
@@ -144,7 +144,7 @@ export function NewsCard({
             <span className="text-muted-foreground text-sm">
               {formatDistanceToNow(new Date(createdAt), { addSuffix: false })}
             </span>
-            {(user?.id === userId || isAdmin) && !isEditing && (
+            {(user?.id === userId || canModerate) && !isEditing && (
               <div className="flex items-center gap-1 ml-auto">
                 <Button 
                   variant="ghost" 
