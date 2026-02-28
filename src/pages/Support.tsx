@@ -24,7 +24,7 @@ interface Ticket {
 
 export default function Support() {
   const { user } = useAuth();
-  const { isAdmin } = useAdmin();
+  const { isAdmin, canModerate } = useAdmin();
   const { toast } = useToast();
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
@@ -171,7 +171,7 @@ export default function Support() {
         {/* Tickets list */}
         <div className="space-y-4">
           <h2 className="mc-text text-lg text-foreground">
-            {isAdmin ? 'All Tickets' : 'Your Tickets'}
+            {canModerate ? 'All Tickets' : 'Your Tickets'}
           </h2>
           {fetchingTickets ? (
             <div className="flex justify-center py-8">
@@ -186,7 +186,7 @@ export default function Support() {
               <div key={ticket.id} className="minecraft-card p-4 space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    {isAdmin && (
+                    {canModerate && (
                       <span className="text-xs text-muted-foreground">from @{ticket.username}</span>
                     )}
                     <h3 className="font-semibold text-foreground">{ticket.subject}</h3>
@@ -208,7 +208,7 @@ export default function Support() {
                   </div>
                 )}
 
-                {isAdmin && !ticket.admin_response && (
+                {canModerate && !ticket.admin_response && (
                   <div>
                     {respondingTo === ticket.id ? (
                       <div className="space-y-2">
