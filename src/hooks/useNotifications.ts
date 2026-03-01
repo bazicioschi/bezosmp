@@ -4,12 +4,13 @@ import { useAuth } from '@/lib/auth';
 
 interface Notification {
   id: string;
-  type: 'message' | 'like' | 'comment';
+  type: 'message' | 'like' | 'comment' | 'ticket_reply';
   senderId: string;
   senderName: string;
   content: string;
   createdAt: string;
   read: boolean;
+  ticketId?: string;
 }
 
 export function useNotifications() {
@@ -59,10 +60,7 @@ export function useNotifications() {
           filter: `receiver_id=eq.${user.id}`,
         },
         (payload) => {
-          // New message received
           setUnreadMessages((prev) => prev + 1);
-          
-          // Show toast notification (handled in component)
           const newMsg = payload.new as { sender_id: string; content: string; created_at: string };
           fetchSenderInfo(newMsg);
         }
@@ -76,17 +74,59 @@ export function useNotifications() {
           filter: `receiver_id=eq.${user.id}`,
         },
         (payload) => {
-          // Message was updated (likely marked as read)
           const oldMsg = payload.old as { read: boolean };
           const newMsg = payload.new as { read: boolean };
-          
-          // If message was marked as read, refresh the count
           if (!oldMsg.read && newMsg.read) {
             fetchUnreadCount();
           }
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'ticket_replies',
+        },
+        (payload) => {
+          const reply = payload.new as { user_id: string; ticket_id: string; message: string; created_at: string };
+          // Don't notify yourself
+          if (reply.user_id !== user.id) {
+            handleTicketReplyNotification(reply);
+          }
+        }
+      )
       .subscribe();
+  };
+
+  const handleTicketReplyNotification = async (reply: { user_id: string; ticket_id: string; message: string; created_at: string }) => {
+    // Check if this ticket belongs to the current user
+    const { data: ticket } = await supabase
+      .from('support_tickets')
+      .select('user_id, subject')
+      .eq('id', reply.ticket_id)
+      .maybeSingle();
+
+    if (!ticket || ticket.user_id !== user?.id) return;
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('user_id', reply.user_id)
+      .maybeSingle();
+
+    const notification: Notification = {
+      id: `ticket-${Date.now()}`,
+      type: 'ticket_reply',
+      senderId: reply.user_id,
+      senderName: profile?.username || 'Staff',
+      content: `Re: ${ticket.subject} — ${reply.message.substring(0, 40)}${reply.message.length > 40 ? '...' : ''}`,
+      createdAt: reply.created_at,
+      read: false,
+      ticketId: reply.ticket_id,
+    };
+    setUnreadMessages((prev) => prev + 1);
+    setNotifications((prev) => [notification, ...prev].slice(0, 10));
   };
 
   const fetchSenderInfo = async (msg: { sender_id: string; content: string; created_at: string }) => {
