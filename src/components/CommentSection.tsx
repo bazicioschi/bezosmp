@@ -210,6 +210,12 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
 
   return (
     <div className="mt-4 pt-4 border-t-2 border-border/50 space-y-4">
+      {user && !canComment && (
+        <div className="text-center py-3 px-4 rounded-lg bg-destructive/10 border border-destructive/30">
+          <p className="text-destructive mc-text text-sm">⚠️ This account can no longer comment.</p>
+          <p className="text-muted-foreground text-xs mt-1">If you believe this is a mistake, please contact support.</p>
+        </div>
+      )}
       {user && canComment && (
         <div className="space-y-2">
           {replyingTo && (
