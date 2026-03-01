@@ -319,9 +319,12 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
 
   if (!canPost) {
     return (
-      <div className="px-4 py-6 border-b-2 border-border text-center">
+      <div className="px-4 py-6 border-b-2 border-border text-center space-y-1">
         <p className="text-destructive mc-text text-lg">
-          ⚠️ Your posting privileges have been restricted.
+          ⚠️ This account has been restricted from posting.
+        </p>
+        <p className="text-muted-foreground text-sm">
+          You are unable to create new posts. If you believe this is a mistake, please contact support.
         </p>
       </div>
     );
