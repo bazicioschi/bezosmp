@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Sparkles, Sword, Pickaxe, Shield, BookOpen, Gem } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -52,6 +52,129 @@ export function SettingsButton() {
     if (isBuzzy) return 'Buzzy (Bee)';
     return 'Red & White (Clean)';
   };
+
+const enchantGlyphs = 'ᔑʖᓵ↸ᒷ⎓⊣⍑╎⋮ꖌꖎᒲリ𝙹ᑑ∷ᓭℸ⚍⊬∴';
+
+const enchantItems = [
+  { id: 'sword', icon: Sword, label: 'Sword' },
+  { id: 'pickaxe', icon: Pickaxe, label: 'Pick' },
+  { id: 'shield', icon: Shield, label: 'Shield' },
+  { id: 'book', icon: BookOpen, label: 'Book' },
+];
+
+const enchantOptions: Record<string, string[]> = {
+  sword: ['Sharpness V', 'Fire Aspect II', 'Looting III'],
+  pickaxe: ['Fortune III', 'Efficiency V', 'Silk Touch'],
+  shield: ['Unbreaking III', 'Mending', 'Thorns III'],
+  book: ['Mending', 'Infinity', 'Protection IV'],
+};
+
+function SettingsEnchantTable() {
+  const [item, setItem] = useState<string | null>(null);
+  const [slots, setSlots] = useState<{ text: string; cost: number }[]>([]);
+  const [isRolling, setIsRolling] = useState(false);
+
+  const generateSlots = (itemId: string) => {
+    setItem(itemId);
+    setIsRolling(true);
+    setSlots([]);
+
+    let count = 0;
+    const interval = setInterval(() => {
+      setSlots(
+        [1, 2, 3].map(() => ({
+          text: Array.from({ length: 12 }, () =>
+            enchantGlyphs[Math.floor(Math.random() * enchantGlyphs.length)]
+          ).join(''),
+          cost: Math.floor(Math.random() * 28) + 2,
+        }))
+      );
+      count++;
+      if (count > 6) {
+        clearInterval(interval);
+        const opts = enchantOptions[itemId];
+        setSlots(
+          opts.map((name, i) => ({
+            text: name,
+            cost: (i + 1) * 10,
+          }))
+        );
+        setIsRolling(false);
+      }
+    }, 100);
+  };
+
+  return (
+    <div className="pt-3 border-t border-border space-y-2">
+      <div className="flex items-center gap-2">
+        <Sparkles className="h-4 w-4 text-primary" />
+        <p className="mc-text text-sm text-foreground">ENCHANT</p>
+      </div>
+
+      {/* Item row */}
+      <div className="flex gap-1.5">
+        {enchantItems.map((ei) => {
+          const Icon = ei.icon;
+          return (
+            <button
+              key={ei.id}
+              onClick={() => generateSlots(ei.id)}
+              disabled={isRolling}
+              className={`mc-slot flex-1 flex flex-col items-center gap-0.5 py-1.5 transition-all ${
+                item === ei.id ? 'ring-1 ring-primary bg-primary/10' : 'hover:bg-secondary/50'
+              }`}
+            >
+              <Icon className={`h-4 w-4 ${item === ei.id ? 'text-primary' : 'text-muted-foreground'}`} />
+              <span className={`mc-text text-[9px] ${item === ei.id ? 'text-primary' : 'text-muted-foreground/70'}`}>
+                {ei.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Enchantment slots - Minecraft style */}
+      {slots.length > 0 && (
+        <div className="space-y-1">
+          {slots.map((slot, i) => (
+            <button
+              key={i}
+              className={`w-full flex items-center justify-between px-2 py-1.5 rounded border transition-all ${
+                isRolling
+                  ? 'border-border bg-secondary/20'
+                  : i === 2
+                    ? 'border-primary/50 bg-primary/10 hover:bg-primary/20'
+                    : 'border-border bg-secondary/30 hover:bg-secondary/50'
+              }`}
+              disabled={isRolling}
+            >
+              <div className="flex items-center gap-2">
+                <span className={`mc-text text-[10px] ${i === 2 ? 'text-primary' : 'text-chart-4'}`}>
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span className={`text-xs ${isRolling ? 'font-mono tracking-widest text-primary/60 animate-pulse' : 'mc-text text-foreground/80'}`}>
+                  {slot.text}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Gem className={`h-3 w-3 ${i === 2 ? 'text-primary' : 'text-chart-4'}`} />
+                <span className={`mc-text text-xs ${i === 2 ? 'text-primary' : 'text-chart-4'}`}>
+                  {slot.cost}
+                </span>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {!item && (
+        <p className="text-[10px] text-muted-foreground/50 mc-text text-center py-1">
+          Select an item to enchant
+        </p>
+      )}
+    </div>
+  );
+}
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -199,6 +322,9 @@ export function SettingsButton() {
               </button>
             </div>
           </div>
+
+          {/* Enchantment Table Mini */}
+          <SettingsEnchantTable />
 
           <div className="pt-2 border-t border-border">
             <p className="text-xs text-muted-foreground text-center mc-text">
