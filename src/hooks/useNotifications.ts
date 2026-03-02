@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/auth';
 
 interface Notification {
   id: string;
-  type: 'message' | 'like' | 'comment' | 'ticket_reply';
+  type: 'message' | 'like' | 'comment' | 'ticket_reply' | 'new_ticket';
   senderId: string;
   senderName: string;
   content: string;
@@ -90,13 +90,56 @@ export function useNotifications() {
         },
         (payload) => {
           const reply = payload.new as { user_id: string; ticket_id: string; message: string; created_at: string };
-          // Don't notify yourself
           if (reply.user_id !== user.id) {
             handleTicketReplyNotification(reply);
           }
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'support_tickets',
+        },
+        (payload) => {
+          const ticket = payload.new as { user_id: string; id: string; subject: string; message: string; created_at: string };
+          if (ticket.user_id !== user.id) {
+            handleNewTicketNotification(ticket);
+          }
+        }
+      )
       .subscribe();
+  };
+
+  const handleNewTicketNotification = async (ticket: { user_id: string; id: string; subject: string; message: string; created_at: string }) => {
+    // Only notify admins/moderators
+    const { data: roles } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user!.id);
+
+    const userRoles = roles?.map(r => r.role) || [];
+    if (!userRoles.includes('admin') && !userRoles.includes('moderator')) return;
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('user_id', ticket.user_id)
+      .maybeSingle();
+
+    const notification: Notification = {
+      id: `new-ticket-${Date.now()}`,
+      type: 'new_ticket',
+      senderId: ticket.user_id,
+      senderName: profile?.username || 'Unknown',
+      content: ticket.subject,
+      createdAt: ticket.created_at,
+      read: false,
+      ticketId: ticket.id,
+    };
+    setUnreadMessages((prev) => prev + 1);
+    setNotifications((prev) => [notification, ...prev].slice(0, 10));
   };
 
   const handleTicketReplyNotification = async (reply: { user_id: string; ticket_id: string; message: string; created_at: string }) => {

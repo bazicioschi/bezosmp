@@ -10,6 +10,7 @@ import { BackToTop } from '@/components/BackToTop';
 import { WhoToFollow } from '@/components/WhoToFollow';
 import { ServerStats } from '@/components/ServerStats';
 import { DailyChallenge } from '@/components/DailyChallenge';
+import { EnchantmentWidget } from '@/components/EnchantmentWidget';
 import { Footer } from '@/components/Footer';
 
 type TabType = 'feed' | 'news';
@@ -110,6 +111,9 @@ export default function Index() {
 
             {/* Daily Challenge */}
             <DailyChallenge />
+
+            {/* Enchantment Widget */}
+            <EnchantmentWidget />
 
             {/* Daily Tip */}
             <div className="minecraft-card p-4">
