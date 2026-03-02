@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, MessageCircle, X, Ticket } from 'lucide-react';
+import { Bell, MessageCircle, X, Ticket, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -32,7 +32,7 @@ export function NotificationBell() {
     playClick();
     if (notification.type === 'message') {
       navigate(`/messages/${notification.senderId}`);
-    } else if (notification.type === 'ticket_reply') {
+    } else if (notification.type === 'ticket_reply' || notification.type === 'new_ticket') {
       navigate('/support');
     }
     clearNotification(notification.id);
@@ -94,12 +94,17 @@ export function NotificationBell() {
                     {notification.type === 'ticket_reply' && (
                       <Ticket className="h-4 w-4 text-primary" />
                     )}
+                    {notification.type === 'new_ticket' && (
+                      <AlertCircle className="h-4 w-4 text-primary" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm">
                       <span className="font-semibold text-primary mc-text">{notification.senderName}</span>
                       <span className="text-muted-foreground">
-                        {notification.type === 'message' ? ' sent you a message' : ' replied to your ticket'}
+                        {notification.type === 'message' ? ' sent you a message' : 
+                         notification.type === 'new_ticket' ? ' submitted a new ticket' : 
+                         ' replied to your ticket'}
                       </span>
                     </p>
                     <p className="text-xs text-muted-foreground truncate mt-0.5">
