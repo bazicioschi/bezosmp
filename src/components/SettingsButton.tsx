@@ -69,10 +69,18 @@ const enchantOptions: Record<string, string[]> = {
   book: ['Mending', 'Infinity', 'Protection IV'],
 };
 
-function SettingsEnchantTable() {
+function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode) => void }) {
   const [item, setItem] = useState<string | null>(null);
   const [slots, setSlots] = useState<{ text: string; cost: number }[]>([]);
   const [isRolling, setIsRolling] = useState(false);
+
+  // Map enchantment slots to themes
+  const slotThemes: Record<string, ThemeMode[]> = {
+    sword: ['dark', 'ghast', 'pizza'],
+    pickaxe: ['light', 'bazimazi', 'cato'],
+    shield: ['buzzy', 'dark', 'ghast'],
+    book: ['bazimazi', 'pizza', 'buzzy'],
+  };
 
   const generateSlots = (itemId: string) => {
     setItem(itemId);
@@ -102,6 +110,14 @@ function SettingsEnchantTable() {
         setIsRolling(false);
       }
     }, 100);
+  };
+
+  const handleSlotClick = (index: number) => {
+    if (isRolling || !item) return;
+    const themes = slotThemes[item];
+    if (themes && themes[index]) {
+      onThemeChange(themes[index]);
+    }
   };
 
   return (
@@ -147,6 +163,7 @@ function SettingsEnchantTable() {
                     : 'border-border bg-secondary/30 hover:bg-secondary/50'
               }`}
               disabled={isRolling}
+              onClick={() => handleSlotClick(i)}
             >
               <div className="flex items-center gap-2">
                 <span className={`mc-text text-[10px] ${i === 2 ? 'text-primary' : 'text-chart-4'}`}>
@@ -324,11 +341,11 @@ function SettingsEnchantTable() {
           </div>
 
           {/* Enchantment Table Mini */}
-          <SettingsEnchantTable />
+          <SettingsEnchantTable onThemeChange={handleThemeChange} />
 
           <div className="pt-2 border-t border-border">
             <p className="text-xs text-muted-foreground text-center mc-text">
-              bezoSMP 1.16
+              bezoSMP 1.17
             </p>
           </div>
         </div>

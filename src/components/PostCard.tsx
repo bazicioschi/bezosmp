@@ -334,14 +334,19 @@ export function PostCard({
                 controlsList="nodownload"
                 style={{ WebkitTransform: 'translateZ(0)' }}
               >
-                {/* Cross-platform compatibility including iPad/iOS */}
+                {/* Cross-platform compatibility including iPad/iOS, Galaxy Tab, Xiaomi */}
                 <source src={videoUrl} type="video/mp4; codecs=avc1.42E01E,mp4a.40.2" />
+                <source src={videoUrl} type="video/mp4; codecs=avc1.64001E,mp4a.40.2" />
+                <source src={videoUrl} type="video/mp4; codecs=hvc1" />
                 <source src={videoUrl} type="video/mp4" />
                 <source src={videoUrl} type="video/webm; codecs=vp9,opus" />
+                <source src={videoUrl} type="video/webm; codecs=vp8,vorbis" />
                 <source src={videoUrl} type="video/webm" />
                 <source src={videoUrl} type="video/quicktime" />
                 <source src={videoUrl} type="video/ogg" />
                 <source src={videoUrl} type="video/3gpp" />
+                <source src={videoUrl} type="video/3gpp2" />
+                <source src={videoUrl} type="video/x-matroska" />
                 Your browser does not support the video tag.
               </video>
             </div>
