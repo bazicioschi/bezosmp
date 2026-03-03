@@ -239,11 +239,64 @@ export function NewsCard({
             </>
           )}
 
-          {imageUrl && !isEditing && (
-            <div className="mt-3 minecraft-card overflow-hidden">
-              <img src={imageUrl} alt={title} className="w-full max-h-[400px] object-cover" />
-            </div>
-          )}
+          {imageUrl && !isEditing && (() => {
+            // Handle multiple images stored as JSON array or single image URL
+            let images: string[] = [];
+            let isVideo = false;
+            try {
+              if (imageUrl.startsWith('[')) {
+                images = JSON.parse(imageUrl);
+              } else if (imageUrl.match(/\.(mp4|webm|mov|avi|mkv|ogg|3gp)(\?|$)/i)) {
+                isVideo = true;
+              } else {
+                images = [imageUrl];
+              }
+            } catch {
+              images = [imageUrl];
+            }
+
+            if (isVideo) {
+              return (
+                <div className="mt-3 minecraft-card overflow-hidden">
+                  <video
+                    src={imageUrl}
+                    className="w-full max-h-[400px] object-contain bg-black"
+                    controls
+                    playsInline
+                    webkit-playsinline="true"
+                    x-webkit-airplay="allow"
+                    preload="metadata"
+                    controlsList="nodownload"
+                    style={{ WebkitTransform: 'translateZ(0)' }}
+                  >
+                    <source src={imageUrl} type="video/mp4; codecs=avc1.42E01E,mp4a.40.2" />
+                    <source src={imageUrl} type="video/mp4; codecs=avc1.64001E,mp4a.40.2" />
+                    <source src={imageUrl} type="video/mp4; codecs=hvc1" />
+                    <source src={imageUrl} type="video/mp4" />
+                    <source src={imageUrl} type="video/webm; codecs=vp9,opus" />
+                    <source src={imageUrl} type="video/webm; codecs=vp8,vorbis" />
+                    <source src={imageUrl} type="video/webm" />
+                    <source src={imageUrl} type="video/quicktime" />
+                    <source src={imageUrl} type="video/ogg" />
+                    <source src={imageUrl} type="video/3gpp" />
+                    <source src={imageUrl} type="video/3gpp2" />
+                    <source src={imageUrl} type="video/x-matroska" />
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              );
+            }
+
+            return (
+              <div className={`mt-3 gap-2 ${images.length === 1 ? '' : images.length === 2 ? 'grid grid-cols-2' : 'grid grid-cols-3'}`}>
+                {images.map((img, index) => (
+                  <div key={index} className="minecraft-card overflow-hidden">
+                    <img src={img} alt={`${title} image ${index + 1}`} className={`w-full object-cover ${images.length === 1 ? 'max-h-[400px]' : 'aspect-square'}`} />
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
         </div>
       </div>
     </article>

@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
-import { Newspaper, Send, Upload, X, Loader2 } from 'lucide-react';
+import { Newspaper, Send, Upload, X, Loader2, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -12,69 +13,137 @@ interface CreateNewsProps {
   onNewsCreated: () => void;
 }
 
+const MAX_IMAGES = 10;
+
+const SUPPORTED_VIDEO_TYPES = [
+  'video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo',
+  'video/x-matroska', 'video/ogg', 'video/3gpp', 'video/3gpp2',
+];
+
 export function CreateNews({ onNewsCreated }: CreateNewsProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const { isAdmin } = useAdmin();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
-  const [imagePreview, setImagePreview] = useState('');
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [videoUrl, setVideoUrl] = useState('');
+  const [videoPreview, setVideoPreview] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const uploadXhrRef = useRef<XMLHttpRequest | null>(null);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !user) return;
+
+    const remainingSlots = MAX_IMAGES - imageUrls.length;
+    if (remainingSlots <= 0) {
+      toast({ title: 'Maximum images reached', description: `You can only upload up to ${MAX_IMAGES} images per news post`, variant: 'destructive' });
+      return;
+    }
+
+    const filesToUpload = Array.from(files).slice(0, remainingSlots);
+
+    for (const file of filesToUpload) {
+      if (!file.type.startsWith('image/')) { toast({ title: 'Error', description: `${file.name} is not an image file`, variant: 'destructive' }); continue; }
+      if (file.size > 5 * 1024 * 1024) { toast({ title: 'Error', description: `${file.name} must be less than 5MB`, variant: 'destructive' }); continue; }
+
+      clearVideo();
+      setUploading(true);
+
+      const reader = new FileReader();
+      reader.onload = (e) => setImagePreviews(prev => [...prev, e.target?.result as string]);
+      reader.readAsDataURL(file);
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage.from('post-images').upload(fileName, file);
+
+      if (uploadError) {
+        toast({ title: 'Upload failed', description: uploadError.message, variant: 'destructive' });
+        setImagePreviews(prev => prev.slice(0, -1));
+      } else {
+        const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(fileName);
+        setImageUrls(prev => [...prev, urlData.publicUrl]);
+      }
+      setUploading(false);
+    }
+
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: 'Error',
-        description: 'Please select an image file',
-        variant: 'destructive',
-      });
+    if (!SUPPORTED_VIDEO_TYPES.includes(file.type) && !file.type.startsWith('video/')) {
+      toast({ title: 'Error', description: 'Please select a valid video file', variant: 'destructive' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024 * 1024) {
+      toast({ title: 'Error', description: 'Video must be less than 5GB', variant: 'destructive' });
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: 'Error',
-        description: 'Image must be less than 5MB',
-        variant: 'destructive',
-      });
-      return;
-    }
-
+    clearAllImages();
     setUploading(true);
+    setUploadProgress(0);
 
-    const reader = new FileReader();
-    reader.onload = (e) => setImagePreview(e.target?.result as string);
-    reader.readAsDataURL(file);
+    const previewUrl = URL.createObjectURL(file);
+    setVideoPreview(previewUrl);
 
-    const fileExt = file.name.split('.').pop();
+    const fileExt = file.name.split('.').pop()?.toLowerCase() || 'mp4';
     const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from('post-images')
-      .upload(fileName, file);
+    const { data: { session } } = await supabase.auth.getSession();
+
+    const uploadPromise = new Promise<{ error: Error | null }>((resolve) => {
+      const xhr = new XMLHttpRequest();
+      uploadXhrRef.current = xhr;
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/post-videos/${fileName}`;
+
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) setUploadProgress(Math.round((event.loaded / event.total) * 100));
+      });
+      xhr.addEventListener('load', () => { uploadXhrRef.current = null; resolve({ error: xhr.status >= 200 && xhr.status < 300 ? null : new Error(`Upload failed with status ${xhr.status}`) }); });
+      xhr.addEventListener('error', () => { uploadXhrRef.current = null; resolve({ error: new Error('Network error during upload') }); });
+      xhr.addEventListener('abort', () => { uploadXhrRef.current = null; resolve({ error: new Error('Upload cancelled') }); });
+
+      xhr.open('POST', url);
+      xhr.setRequestHeader('Authorization', `Bearer ${session?.access_token}`);
+      xhr.setRequestHeader('Content-Type', file.type);
+      xhr.setRequestHeader('x-upsert', 'true');
+      xhr.send(file);
+    });
+
+    const { error: uploadError } = await uploadPromise;
 
     if (uploadError) {
-      toast({
-        title: 'Upload failed',
-        description: uploadError.message,
-        variant: 'destructive',
-      });
-      setImagePreview('');
+      toast({ title: 'Upload failed', description: uploadError.message, variant: 'destructive' });
+      setVideoPreview('');
+      URL.revokeObjectURL(previewUrl);
     } else {
-      const { data: urlData } = supabase.storage
-        .from('post-images')
-        .getPublicUrl(fileName);
-      setImageUrl(urlData.publicUrl);
+      const { data: urlData } = supabase.storage.from('post-videos').getPublicUrl(fileName);
+      setVideoUrl(urlData.publicUrl);
+      toast({ title: 'Upload complete!', description: 'Your video has been uploaded successfully.' });
     }
 
     setUploading(false);
+    setUploadProgress(0);
+  };
+
+  const cancelUpload = () => {
+    if (uploadXhrRef.current) { uploadXhrRef.current.abort(); uploadXhrRef.current = null; }
+    if (videoPreview) URL.revokeObjectURL(videoPreview);
+    setVideoPreview(''); setVideoUrl(''); setUploading(false); setUploadProgress(0);
+    if (videoInputRef.current) videoInputRef.current.value = '';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,45 +155,41 @@ export function CreateNews({ onNewsCreated }: CreateNewsProps) {
       user_id: user.id,
       title: title.trim(),
       content: content.trim(),
-      image_url: imageUrl || null,
+      image_url: imageUrls.length > 0 ? (imageUrls.length === 1 ? imageUrls[0] : JSON.stringify(imageUrls)) : (videoUrl || null),
     });
 
     if (!error) {
-      setTitle('');
-      setContent('');
-      setImageUrl('');
-      setImagePreview('');
-      setShowForm(false);
+      setTitle(''); setContent(''); setImageUrls([]); setImagePreviews([]);
+      setVideoUrl(''); setVideoPreview(''); setShowForm(false);
       onNewsCreated();
       toast({ title: 'News posted successfully!' });
     } else {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
     }
     setLoading(false);
   };
 
-  const clearImage = () => {
-    setImageUrl('');
-    setImagePreview('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+  const clearImage = (index: number) => {
+    setImageUrls(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
-  if (!user || !isAdmin) {
-    return null;
-  }
+  const clearAllImages = () => {
+    setImageUrls([]); setImagePreviews([]);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const clearVideo = () => {
+    if (videoPreview) URL.revokeObjectURL(videoPreview);
+    setVideoUrl(''); setVideoPreview('');
+    if (videoInputRef.current) videoInputRef.current.value = '';
+  };
+
+  if (!user || !isAdmin) return null;
 
   if (!showForm) {
     return (
-      <Button
-        onClick={() => setShowForm(true)}
-        className="w-full minecraft-border h-12 font-display"
-      >
+      <Button onClick={() => setShowForm(true)} className="w-full minecraft-border h-12 font-display">
         <Newspaper className="h-5 w-5 mr-2" />
         POST NEWS
       </Button>
@@ -140,66 +205,77 @@ export function CreateNews({ onNewsCreated }: CreateNewsProps) {
         </Button>
       </div>
 
-      <Input
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="News title..."
-        className="bg-secondary/50 border-2 border-border input-glow h-12 font-display"
-        maxLength={100}
-        required
-      />
+      <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="News title..." className="bg-secondary/50 border-2 border-border input-glow h-12 font-display" maxLength={100} required />
 
-      <Textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder="What's the news?"
-        className="min-h-32 bg-secondary/50 border-2 border-border resize-none input-glow"
-        maxLength={2000}
-        required
-      />
+      <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="What's the news?" className="min-h-32 bg-secondary/50 border-2 border-border resize-none input-glow" maxLength={2000} required />
 
       <div className="space-y-2">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleImageUpload}
-          className="hidden"
-          id="news-image-upload"
-        />
-        
-        {!imagePreview && (
-          <Button
-            type="button"
-            variant="outline"
-            className="minecraft-border"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-          >
-            {uploading ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Upload className="h-4 w-4 mr-2" />
-            )}
-            Add Cover Image
-          </Button>
+        <input ref={fileInputRef} type="file" multiple accept="image/*" onChange={handleImageUpload} className="hidden" />
+        <input ref={videoInputRef} type="file" accept="video/*,.mp4,.webm,.mov,.avi,.mkv,.ogg,.3gp" onChange={handleVideoUpload} className="hidden" />
+
+        {imagePreviews.length === 0 && !videoPreview && !videoUrl && (
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" className="minecraft-border" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+              {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+              Add Images ({imageUrls.length}/{MAX_IMAGES})
+            </Button>
+            <Button type="button" variant="outline" className="minecraft-border" onClick={() => videoInputRef.current?.click()} disabled={uploading}>
+              <Video className="h-4 w-4 mr-2" />
+              Add Video
+            </Button>
+          </div>
         )}
 
-        {(imagePreview || imageUrl) && (
+        {imagePreviews.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground mc-text">{imagePreviews.length}/{MAX_IMAGES} images</span>
+              <div className="flex gap-2">
+                {imageUrls.length < MAX_IMAGES && (
+                  <Button type="button" variant="ghost" size="sm" className="h-6 text-xs" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                    + Add more
+                  </Button>
+                )}
+                <Button type="button" variant="ghost" size="sm" className="h-6 text-xs text-muted-foreground hover:text-destructive" onClick={clearAllImages}>
+                  Clear all
+                </Button>
+              </div>
+            </div>
+            <div className={`grid gap-2 ${imagePreviews.length === 1 ? 'grid-cols-1' : imagePreviews.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+              {imagePreviews.map((preview, index) => (
+                <div key={index} className="relative rounded-lg overflow-hidden border-2 border-border aspect-square">
+                  <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
+                  <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => clearImage(index)}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+            {uploading && (
+              <div className="flex items-center gap-2 p-2">
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                <span className="text-sm text-primary">Uploading...</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {(videoPreview || videoUrl) && (
           <div className="relative rounded-lg overflow-hidden border-2 border-border">
-            <img src={imagePreview || imageUrl} alt="Preview" className="w-full max-h-48 object-cover" />
-            <Button
-              type="button"
-              variant="destructive"
-              size="icon"
-              className="absolute top-2 right-2"
-              onClick={clearImage}
-            >
+            <video src={videoPreview || videoUrl} className="w-full max-h-48 object-contain bg-black" controls playsInline preload="metadata" />
+            <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2" onClick={clearVideo}>
               <X className="h-4 w-4" />
             </Button>
             {uploading && (
-              <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <div className="absolute inset-0 bg-background/90 flex flex-col items-center justify-center gap-3 p-4">
+                <Upload className="h-8 w-8 text-primary animate-pulse" />
+                <div className="w-full max-w-xs">
+                  <Progress value={uploadProgress} className="h-3" />
+                  <p className="text-center mt-2 mc-text text-sm text-primary">{uploadProgress}% uploaded</p>
+                  <Button type="button" variant="destructive" size="sm" onClick={cancelUpload} className="mt-3 w-full">
+                    <X className="h-4 w-4 mr-2" /> Cancel Upload
+                  </Button>
+                </div>
               </div>
             )}
           </div>
@@ -209,14 +285,7 @@ export function CreateNews({ onNewsCreated }: CreateNewsProps) {
       <div className="flex items-center justify-between">
         <span className="text-xs text-muted-foreground">{content.length}/2000</span>
         <Button type="submit" disabled={loading || !title.trim() || !content.trim() || uploading} className="minecraft-border">
-          {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <>
-              <Send className="h-4 w-4 mr-2" />
-              Publish
-            </>
-          )}
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="h-4 w-4 mr-2" />Publish</>}
         </Button>
       </div>
     </form>
