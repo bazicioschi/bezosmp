@@ -13,7 +13,7 @@ interface NewsItem {
   category: string;
 }
 
-const CATEGORIES = ['All', 'World', 'Technology', 'Sports', 'MC Bedrock', 'MC Java'];
+const CATEGORIES = ['All', 'Hot News', 'World', 'Technology', 'Sports', 'MC Bedrock', 'MC Java'];
 
 export function InternationalNews() {
   const [news, setNews] = useState<NewsItem[]>([]);
