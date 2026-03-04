@@ -61,11 +61,13 @@ Deno.serve(async (req) => {
     const feeds = [
       { url: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', source: 'NY Times', category: 'World' },
       { url: 'https://feeds.bbci.co.uk/news/world/rss.xml', source: 'BBC News', category: 'World' },
-      { url: 'https://rss.cnn.com/rss/edition_world.rss', source: 'CNN', category: 'World' },
       { url: 'https://feeds.bbci.co.uk/news/technology/rss.xml', source: 'BBC Tech', category: 'Technology' },
       { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml', source: 'NY Times Tech', category: 'Technology' },
       { url: 'https://feeds.bbci.co.uk/sport/rss.xml', source: 'BBC Sport', category: 'Sports' },
-      // Minecraft Bedrock & Java news from Minecraft.net
+      // Hot News - trending/breaking
+      { url: 'https://feeds.bbci.co.uk/news/rss.xml', source: 'BBC Top', category: 'Hot News' },
+      { url: 'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml', source: 'NY Times Top', category: 'Hot News' },
+      // Minecraft news from Minecraft.net
       { url: 'https://www.minecraft.net/en-us/feeds/community-content/rss', source: 'Minecraft.net', category: 'MC Bedrock' },
       { url: 'https://www.minecraft.net/en-us/feeds/community-content/rss', source: 'Minecraft.net', category: 'MC Java' },
     ];
