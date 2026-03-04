@@ -65,6 +65,10 @@ Deno.serve(async (req) => {
       { url: 'https://feeds.bbci.co.uk/news/technology/rss.xml', source: 'BBC Tech', category: 'Technology' },
       { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml', source: 'NY Times Tech', category: 'Technology' },
       { url: 'https://feeds.bbci.co.uk/sport/rss.xml', source: 'BBC Sport', category: 'Sports' },
+      // Minecraft Bedrock & Java news
+      { url: 'https://www.minecraft.net/en-us/feeds/community-content/rss', source: 'Minecraft.net', category: 'MC Bedrock' },
+      { url: 'https://blog.modrinth.com/feed', source: 'Modrinth', category: 'MC Java' },
+      { url: 'https://www.curseforge.com/minecraft/mc-mods?filter-game-version=2020709689%3A7498&filter-sort=4', source: 'CurseForge', category: 'MC Java' },
     ];
 
     const results = await Promise.all(
