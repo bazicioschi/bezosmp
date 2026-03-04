@@ -64,7 +64,7 @@ export default function Index() {
                 }`}
               >
                 <span className="mc-text text-lg tracking-wider">
-                  {activeTab === 'news' ? '> NEWS <' : 'NEWS'}
+                  {activeTab === 'news' ? '> BZ NEWS <' : 'BZ NEWS'}
                 </span>
                 {activeTab === 'news' && (
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary redstone-glow" />
@@ -79,7 +79,7 @@ export default function Index() {
                 }`}
               >
                 <span className="mc-text text-sm tracking-wider">
-                  {activeTab === 'international' ? '> WORLD <' : '🌍 WORLD'}
+                  {activeTab === 'international' ? '> WORLD NEWS <' : 'WORLD NEWS'}
                 </span>
                 {activeTab === 'international' && (
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary redstone-glow" />

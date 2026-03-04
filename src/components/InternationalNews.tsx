@@ -13,7 +13,7 @@ interface NewsItem {
   category: string;
 }
 
-const CATEGORIES = ['All', 'World', 'Technology', 'Sports'];
+const CATEGORIES = ['All', 'World', 'Technology', 'Sports', 'MC Bedrock', 'MC Java'];
 
 export function InternationalNews() {
   const [news, setNews] = useState<NewsItem[]>([]);
@@ -73,22 +73,32 @@ export function InternationalNews() {
 
   return (
     <div className="p-4 space-y-4">
-      {/* Category Filter */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
-        {CATEGORIES.map(cat => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className={`mc-text text-xs px-3 py-1.5 rounded transition-all whitespace-nowrap ${
-              activeCategory === cat
-                ? 'bg-primary text-primary-foreground'
-                : 'mc-slot hover:bg-secondary/50 text-muted-foreground'
-            }`}
-          >
-            {cat.toUpperCase()}
-          </button>
-        ))}
+      {/* Category Filter - Settings toggle style */}
+      <div className="minecraft-card minecraft-border p-3 space-y-2">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="mc-slot h-7 w-7 flex items-center justify-center">
+            <Filter className="h-3.5 w-3.5 text-primary" />
+          </div>
+          <span className="mc-text text-sm text-foreground">FILTER</span>
+        </div>
+        <div className="grid grid-cols-3 gap-1.5">
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`flex items-center justify-between px-2.5 py-2 rounded border transition-all ${
+                activeCategory === cat
+                  ? 'border-primary/50 bg-primary/10'
+                  : 'border-border bg-secondary/20 hover:bg-secondary/40'
+              }`}
+            >
+              <span className={`mc-text text-[10px] ${activeCategory === cat ? 'text-primary' : 'text-muted-foreground'}`}>
+                {cat.toUpperCase()}
+              </span>
+              <div className={`h-2 w-2 rounded-full ${activeCategory === cat ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* News List */}
