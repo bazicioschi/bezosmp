@@ -95,9 +95,12 @@ Deno.serve(async (req) => {
       // Hot News - trending/breaking
       { url: 'https://feeds.bbci.co.uk/news/rss.xml', source: 'BBC Top', category: 'Hot News' },
       { url: 'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml', source: 'NY Times Top', category: 'Hot News' },
-      // HotNews.ro
-      { url: 'https://www.hotnews.ro/rss', source: 'HotNews.ro', category: 'HotNews.ro' },
-      { url: 'https://www.hotnews.ro/rss/internacional', source: 'HotNews.ro', category: 'HotNews.ro' },
+      // Romanian news
+      { url: 'https://www.hotnews.ro/rss', source: 'HotNews.ro', category: 'Romania' },
+      { url: 'https://www.hotnews.ro/rss/internacional', source: 'HotNews.ro', category: 'Romania' },
+      { url: 'https://www.digi24.ro/rss', source: 'Digi24', category: 'Romania' },
+      { url: 'https://www.mediafax.ro/rss/', source: 'Mediafax', category: 'Romania' },
+      { url: 'https://www.g4media.ro/feed', source: 'G4Media', category: 'Romania' },
     ];
 
     const results = await Promise.all(
