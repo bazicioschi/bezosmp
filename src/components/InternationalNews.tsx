@@ -20,6 +20,7 @@ export function InternationalNews() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -43,7 +44,13 @@ export function InternationalNews() {
     fetchNews();
   }, []);
 
-  const filtered = activeCategory === 'All' ? news : news.filter(n => n.category === activeCategory);
+  const filtered = news
+    .filter(n => activeCategory === 'All' || n.category === activeCategory)
+    .filter(n => {
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase();
+      return n.title.toLowerCase().includes(q) || n.description.toLowerCase().includes(q) || n.source.toLowerCase().includes(q);
+    });
 
   if (loading) {
     return (
