@@ -13,7 +13,7 @@ interface NewsItem {
   category: string;
 }
 
-const CATEGORIES = ['All', 'Hot News', 'World', 'Technology', 'Sports', 'HotNews.ro'];
+const CATEGORIES = ['All', 'Hot News', 'World', 'Technology', 'Sports', 'Romania'];
 
 export function InternationalNews() {
   const [news, setNews] = useState<NewsItem[]>([]);
