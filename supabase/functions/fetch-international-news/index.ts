@@ -79,16 +79,6 @@ async function fetchRSSFeed(url: string, source: string, category: string): Prom
   }
 }
 
-function getMinecraftFallbackNews(): NewsItem[] {
-  return [
-    { title: 'Minecraft Java Edition - Latest Snapshot Available', description: 'Check out the latest snapshot with new features, bug fixes, and experimental gameplay changes for Java Edition.', url: 'https://www.minecraft.net/en-us/article/minecraft-snapshot', source: 'Minecraft.net', publishedAt: new Date().toISOString(), imageUrl: null, category: 'MC Java' },
-    { title: 'Minecraft Bedrock Edition - Latest Update', description: 'New update brings exciting features, improvements, and bug fixes to Bedrock Edition across all platforms.', url: 'https://www.minecraft.net/en-us/article/minecraft-bedrock-update', source: 'Minecraft.net', publishedAt: new Date().toISOString(), imageUrl: null, category: 'MC Bedrock' },
-    { title: 'Minecraft Java - New Mob Behaviors & Biomes', description: 'Discover the latest additions to Java Edition including new mob AI behaviors and expanded biome generation.', url: 'https://www.minecraft.net/en-us', source: 'Minecraft.net', publishedAt: new Date().toISOString(), imageUrl: null, category: 'MC Java' },
-    { title: 'Minecraft Bedrock - Cross-Platform Updates', description: 'Latest cross-platform improvements ensure smoother gameplay across console, mobile, and Windows editions.', url: 'https://www.minecraft.net/en-us', source: 'Minecraft.net', publishedAt: new Date().toISOString(), imageUrl: null, category: 'MC Bedrock' },
-    { title: 'Minecraft Java - Redstone & Technical Changes', description: 'Technical players will love the new redstone mechanics and command block improvements in the latest Java update.', url: 'https://www.minecraft.net/en-us', source: 'Minecraft.net', publishedAt: new Date().toISOString(), imageUrl: null, category: 'MC Java' },
-    { title: 'Minecraft Bedrock - Marketplace Highlights', description: 'Explore the newest community creations available on the Minecraft Marketplace for Bedrock Edition.', url: 'https://www.minecraft.net/en-us/marketplace', source: 'Minecraft.net', publishedAt: new Date().toISOString(), imageUrl: null, category: 'MC Bedrock' },
-  ];
-}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -105,24 +95,16 @@ Deno.serve(async (req) => {
       // Hot News - trending/breaking
       { url: 'https://feeds.bbci.co.uk/news/rss.xml', source: 'BBC Top', category: 'Hot News' },
       { url: 'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml', source: 'NY Times Top', category: 'Hot News' },
-      // Minecraft news
-      { url: 'https://www.minecraft.net/en-us/feeds/community-content/rss', source: 'Minecraft.net', category: 'MC Bedrock' },
-      { url: 'https://www.minecraft.net/en-us/feeds/community-content/rss', source: 'Minecraft.net', category: 'MC Java' },
-      { url: 'https://blog.minecraft.net/en-us/feed/', source: 'Minecraft Blog', category: 'MC Java' },
-      { url: 'https://feedback.minecraft.net/hc/en-us/community/posts.rss', source: 'Minecraft Feedback', category: 'MC Bedrock' },
+      // HotNews.ro
+      { url: 'https://www.hotnews.ro/rss', source: 'HotNews.ro', category: 'HotNews.ro' },
+      { url: 'https://www.hotnews.ro/rss/internacional', source: 'HotNews.ro', category: 'HotNews.ro' },
     ];
 
     const results = await Promise.all(
       feeds.map(f => fetchRSSFeed(f.url, f.source, f.category))
     );
 
-    let allNews = results.flat();
-    
-    // Add fallback Minecraft news if none were fetched
-    const hasMCNews = allNews.some(n => n.category === 'MC Java' || n.category === 'MC Bedrock');
-    if (!hasMCNews) {
-      allNews = [...allNews, ...getMinecraftFallbackNews()];
-    }
+    const allNews = results.flat();
     
     allNews.sort((a, b) => {
       const dateA = new Date(a.publishedAt).getTime() || 0;
