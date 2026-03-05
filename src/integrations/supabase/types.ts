@@ -191,6 +191,7 @@ export type Database = {
           created_at: string
           id: string
           image_url: string | null
+          likes_count_override: number | null
           updated_at: string
           user_id: string
           video_url: string | null
@@ -200,6 +201,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          likes_count_override?: number | null
           updated_at?: string
           user_id: string
           video_url?: string | null
@@ -209,6 +211,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          likes_count_override?: number | null
           updated_at?: string
           user_id?: string
           video_url?: string | null
