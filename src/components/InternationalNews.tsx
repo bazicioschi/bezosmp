@@ -80,6 +80,25 @@ export function InternationalNews() {
 
   return (
     <div className="p-4 space-y-4">
+      {/* Search Bar */}
+      <div className="minecraft-card minecraft-border p-3">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search news by keyword..."
+            className="w-full bg-secondary/30 border border-border rounded pl-8 pr-8 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 mc-text"
+          />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2">
+              <X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Category Filter - Settings toggle style */}
       <div className="minecraft-card minecraft-border p-3 space-y-2">
         <div className="flex items-center gap-2 mb-2">
