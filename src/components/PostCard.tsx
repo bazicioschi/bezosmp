@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Trash2, Share, Bookmark, Pencil, X, Check } from 'lucide-react';
+import { Heart, MessageCircle, Trash2, Share, Bookmark, Pencil, X, Check, Edit3 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -23,6 +23,8 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useToast } from '@/hooks/use-toast';
 import { ImageLightbox } from './ImageLightbox';
 import { useAdmin } from '@/hooks/useAdmin';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 interface PostCardProps {
   id: string;
@@ -34,6 +36,7 @@ interface PostCardProps {
   username: string;
   avatarUrl?: string | null;
   likesCount: number;
+  likesCountOverride?: number | null;
   commentsCount: number;
   isLiked: boolean;
   onLikeToggle: () => void;
@@ -51,6 +54,7 @@ export function PostCard({
   username,
   avatarUrl,
   likesCount,
+  likesCountOverride,
   commentsCount,
   isLiked,
   onLikeToggle,
@@ -71,6 +75,22 @@ export function PostCard({
   const [isSaving, setIsSaving] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [showLikesDialog, setShowLikesDialog] = useState(false);
+  const [likesOverrideInput, setLikesOverrideInput] = useState('');
+  const { isAdmin } = useAdmin();
+
+  const displayedLikes = likesCountOverride != null ? likesCountOverride : likesCount;
+
+  const handleEditLikes = async () => {
+    const value = likesOverrideInput.trim();
+    const newOverride = value === '' ? null : parseInt(value, 10);
+    if (value !== '' && (isNaN(newOverride!) || newOverride! < 0)) return;
+
+    await supabase.from('posts').update({ likes_count_override: newOverride } as any).eq('id', id);
+    setShowLikesDialog(false);
+    onLikeToggle();
+    toast({ title: 'Likes updated', description: newOverride == null ? 'Reset to actual count' : `Set to ${newOverride}` });
+  };
 
   // Function to render content with clickable mentions
   const renderContentWithMentions = (text: string) => {
@@ -374,8 +394,24 @@ export function PostCard({
               <Heart 
                 className={`h-4 w-4 transition-all ${isLiked ? 'fill-primary mc-heart' : ''} ${isAnimating ? 'animate-like-pop' : ''}`} 
               />
-              <span className={`mc-text text-sm ${isAnimating ? 'animate-like-pop' : ''}`}>{likesCount || ''}</span>
+              <span className={`mc-text text-sm ${isAnimating ? 'animate-like-pop' : ''}`}>{displayedLikes || ''}</span>
             </Button>
+
+            {isAdmin && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLikesOverrideInput(likesCountOverride != null ? String(likesCountOverride) : '');
+                  setShowLikesDialog(true);
+                }}
+                className="h-7 w-7 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                title="Edit like count"
+              >
+                <Edit3 className="h-3 w-3" />
+              </Button>
+            )}
 
             {/* Quick Reactions */}
             <div className="hidden sm:flex items-center gap-0.5 ml-1">
@@ -424,6 +460,30 @@ export function PostCard({
           )}
         </div>
       </div>
+
+      {/* Admin likes edit dialog */}
+      <Dialog open={showLikesDialog} onOpenChange={setShowLikesDialog}>
+        <DialogContent className="minecraft-card minecraft-border sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="mc-text text-xl">Edit Like Count</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">Set a custom like count or leave empty to show the real count ({likesCount}).</p>
+            <Input
+              type="number"
+              min="0"
+              value={likesOverrideInput}
+              onChange={(e) => setLikesOverrideInput(e.target.value)}
+              placeholder={`Actual: ${likesCount}`}
+              className="bg-secondary/50 border-2 border-border"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowLikesDialog(false)} className="mc-btn">Cancel</Button>
+            <Button onClick={handleEditLikes} className="mc-btn-primary">Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </article>
   );
 }
