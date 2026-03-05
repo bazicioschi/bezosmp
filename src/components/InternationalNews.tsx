@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Globe, ExternalLink, Clock, Filter } from 'lucide-react';
+import { Globe, ExternalLink, Clock, Filter, Search, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface NewsItem {
