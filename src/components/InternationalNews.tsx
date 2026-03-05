@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Globe, ExternalLink, Clock, Filter } from 'lucide-react';
+import { Globe, ExternalLink, Clock, Filter, Search, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface NewsItem {
@@ -20,6 +20,7 @@ export function InternationalNews() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -43,7 +44,13 @@ export function InternationalNews() {
     fetchNews();
   }, []);
 
-  const filtered = activeCategory === 'All' ? news : news.filter(n => n.category === activeCategory);
+  const filtered = news
+    .filter(n => activeCategory === 'All' || n.category === activeCategory)
+    .filter(n => {
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase();
+      return n.title.toLowerCase().includes(q) || n.description.toLowerCase().includes(q) || n.source.toLowerCase().includes(q);
+    });
 
   if (loading) {
     return (
@@ -73,6 +80,25 @@ export function InternationalNews() {
 
   return (
     <div className="p-4 space-y-4">
+      {/* Search Bar */}
+      <div className="minecraft-card minecraft-border p-3">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search news by keyword..."
+            className="w-full bg-secondary/30 border border-border rounded pl-8 pr-8 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 mc-text"
+          />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2">
+              <X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Category Filter - Settings toggle style */}
       <div className="minecraft-card minecraft-border p-3 space-y-2">
         <div className="flex items-center gap-2 mb-2">
