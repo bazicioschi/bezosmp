@@ -97,10 +97,14 @@ Deno.serve(async (req) => {
       { url: 'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml', source: 'NY Times Top', category: 'Hot News' },
       // Romanian news
       { url: 'https://www.hotnews.ro/rss', source: 'HotNews.ro', category: 'Romania' },
-      { url: 'https://www.hotnews.ro/rss/internacional', source: 'HotNews.ro', category: 'Romania' },
       { url: 'https://www.digi24.ro/rss', source: 'Digi24', category: 'Romania' },
       { url: 'https://www.mediafax.ro/rss/', source: 'Mediafax', category: 'Romania' },
       { url: 'https://www.g4media.ro/feed', source: 'G4Media', category: 'Romania' },
+      { url: 'https://www.protv.ro/rss', source: 'ProTV', category: 'Romania' },
+      { url: 'https://adevarul.ro/rss/', source: 'Adevărul', category: 'Romania' },
+      { url: 'https://www.libertatea.ro/feed', source: 'Libertatea', category: 'Romania' },
+      { url: 'https://stirileprotv.ro/rss', source: 'Știrile ProTV', category: 'Romania' },
+      { url: 'https://www.zf.ro/rss', source: 'Ziarul Financiar', category: 'Romania' },
     ];
 
     const results = await Promise.all(
