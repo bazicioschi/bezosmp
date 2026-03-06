@@ -13,8 +13,9 @@ import { ServerStats } from '@/components/ServerStats';
 import { DailyChallenge } from '@/components/DailyChallenge';
 import { EnchantmentWidget } from '@/components/EnchantmentWidget';
 import { Footer } from '@/components/Footer';
+import { Weather } from '@/components/Weather';
 
-type TabType = 'feed' | 'news' | 'international';
+type TabType = 'feed' | 'news' | 'international' | 'weather';
 
 export default function Index() {
   const [activeTab, setActiveTab] = useState<TabType>('feed');
