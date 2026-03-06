@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Sparkles, Sword, Pickaxe, Shield, BookOpen, Gem } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Sparkles, Sword, Pickaxe, Shield, BookOpen, Gem, Citrus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -13,7 +13,7 @@ import { useTheme, ThemeMode } from '@/hooks/useTheme';
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
   const { playClick, isEnabled, setEnabled } = useSoundEffects();
-  const { theme, setTheme, isDark, isLight, isBaziMazi, isCato, isPizza, isGhast, isBuzzy } = useTheme();
+  const { theme, setTheme, isDark, isLight, isBaziMazi, isCato, isPizza, isGhast, isBuzzy, isOrange } = useTheme();
   const [soundsEnabled, setSoundsEnabled] = useState(true);
 
   useEffect(() => {
@@ -40,6 +40,7 @@ export function SettingsButton() {
     if (isPizza) return <Pizza className="h-4 w-4 text-primary" />;
     if (isGhast) return <Ghost className="h-4 w-4 text-primary" />;
     if (isBuzzy) return <Flower className="h-4 w-4 text-primary" />;
+    if (isOrange) return <Citrus className="h-4 w-4 text-primary" />;
     return <Sun className="h-4 w-4 text-primary" />;
   };
 
@@ -50,6 +51,7 @@ export function SettingsButton() {
     if (isPizza) return 'Pizza (Green)';
     if (isGhast) return 'Ghast (Minecraft)';
     if (isBuzzy) return 'Buzzy (Bee)';
+    if (isOrange) return 'Orange (Citrus)';
     return 'Red & White (Clean)';
   };
 
@@ -337,6 +339,18 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
                 <Flower className="h-4 w-4" />
                 <span className="text-xs mc-text">Buzzy</span>
               </button>
+              
+              <button
+                onClick={() => handleThemeChange('orange')}
+                className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
+                  isOrange 
+                    ? 'border-primary bg-primary/10' 
+                    : 'border-border hover:border-primary/50'
+                }`}
+              >
+                <Citrus className="h-4 w-4" />
+                <span className="text-xs mc-text">Orange</span>
+              </button>
             </div>
           </div>
 
@@ -345,7 +359,7 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
 
           <div className="pt-2 border-t border-border">
             <p className="text-xs text-muted-foreground text-center mc-text">
-              bezoSMP 1.23
+              bezoSMP 1.24
             </p>
           </div>
         </div>

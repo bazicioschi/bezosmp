@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export type ThemeMode = 'dark' | 'light' | 'bazimazi' | 'cato' | 'pizza' | 'ghast' | 'buzzy';
+export type ThemeMode = 'dark' | 'light' | 'bazimazi' | 'cato' | 'pizza' | 'ghast' | 'buzzy' | 'orange';
 
 export function useTheme() {
   const [theme, setThemeState] = useState<ThemeMode>(() => {
@@ -15,7 +15,7 @@ export function useTheme() {
     const root = document.documentElement;
     
     // Remove all theme classes first
-    root.classList.remove('light-mode', 'dark-mode', 'bazimazi-mode', 'cato-mode', 'pizza-mode', 'ghast-mode', 'buzzy-mode');
+    root.classList.remove('light-mode', 'dark-mode', 'bazimazi-mode', 'cato-mode', 'pizza-mode', 'ghast-mode', 'buzzy-mode', 'orange-mode');
     
     if (newTheme === 'light') {
       // Red and White theme - clean, modern, non-Minecraft
@@ -167,6 +167,31 @@ export function useTheme() {
       root.style.setProperty('--sidebar-accent', '45 50% 90%');
       root.style.setProperty('--sidebar-accent-foreground', '0 0% 15%');
       root.style.setProperty('--sidebar-border', '45 40% 80%');
+    } else if (newTheme === 'orange') {
+      // Orange theme - warm peach/orange with green accents
+      root.classList.add('orange-mode');
+      root.style.setProperty('--background', '25 80% 95%');
+      root.style.setProperty('--foreground', '0 0% 10%');
+      root.style.setProperty('--card', '25 60% 98%');
+      root.style.setProperty('--card-foreground', '0 0% 10%');
+      root.style.setProperty('--popover', '25 60% 98%');
+      root.style.setProperty('--popover-foreground', '0 0% 10%');
+      root.style.setProperty('--primary', '30 90% 55%');
+      root.style.setProperty('--primary-foreground', '0 0% 100%');
+      root.style.setProperty('--secondary', '25 50% 90%');
+      root.style.setProperty('--secondary-foreground', '0 0% 15%');
+      root.style.setProperty('--muted', '25 30% 88%');
+      root.style.setProperty('--muted-foreground', '0 0% 40%');
+      root.style.setProperty('--accent', '30 80% 85%');
+      root.style.setProperty('--accent-foreground', '0 0% 10%');
+      root.style.setProperty('--border', '25 40% 78%');
+      root.style.setProperty('--input', '25 50% 92%');
+      root.style.setProperty('--ring', '30 90% 55%');
+      root.style.setProperty('--sidebar-background', '25 60% 96%');
+      root.style.setProperty('--sidebar-foreground', '0 0% 15%');
+      root.style.setProperty('--sidebar-accent', '25 50% 90%');
+      root.style.setProperty('--sidebar-accent-foreground', '0 0% 15%');
+      root.style.setProperty('--sidebar-border', '25 40% 80%');
     } else {
       // Red and Black theme - Minecraft style
       root.classList.add('dark-mode');
@@ -201,7 +226,7 @@ export function useTheme() {
   }, []);
 
   const toggleTheme = useCallback(() => {
-    const themes: ThemeMode[] = ['dark', 'light', 'bazimazi', 'cato', 'pizza', 'ghast', 'buzzy'];
+    const themes: ThemeMode[] = ['dark', 'light', 'bazimazi', 'cato', 'pizza', 'ghast', 'buzzy', 'orange'];
     const currentIndex = themes.indexOf(theme);
     const nextIndex = (currentIndex + 1) % themes.length;
     setTheme(themes[nextIndex]);
@@ -218,5 +243,6 @@ export function useTheme() {
     isPizza: theme === 'pizza',
     isGhast: theme === 'ghast',
     isBuzzy: theme === 'buzzy',
+    isOrange: theme === 'orange',
   };
 }
