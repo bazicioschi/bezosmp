@@ -81,6 +81,16 @@ export function PostCard({
 
   const displayedLikes = likesCountOverride != null ? likesCountOverride : likesCount;
 
+  const formatCount = (count: number) => {
+    if (count >= 1000000) {
+      return (count / 1000000).toFixed(1).replace(/\.0$/, '') + 'mil';
+    }
+    if (count >= 1000) {
+      return (count / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    }
+    return count.toString();
+  };
+
   const handleEditLikes = async () => {
     const value = likesOverrideInput.trim();
     const newOverride = value === '' ? null : parseInt(value, 10);
