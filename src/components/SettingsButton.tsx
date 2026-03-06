@@ -40,6 +40,7 @@ export function SettingsButton() {
     if (isPizza) return <Pizza className="h-4 w-4 text-primary" />;
     if (isGhast) return <Ghost className="h-4 w-4 text-primary" />;
     if (isBuzzy) return <Flower className="h-4 w-4 text-primary" />;
+    if (isOrange) return <Citrus className="h-4 w-4 text-primary" />;
     return <Sun className="h-4 w-4 text-primary" />;
   };
 
@@ -50,6 +51,7 @@ export function SettingsButton() {
     if (isPizza) return 'Pizza (Green)';
     if (isGhast) return 'Ghast (Minecraft)';
     if (isBuzzy) return 'Buzzy (Bee)';
+    if (isOrange) return 'Orange (Citrus)';
     return 'Red & White (Clean)';
   };
 
