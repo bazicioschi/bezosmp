@@ -86,6 +86,21 @@ export default function Index() {
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary redstone-glow" />
                 )}
               </button>
+              <button
+                onClick={() => setActiveTab('weather')}
+                className={`flex-1 py-3 text-center transition-colors relative ${
+                  activeTab === 'weather' 
+                    ? 'bg-secondary/50' 
+                    : 'hover:bg-secondary/30'
+                }`}
+              >
+                <span className="mc-text text-sm tracking-wider">
+                  {activeTab === 'weather' ? '> WEATHER <' : 'WEATHER'}
+                </span>
+                {activeTab === 'weather' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary redstone-glow" />
+                )}
+              </button>
             </div>
           </div>
 
@@ -99,6 +114,8 @@ export default function Index() {
             {activeTab === 'feed' && <Feed />}
             {activeTab === 'news' && <NewsFeed />}
             {activeTab === 'international' && <InternationalNews />}
+            {activeTab === 'weather' && <Weather />}
+          </div>
           </div>
         </div>
 

@@ -226,7 +226,7 @@ export function useTheme() {
   }, []);
 
   const toggleTheme = useCallback(() => {
-    const themes: ThemeMode[] = ['dark', 'light', 'bazimazi', 'cato', 'pizza', 'ghast', 'buzzy'];
+    const themes: ThemeMode[] = ['dark', 'light', 'bazimazi', 'cato', 'pizza', 'ghast', 'buzzy', 'orange'];
     const currentIndex = themes.indexOf(theme);
     const nextIndex = (currentIndex + 1) % themes.length;
     setTheme(themes[nextIndex]);
@@ -243,5 +243,6 @@ export function useTheme() {
     isPizza: theme === 'pizza',
     isGhast: theme === 'ghast',
     isBuzzy: theme === 'buzzy',
+    isOrange: theme === 'orange',
   };
 }
