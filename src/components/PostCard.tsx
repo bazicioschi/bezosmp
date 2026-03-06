@@ -404,7 +404,7 @@ export function PostCard({
               <Heart 
                 className={`h-4 w-4 transition-all ${isLiked ? 'fill-primary mc-heart' : ''} ${isAnimating ? 'animate-like-pop' : ''}`} 
               />
-              <span className={`mc-text text-sm ${isAnimating ? 'animate-like-pop' : ''}`}>{displayedLikes || ''}</span>
+              <span className={`mc-text text-sm ${isAnimating ? 'animate-like-pop' : ''}`}>{displayedLikes ? formatCount(displayedLikes) : ''}</span>
             </Button>
 
             {isAdmin && (
