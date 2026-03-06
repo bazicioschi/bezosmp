@@ -339,6 +339,18 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
                 <Flower className="h-4 w-4" />
                 <span className="text-xs mc-text">Buzzy</span>
               </button>
+              
+              <button
+                onClick={() => handleThemeChange('orange')}
+                className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
+                  isOrange 
+                    ? 'border-primary bg-primary/10' 
+                    : 'border-border hover:border-primary/50'
+                }`}
+              >
+                <Citrus className="h-4 w-4" />
+                <span className="text-xs mc-text">Orange</span>
+              </button>
             </div>
           </div>
 

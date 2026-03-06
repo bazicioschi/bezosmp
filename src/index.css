@@ -1700,4 +1700,233 @@
   .buzzy-mode [role="switch"] > span {
     background-color: hsl(0 0% 5%) !important;
   }
+
+  /* ============================== */
+  /* ORANGE THEME - Citrus Themed */
+  /* ============================== */
+
+  /* Orange body background */
+  .orange-mode body,
+  body.orange-mode,
+  html.orange-mode body {
+    background-image: url('/src/assets/orange-pattern.jpg');
+    background-repeat: repeat;
+    background-size: 300px;
+    background-attachment: fixed;
+  }
+
+  html.orange-mode {
+    background-image: url('/src/assets/orange-pattern.jpg');
+    background-repeat: repeat;
+    background-size: 300px;
+    background-attachment: fixed;
+  }
+
+  .orange-mode {
+    color: hsl(0 0% 15%);
+  }
+
+  .orange-mode h1, .orange-mode h2, .orange-mode h3, .orange-mode h4, .orange-mode h5, .orange-mode h6 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .orange-mode .text-foreground {
+    color: hsl(0 0% 10%);
+  }
+
+  .orange-mode .text-muted-foreground {
+    color: hsl(0 0% 40%);
+  }
+
+  .orange-mode .mc-text {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    text-shadow: none;
+    color: hsl(30 90% 40%);
+  }
+
+  .orange-mode .glow-text {
+    text-shadow: none;
+    color: hsl(30 90% 35%);
+  }
+
+  /* Orange cards */
+  .orange-mode .minecraft-card {
+    @apply border border-border rounded-2xl;
+    background: hsl(25 60% 98%);
+    box-shadow: 0 4px 12px hsl(30 50% 50% / 0.1);
+  }
+
+  .orange-mode .minecraft-card-hover:hover {
+    box-shadow: 0 6px 20px hsl(30 90% 55% / 0.2);
+    transform: translateY(-2px);
+  }
+
+  .orange-mode .mc-btn {
+    @apply rounded-full font-semibold;
+    font-family: 'Inter', sans-serif;
+    background: hsl(25 60% 98%);
+    border: 2px solid hsl(25 50% 75%);
+    box-shadow: none;
+    transition: all 0.2s ease;
+    color: hsl(0 0% 10%);
+  }
+
+  .orange-mode .mc-btn:hover {
+    background: hsl(25 70% 92%);
+    border-color: hsl(30 90% 55%);
+  }
+
+  .orange-mode .mc-btn-primary {
+    @apply rounded-full font-semibold;
+    font-family: 'Inter', sans-serif;
+    background: hsl(30 90% 55%);
+    border: none;
+    box-shadow: 0 4px 8px hsl(30 90% 40% / 0.3);
+    color: white;
+  }
+
+  .orange-mode .mc-btn-primary:hover {
+    background: hsl(30 90% 48%);
+    box-shadow: 0 6px 12px hsl(30 90% 40% / 0.4);
+  }
+
+  .orange-mode .mc-slot {
+    background: hsl(25 60% 98%);
+    border: 2px solid hsl(25 50% 78%);
+    border-radius: 1rem;
+    box-shadow: none;
+  }
+
+  .orange-mode .mc-slot-active {
+    border-color: hsl(30 90% 55%);
+    background: hsl(30 80% 92%);
+  }
+
+  .orange-mode .pixel-border {
+    border: 2px solid hsl(25 50% 75%);
+    border-radius: 1rem;
+  }
+
+  /* No textures in Orange */
+  .orange-mode .mc-dirt,
+  .orange-mode .mc-stone,
+  .orange-mode .mc-bedrock {
+    background: transparent;
+  }
+
+  .orange-mode .mc-heart {
+    color: hsl(30 90% 55%);
+    filter: none;
+  }
+
+  .orange-mode .mc-chat-sent {
+    background: hsl(30 90% 55%);
+    border: none;
+    border-radius: 1.25rem 1.25rem 0.25rem 1.25rem;
+    box-shadow: 0 2px 6px hsl(30 90% 40% / 0.25);
+    color: white;
+  }
+
+  .orange-mode .mc-chat-received {
+    background: hsl(25 60% 98%);
+    border: none;
+    border-radius: 1.25rem 1.25rem 1.25rem 0.25rem;
+    box-shadow: 0 2px 6px hsl(0 0% 0% / 0.08);
+    color: hsl(0 0% 10%);
+  }
+
+  .orange-mode .redstone-glow {
+    animation: none;
+    box-shadow: 0 2px 8px hsl(30 90% 55% / 0.3);
+    background: hsl(30 90% 55%);
+  }
+
+  /* Orange header, sidebars, and content areas */
+  .orange-mode header,
+  .orange-mode .bg-card {
+    background: hsl(25 60% 98%) !important;
+  }
+
+  .orange-mode .bg-background {
+    background: transparent !important;
+  }
+
+  .orange-mode .bg-secondary {
+    background: hsl(25 60% 98%) !important;
+  }
+
+  .orange-mode .bg-secondary\/50,
+  .orange-mode .bg-secondary\/30,
+  .orange-mode .bg-secondary\/20 {
+    background: hsl(25 60% 98%) !important;
+  }
+
+  /* Orange post content areas */
+  .orange-mode article {
+    background: hsl(25 60% 98%);
+  }
+
+  .orange-mode .border-b-2 {
+    border-color: hsl(25 40% 80%) !important;
+  }
+
+  .orange-mode .border-x-2 {
+    border-color: hsl(25 40% 80%) !important;
+    background: hsl(25 60% 98%);
+  }
+
+  /* Orange input fields */
+  .orange-mode input,
+  .orange-mode textarea {
+    background: hsl(25 60% 98%) !important;
+    border-color: hsl(25 50% 75%);
+    color: hsl(0 0% 10%);
+  }
+
+  .orange-mode input::placeholder,
+  .orange-mode textarea::placeholder {
+    color: hsl(25 30% 55%);
+  }
+
+  /* Orange popover and dialog */
+  .orange-mode [data-radix-popper-content-wrapper] > div,
+  .orange-mode [role="dialog"] {
+    background: hsl(25 60% 98%) !important;
+  }
+
+  /* Orange comment sections */
+  .orange-mode .border-t-2 {
+    background: hsl(25 60% 98%);
+  }
+
+  /* Orange notification */
+  .orange-mode .minecraft-notification {
+    color: hsl(0 0% 100%);
+  }
+
+  .orange-mode [data-radix-popper-content-wrapper] p,
+  .orange-mode [data-radix-popper-content-wrapper] span,
+  .orange-mode [data-radix-popper-content-wrapper] h3 {
+    color: hsl(0 0% 10%);
+  }
+
+  .orange-mode [data-radix-popper-content-wrapper] .text-primary {
+    color: hsl(30 90% 40%);
+  }
+
+  /* Orange theme - orange bar with white dot */
+  .orange-mode [role="switch"] {
+    background-color: hsl(25 30% 70%) !important;
+  }
+  
+  .orange-mode [role="switch"][data-state="checked"] {
+    background-color: hsl(30 90% 55%) !important;
+  }
+  
+  .orange-mode [role="switch"] > span {
+    background-color: hsl(0 0% 100%) !important;
+  }
 }
