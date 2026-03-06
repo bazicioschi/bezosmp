@@ -116,7 +116,6 @@ export default function Index() {
             {activeTab === 'international' && <InternationalNews />}
             {activeTab === 'weather' && <Weather />}
           </div>
-          </div>
         </div>
 
         {/* Right Sidebar */}
