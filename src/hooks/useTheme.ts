@@ -15,7 +15,7 @@ export function useTheme() {
     const root = document.documentElement;
     
     // Remove all theme classes first
-    root.classList.remove('light-mode', 'dark-mode', 'bazimazi-mode', 'cato-mode', 'pizza-mode', 'ghast-mode', 'buzzy-mode');
+    root.classList.remove('light-mode', 'dark-mode', 'bazimazi-mode', 'cato-mode', 'pizza-mode', 'ghast-mode', 'buzzy-mode', 'orange-mode');
     
     if (newTheme === 'light') {
       // Red and White theme - clean, modern, non-Minecraft
