@@ -13,7 +13,7 @@ import { useTheme, ThemeMode } from '@/hooks/useTheme';
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
   const { playClick, isEnabled, setEnabled } = useSoundEffects();
-  const { theme, setTheme, isDark, isLight, isBaziMazi, isCato, isPizza, isGhast, isBuzzy } = useTheme();
+  const { theme, setTheme, isDark, isLight, isBaziMazi, isCato, isPizza, isGhast, isBuzzy, isOrange } = useTheme();
   const [soundsEnabled, setSoundsEnabled] = useState(true);
 
   useEffect(() => {
