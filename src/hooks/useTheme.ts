@@ -215,6 +215,60 @@ export function useTheme() {
       root.style.setProperty('--sidebar-accent', '25 50% 90%');
       root.style.setProperty('--sidebar-accent-foreground', '0 0% 15%');
       root.style.setProperty('--sidebar-border', '25 40% 80%');
+    } else if (newTheme === 'custom') {
+      root.classList.add('dark-mode');
+      const stored = localStorage.getItem('mc-custom-theme');
+      const custom: CustomThemeColors = stored ? JSON.parse(stored) : { primary: '#e63946', mode: 'dark' };
+      const hsl = hexToHsl(custom.primary);
+      const p = `${hsl.h} ${hsl.s}% ${hsl.l}%`;
+      const isDarkBase = custom.mode === 'dark';
+      
+      if (isDarkBase) {
+        root.classList.remove('light-mode');
+        root.classList.add('dark-mode');
+        root.style.setProperty('--background', '0 0% 5%');
+        root.style.setProperty('--foreground', '0 0% 93%');
+        root.style.setProperty('--card', '0 0% 8%');
+        root.style.setProperty('--card-foreground', '0 0% 93%');
+        root.style.setProperty('--popover', '0 0% 10%');
+        root.style.setProperty('--popover-foreground', '0 0% 93%');
+        root.style.setProperty('--secondary', '0 0% 12%');
+        root.style.setProperty('--secondary-foreground', '0 0% 93%');
+        root.style.setProperty('--muted', '0 0% 18%');
+        root.style.setProperty('--muted-foreground', '0 0% 55%');
+        root.style.setProperty('--border', '0 0% 20%');
+        root.style.setProperty('--input', '0 0% 15%');
+        root.style.setProperty('--sidebar-background', '0 0% 5%');
+        root.style.setProperty('--sidebar-foreground', '0 0% 90%');
+        root.style.setProperty('--sidebar-accent', '0 0% 12%');
+        root.style.setProperty('--sidebar-accent-foreground', '0 0% 93%');
+        root.style.setProperty('--sidebar-border', '0 0% 20%');
+      } else {
+        root.classList.remove('dark-mode');
+        root.classList.add('light-mode');
+        root.style.setProperty('--background', '0 0% 98%');
+        root.style.setProperty('--foreground', `${hsl.h} ${Math.min(hsl.s, 72)}% 40%`);
+        root.style.setProperty('--card', '0 0% 100%');
+        root.style.setProperty('--card-foreground', `${hsl.h} ${Math.min(hsl.s, 72)}% 40%`);
+        root.style.setProperty('--popover', '0 0% 100%');
+        root.style.setProperty('--popover-foreground', `${hsl.h} ${Math.min(hsl.s, 72)}% 40%`);
+        root.style.setProperty('--secondary', '0 0% 96%');
+        root.style.setProperty('--secondary-foreground', `${hsl.h} ${Math.min(hsl.s, 72)}% 40%`);
+        root.style.setProperty('--muted', '0 0% 92%');
+        root.style.setProperty('--muted-foreground', `${hsl.h} 30% 50%`);
+        root.style.setProperty('--border', `${hsl.h} 20% 88%`);
+        root.style.setProperty('--input', '0 0% 95%');
+        root.style.setProperty('--sidebar-background', '0 0% 100%');
+        root.style.setProperty('--sidebar-foreground', `${hsl.h} ${Math.min(hsl.s, 72)}% 40%`);
+        root.style.setProperty('--sidebar-accent', `${hsl.h} ${Math.min(hsl.s, 72)}% 96%`);
+        root.style.setProperty('--sidebar-accent-foreground', `${hsl.h} ${Math.min(hsl.s, 72)}% 40%`);
+        root.style.setProperty('--sidebar-border', `${hsl.h} 20% 90%`);
+      }
+      root.style.setProperty('--primary', p);
+      root.style.setProperty('--primary-foreground', isDarkBase ? '0 0% 100%' : '0 0% 100%');
+      root.style.setProperty('--accent', `${hsl.h} ${Math.min(hsl.s, 72)}% ${isDarkBase ? '45' : '95'}%`);
+      root.style.setProperty('--accent-foreground', isDarkBase ? '0 0% 100%' : `${hsl.h} ${Math.min(hsl.s, 72)}% 40%`);
+      root.style.setProperty('--ring', p);
     } else {
       // Red and Black theme - Minecraft style
       root.classList.add('dark-mode');
@@ -242,6 +296,14 @@ export function useTheme() {
       root.style.setProperty('--sidebar-border', '0 0% 20%');
     }
   }, []);
+
+  const setCustomColor = useCallback((primary: string, mode: 'light' | 'dark') => {
+    const custom: CustomThemeColors = { primary, mode };
+    localStorage.setItem('mc-custom-theme', JSON.stringify(custom));
+    setThemeState('custom');
+    localStorage.setItem('mc-theme', 'custom');
+    setTheme('custom');
+  }, [setTheme]);
 
   // Apply theme on mount
   useEffect(() => {
