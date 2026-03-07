@@ -1,6 +1,29 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export type ThemeMode = 'dark' | 'light' | 'bazimazi' | 'cato' | 'pizza' | 'ghast' | 'buzzy' | 'orange';
+export type ThemeMode = 'dark' | 'light' | 'bazimazi' | 'cato' | 'pizza' | 'ghast' | 'buzzy' | 'orange' | 'custom';
+
+export interface CustomThemeColors {
+  primary: string; // hex color
+  mode: 'light' | 'dark'; // base mode
+}
+
+function hexToHsl(hex: string): { h: number; s: number; l: number } {
+  hex = hex.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16) / 255;
+  const g = parseInt(hex.substring(2, 4), 16) / 255;
+  const b = parseInt(hex.substring(4, 6), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0;
+  const l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+    else if (max === g) h = ((b - r) / d + 2) / 6;
+    else h = ((r - g) / d + 4) / 6;
+  }
+  return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+}
 
 export function useTheme() {
   const [theme, setThemeState] = useState<ThemeMode>(() => {
@@ -192,6 +215,60 @@ export function useTheme() {
       root.style.setProperty('--sidebar-accent', '25 50% 90%');
       root.style.setProperty('--sidebar-accent-foreground', '0 0% 15%');
       root.style.setProperty('--sidebar-border', '25 40% 80%');
+    } else if (newTheme === 'custom') {
+      root.classList.add('dark-mode');
+      const stored = localStorage.getItem('mc-custom-theme');
+      const custom: CustomThemeColors = stored ? JSON.parse(stored) : { primary: '#e63946', mode: 'dark' };
+      const hsl = hexToHsl(custom.primary);
+      const p = `${hsl.h} ${hsl.s}% ${hsl.l}%`;
+      const isDarkBase = custom.mode === 'dark';
+      
+      if (isDarkBase) {
+        root.classList.remove('light-mode');
+        root.classList.add('dark-mode');
+        root.style.setProperty('--background', '0 0% 5%');
+        root.style.setProperty('--foreground', '0 0% 93%');
+        root.style.setProperty('--card', '0 0% 8%');
+        root.style.setProperty('--card-foreground', '0 0% 93%');
+        root.style.setProperty('--popover', '0 0% 10%');
+        root.style.setProperty('--popover-foreground', '0 0% 93%');
+        root.style.setProperty('--secondary', '0 0% 12%');
+        root.style.setProperty('--secondary-foreground', '0 0% 93%');
+        root.style.setProperty('--muted', '0 0% 18%');
+        root.style.setProperty('--muted-foreground', '0 0% 55%');
+        root.style.setProperty('--border', '0 0% 20%');
+        root.style.setProperty('--input', '0 0% 15%');
+        root.style.setProperty('--sidebar-background', '0 0% 5%');
+        root.style.setProperty('--sidebar-foreground', '0 0% 90%');
+        root.style.setProperty('--sidebar-accent', '0 0% 12%');
+        root.style.setProperty('--sidebar-accent-foreground', '0 0% 93%');
+        root.style.setProperty('--sidebar-border', '0 0% 20%');
+      } else {
+        root.classList.remove('dark-mode');
+        root.classList.add('light-mode');
+        root.style.setProperty('--background', '0 0% 98%');
+        root.style.setProperty('--foreground', `${hsl.h} ${Math.min(hsl.s, 72)}% 40%`);
+        root.style.setProperty('--card', '0 0% 100%');
+        root.style.setProperty('--card-foreground', `${hsl.h} ${Math.min(hsl.s, 72)}% 40%`);
+        root.style.setProperty('--popover', '0 0% 100%');
+        root.style.setProperty('--popover-foreground', `${hsl.h} ${Math.min(hsl.s, 72)}% 40%`);
+        root.style.setProperty('--secondary', '0 0% 96%');
+        root.style.setProperty('--secondary-foreground', `${hsl.h} ${Math.min(hsl.s, 72)}% 40%`);
+        root.style.setProperty('--muted', '0 0% 92%');
+        root.style.setProperty('--muted-foreground', `${hsl.h} 30% 50%`);
+        root.style.setProperty('--border', `${hsl.h} 20% 88%`);
+        root.style.setProperty('--input', '0 0% 95%');
+        root.style.setProperty('--sidebar-background', '0 0% 100%');
+        root.style.setProperty('--sidebar-foreground', `${hsl.h} ${Math.min(hsl.s, 72)}% 40%`);
+        root.style.setProperty('--sidebar-accent', `${hsl.h} ${Math.min(hsl.s, 72)}% 96%`);
+        root.style.setProperty('--sidebar-accent-foreground', `${hsl.h} ${Math.min(hsl.s, 72)}% 40%`);
+        root.style.setProperty('--sidebar-border', `${hsl.h} 20% 90%`);
+      }
+      root.style.setProperty('--primary', p);
+      root.style.setProperty('--primary-foreground', isDarkBase ? '0 0% 100%' : '0 0% 100%');
+      root.style.setProperty('--accent', `${hsl.h} ${Math.min(hsl.s, 72)}% ${isDarkBase ? '45' : '95'}%`);
+      root.style.setProperty('--accent-foreground', isDarkBase ? '0 0% 100%' : `${hsl.h} ${Math.min(hsl.s, 72)}% 40%`);
+      root.style.setProperty('--ring', p);
     } else {
       // Red and Black theme - Minecraft style
       root.classList.add('dark-mode');
@@ -220,13 +297,21 @@ export function useTheme() {
     }
   }, []);
 
+  const setCustomColor = useCallback((primary: string, mode: 'light' | 'dark') => {
+    const custom: CustomThemeColors = { primary, mode };
+    localStorage.setItem('mc-custom-theme', JSON.stringify(custom));
+    setThemeState('custom');
+    localStorage.setItem('mc-theme', 'custom');
+    setTheme('custom');
+  }, [setTheme]);
+
   // Apply theme on mount
   useEffect(() => {
     setTheme(theme);
   }, []);
 
   const toggleTheme = useCallback(() => {
-    const themes: ThemeMode[] = ['dark', 'light', 'bazimazi', 'cato', 'pizza', 'ghast', 'buzzy', 'orange'];
+    const themes: ThemeMode[] = ['dark', 'light', 'bazimazi', 'cato', 'pizza', 'ghast', 'buzzy', 'orange', 'custom'];
     const currentIndex = themes.indexOf(theme);
     const nextIndex = (currentIndex + 1) % themes.length;
     setTheme(themes[nextIndex]);
@@ -235,6 +320,7 @@ export function useTheme() {
   return {
     theme,
     setTheme,
+    setCustomColor,
     toggleTheme,
     isDark: theme === 'dark',
     isLight: theme === 'light',
@@ -244,5 +330,6 @@ export function useTheme() {
     isGhast: theme === 'ghast',
     isBuzzy: theme === 'buzzy',
     isOrange: theme === 'orange',
+    isCustom: theme === 'custom',
   };
 }

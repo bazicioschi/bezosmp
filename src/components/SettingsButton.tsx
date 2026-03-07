@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Sparkles, Sword, Pickaxe, Shield, BookOpen, Gem, Citrus } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Sparkles, Sword, Pickaxe, Shield, BookOpen, Gem, Citrus, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -13,8 +13,17 @@ import { useTheme, ThemeMode } from '@/hooks/useTheme';
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
   const { playClick, isEnabled, setEnabled } = useSoundEffects();
-  const { theme, setTheme, isDark, isLight, isBaziMazi, isCato, isPizza, isGhast, isBuzzy, isOrange } = useTheme();
+  const { theme, setTheme, setCustomColor, isDark, isLight, isBaziMazi, isCato, isPizza, isGhast, isBuzzy, isOrange, isCustom } = useTheme();
   const [soundsEnabled, setSoundsEnabled] = useState(true);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [customColor, setCustomColorState] = useState(() => {
+    const stored = localStorage.getItem('mc-custom-theme');
+    return stored ? JSON.parse(stored).primary : '#e63946';
+  });
+  const [customMode, setCustomMode] = useState<'light' | 'dark'>(() => {
+    const stored = localStorage.getItem('mc-custom-theme');
+    return stored ? JSON.parse(stored).mode : 'dark';
+  });
 
   useEffect(() => {
     setSoundsEnabled(isEnabled());
@@ -34,6 +43,7 @@ export function SettingsButton() {
   };
 
   const getThemeIcon = () => {
+    if (isCustom) return <Palette className="h-4 w-4 text-primary" />;
     if (isDark) return <Moon className="h-4 w-4 text-primary" />;
     if (isBaziMazi) return <Bug className="h-4 w-4 text-primary" />;
     if (isCato) return <Rat className="h-4 w-4 text-primary" />;
@@ -45,6 +55,7 @@ export function SettingsButton() {
   };
 
   const getThemeName = () => {
+    if (isCustom) return 'Custom Color';
     if (isDark) return 'Red & Black (Minecraft)';
     if (isBaziMazi) return 'BaziMazi (Ladybug)';
     if (isCato) return 'Cato (Rat)';
@@ -351,7 +362,91 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
                 <Citrus className="h-4 w-4" />
                 <span className="text-xs mc-text">Orange</span>
               </button>
+
+              <button
+                onClick={() => setShowColorPicker(!showColorPicker)}
+                className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
+                  isCustom 
+                    ? 'border-primary bg-primary/10' 
+                    : 'border-border hover:border-primary/50'
+                }`}
+              >
+                <Palette className="h-4 w-4" />
+                <span className="text-xs mc-text">Custom</span>
+              </button>
             </div>
+
+            {/* Custom Color Picker */}
+            {showColorPicker && (
+              <div className="ml-12 space-y-3 p-3 rounded-lg border border-border bg-secondary/30">
+                <div className="flex items-center gap-2">
+                  <Palette className="h-4 w-4 text-primary" />
+                  <p className="mc-text text-xs text-foreground">PICK YOUR COLOR</p>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={customColor}
+                    onChange={(e) => setCustomColorState(e.target.value)}
+                    className="w-10 h-10 rounded cursor-pointer border-2 border-border bg-transparent"
+                  />
+                  <div className="flex-1 space-y-1">
+                    <p className="text-xs text-muted-foreground">{customColor.toUpperCase()}</p>
+                    <div 
+                      className="h-3 rounded-full" 
+                      style={{ backgroundColor: customColor }}
+                    />
+                  </div>
+                </div>
+
+                {/* Quick preset colors */}
+                <div className="flex gap-1.5 flex-wrap">
+                  {['#e63946', '#457b9d', '#2a9d8f', '#e9c46a', '#f4a261', '#264653', '#6a0572', '#ff006e', '#00b4d8', '#80b918'].map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => setCustomColorState(color)}
+                      className={`w-6 h-6 rounded-full border-2 transition-all hover:scale-110 ${
+                        customColor === color ? 'border-foreground scale-110' : 'border-transparent'
+                      }`}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+
+                {/* Base mode toggle */}
+                <div className="flex items-center gap-2">
+                  <p className="text-xs text-muted-foreground mc-text">BASE:</p>
+                  <button
+                    onClick={() => setCustomMode('dark')}
+                    className={`px-2 py-1 text-xs mc-text rounded border transition-all ${
+                      customMode === 'dark' ? 'border-primary bg-primary/20 text-foreground' : 'border-border text-muted-foreground'
+                    }`}
+                  >
+                    Dark
+                  </button>
+                  <button
+                    onClick={() => setCustomMode('light')}
+                    className={`px-2 py-1 text-xs mc-text rounded border transition-all ${
+                      customMode === 'light' ? 'border-primary bg-primary/20 text-foreground' : 'border-border text-muted-foreground'
+                    }`}
+                  >
+                    Light
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => {
+                    playClick();
+                    setCustomColor(customColor, customMode);
+                    setShowColorPicker(false);
+                  }}
+                  className="w-full py-1.5 rounded border border-primary bg-primary/20 hover:bg-primary/30 text-foreground mc-text text-xs transition-all"
+                >
+                  APPLY COLOR
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Enchantment Table Mini */}
