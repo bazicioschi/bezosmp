@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Sparkles, Sword, Pickaxe, Shield, BookOpen, Gem, Citrus } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Sparkles, Sword, Pickaxe, Shield, BookOpen, Gem, Citrus, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -13,8 +13,17 @@ import { useTheme, ThemeMode } from '@/hooks/useTheme';
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
   const { playClick, isEnabled, setEnabled } = useSoundEffects();
-  const { theme, setTheme, isDark, isLight, isBaziMazi, isCato, isPizza, isGhast, isBuzzy, isOrange } = useTheme();
+  const { theme, setTheme, setCustomColor, isDark, isLight, isBaziMazi, isCato, isPizza, isGhast, isBuzzy, isOrange, isCustom } = useTheme();
   const [soundsEnabled, setSoundsEnabled] = useState(true);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [customColor, setCustomColorState] = useState(() => {
+    const stored = localStorage.getItem('mc-custom-theme');
+    return stored ? JSON.parse(stored).primary : '#e63946';
+  });
+  const [customMode, setCustomMode] = useState<'light' | 'dark'>(() => {
+    const stored = localStorage.getItem('mc-custom-theme');
+    return stored ? JSON.parse(stored).mode : 'dark';
+  });
 
   useEffect(() => {
     setSoundsEnabled(isEnabled());
