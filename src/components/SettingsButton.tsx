@@ -43,6 +43,7 @@ export function SettingsButton() {
   };
 
   const getThemeIcon = () => {
+    if (isCustom) return <Palette className="h-4 w-4 text-primary" />;
     if (isDark) return <Moon className="h-4 w-4 text-primary" />;
     if (isBaziMazi) return <Bug className="h-4 w-4 text-primary" />;
     if (isCato) return <Rat className="h-4 w-4 text-primary" />;
@@ -54,6 +55,7 @@ export function SettingsButton() {
   };
 
   const getThemeName = () => {
+    if (isCustom) return 'Custom Color';
     if (isDark) return 'Red & Black (Minecraft)';
     if (isBaziMazi) return 'BaziMazi (Ladybug)';
     if (isCato) return 'Cato (Rat)';
