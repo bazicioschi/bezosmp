@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { User, Loader2, MessageCircle, ArrowLeft, UserPlus } from 'lucide-react';
+import { User, Loader2, MessageCircle, ArrowLeft, UserPlus, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/lib/auth';
@@ -16,6 +16,7 @@ interface Profile {
   username: string;
   avatar_url: string | null;
   bio: string | null;
+  banner_url: string | null;
   created_at: string;
 }
 
@@ -34,33 +35,40 @@ export default function UserProfile() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { isFollowing, toggleFollow } = useFollows();
+  const { isFollowing, toggleFollow, getFollowerCount, getFollowingCount } = useFollows();
   const { playPop } = useSoundEffects();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
 
   useEffect(() => {
     if (userId) {
       fetchProfileAndPosts();
+      fetchCounts();
     }
   }, [userId, user]);
 
+  const fetchCounts = async () => {
+    if (!userId) return;
+    const [followers, following] = await Promise.all([
+      supabase.from('follows').select('id', { count: 'exact' }).eq('following_id', userId),
+      supabase.from('follows').select('id', { count: 'exact' }).eq('follower_id', userId),
+    ]);
+    setFollowerCount(followers.count || 0);
+    setFollowingCount(following.count || 0);
+  };
+
   const fetchProfileAndPosts = async () => {
     if (!userId) return;
-
-    // Fetch profile
     const { data: profileData } = await supabase
       .from('profiles')
       .select('*')
       .eq('user_id', userId)
       .maybeSingle();
+    if (profileData) setProfile(profileData as Profile);
 
-    if (profileData) {
-      setProfile(profileData);
-    }
-
-    // Fetch posts with likes and comments count
     const { data: postsData } = await supabase
       .from('posts')
       .select('*')
@@ -77,7 +85,6 @@ export default function UserProfile() {
               ? supabase.from('likes').select('id').eq('post_id', post.id).eq('user_id', user.id).maybeSingle()
               : Promise.resolve({ data: null }),
           ]);
-
           return {
             ...post,
             likes_count: likesRes.count || 0,
@@ -88,14 +95,15 @@ export default function UserProfile() {
       );
       setPosts(postsWithCounts);
     }
-
     setLoading(false);
   };
 
   const handleStartChat = () => {
-    if (userId && user) {
-      navigate(`/messages/${userId}`);
-    }
+    if (userId && user) navigate(`/messages/${userId}`);
+  };
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   };
 
   if (loading) {
@@ -126,89 +134,112 @@ export default function UserProfile() {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Back Button */}
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="mb-6 font-display"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          BACK
-        </Button>
+      <main className="max-w-2xl mx-auto">
+        {/* Back button */}
+        <div className="sticky top-14 z-30 bg-background/80 backdrop-blur-sm border-b border-border px-4 py-2 flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="h-8 w-8">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h2 className="font-display text-lg font-bold text-foreground leading-tight">{profile.username}</h2>
+            <p className="text-xs text-muted-foreground">{posts.length} posts</p>
+          </div>
+        </div>
 
-        {/* Profile Header */}
-        <div className="minecraft-card minecraft-border minecraft-grass-top glow-border p-6 md:p-8 mb-8">
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-            <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-primary/30 minecraft-border">
+        {/* Banner */}
+        <div className="relative h-48 bg-secondary/50">
+          {profile.banner_url ? (
+            <img src={profile.banner_url} alt="Banner" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-r from-primary/20 to-primary/5" />
+          )}
+
+          {/* Avatar */}
+          <div className="absolute -bottom-16 left-4">
+            <Avatar className="h-32 w-32 border-4 border-background">
               <AvatarImage src={profile.avatar_url || undefined} />
               <AvatarFallback className="bg-primary/20 text-primary font-display text-3xl">
                 {profile.username?.slice(0, 2).toUpperCase() || <User className="h-12 w-12" />}
               </AvatarFallback>
             </Avatar>
-
-            <div className="flex-1 text-center md:text-left">
-              <h1 className="font-display text-3xl font-bold text-foreground glow-text mb-2">
-                {profile.username}
-              </h1>
-              
-              {profile.bio && (
-                <p className="text-muted-foreground mb-4 max-w-md">{profile.bio}</p>
-              )}
-
-              <div className="flex flex-wrap gap-4 justify-center md:justify-start mb-4">
-                <div className="minecraft-card px-4 py-2 text-center">
-                  <span className="font-display text-2xl font-bold text-primary">{posts.length}</span>
-                  <span className="block text-xs text-muted-foreground uppercase tracking-wider">Posts</span>
-                </div>
-              </div>
-
-              {!isOwnProfile && user && (
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => { playPop(); toggleFollow(userId!); }}
-                    variant={isFollowing(userId!) ? "outline" : "default"}
-                    className="minecraft-border font-display"
-                  >
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    {isFollowing(userId!) ? 'FOLLOWING' : 'FOLLOW'}
-                  </Button>
-                  <Button
-                    onClick={handleStartChat}
-                    variant="outline"
-                    className="minecraft-border font-display"
-                  >
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    MESSAGE
-                  </Button>
-                </div>
-              )}
-
-              {isOwnProfile && (
-                <Button
-                  onClick={() => navigate('/profile')}
-                  variant="outline"
-                  className="minecraft-border font-display"
-                >
-                  EDIT PROFILE
-                </Button>
-              )}
-            </div>
           </div>
         </div>
 
-        {/* User's Posts */}
-        <h2 className="font-display text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          Posts by {profile.username}
-        </h2>
+        {/* Action buttons */}
+        <div className="flex justify-end gap-2 px-4 pt-3">
+          {!isOwnProfile && user && (
+            <>
+              <Button
+                onClick={handleStartChat}
+                variant="outline"
+                size="sm"
+                className="rounded-full border-border"
+              >
+                <MessageCircle className="h-4 w-4" />
+              </Button>
+              <Button
+                onClick={() => { playPop(); toggleFollow(userId!); fetchCounts(); }}
+                variant={isFollowing(userId!) ? "outline" : "default"}
+                size="sm"
+                className="rounded-full font-display"
+              >
+                {isFollowing(userId!) ? 'Following' : 'Follow'}
+              </Button>
+            </>
+          )}
+          {isOwnProfile && (
+            <Button
+              onClick={() => navigate('/profile')}
+              variant="outline"
+              size="sm"
+              className="rounded-full font-display"
+            >
+              Edit profile
+            </Button>
+          )}
+        </div>
 
+        {/* Profile info */}
+        <div className="px-4 pt-12 pb-4">
+          <h1 className="font-display text-xl font-bold text-foreground">{profile.username}</h1>
+          
+          {profile.bio && (
+            <p className="text-sm text-foreground mt-2">{profile.bio}</p>
+          )}
+
+          <div className="flex items-center gap-1 mt-2 text-muted-foreground">
+            <CalendarDays className="h-4 w-4" />
+            <span className="text-sm">Joined {formatDate(profile.created_at)}</span>
+          </div>
+
+          <div className="flex gap-4 mt-3">
+            <span className="text-sm">
+              <span className="font-bold text-foreground">{followingCount}</span>{' '}
+              <span className="text-muted-foreground">Following</span>
+            </span>
+            <span className="text-sm">
+              <span className="font-bold text-foreground">{followerCount}</span>{' '}
+              <span className="text-muted-foreground">Followers</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="border-b border-border">
+          <div className="flex">
+            <button className="flex-1 py-3 text-center border-b-2 border-primary">
+              <span className="mc-text text-sm text-foreground">Posts</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Posts */}
         {posts.length === 0 ? (
-          <div className="minecraft-card minecraft-border p-8 text-center">
-            <p className="text-muted-foreground font-display">No posts yet</p>
+          <div className="p-8 text-center">
+            <p className="text-muted-foreground">No posts yet</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div>
             {posts.map((post) => (
               <PostCard
                 key={post.id}

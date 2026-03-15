@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Save, Loader2, Camera } from 'lucide-react';
+import { User, Save, Loader2, Camera, ImagePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -15,6 +15,7 @@ interface Profile {
   username: string;
   avatar_url: string | null;
   bio: string | null;
+  banner_url: string | null;
 }
 
 export default function Profile() {
@@ -25,91 +26,85 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/login');
       return;
     }
-
-    if (user) {
-      fetchProfile();
-    }
+    if (user) fetchProfile();
   }, [user, authLoading, navigate]);
 
   const fetchProfile = async () => {
     if (!user) return;
-
     const { data, error } = await supabase
       .from('profiles')
-      .select('username, avatar_url, bio')
+      .select('username, avatar_url, bio, banner_url')
       .eq('user_id', user.id)
       .maybeSingle();
-
-    if (!error && data) {
-      setProfile(data);
-    }
+    if (!error && data) setProfile(data);
     setLoading(false);
   };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
-
-    // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast({
-        title: 'Invalid file type',
-        description: 'Please upload an image file',
-        variant: 'destructive',
-      });
+      toast({ title: 'Invalid file type', description: 'Please upload an image file', variant: 'destructive' });
       return;
     }
-
-    // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
-      toast({
-        title: 'File too large',
-        description: 'Please upload an image smaller than 2MB',
-        variant: 'destructive',
-      });
+      toast({ title: 'File too large', description: 'Please upload an image smaller than 2MB', variant: 'destructive' });
       return;
     }
-
     setUploading(true);
-    
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, file, { upsert: true });
-
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file, { upsert: true });
       if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
-
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
       setProfile(p => p ? { ...p, avatar_url: publicUrl } : null);
-      
       toast({ title: 'Avatar uploaded!' });
     } catch (error: any) {
-      toast({
-        title: 'Upload failed',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
     } finally {
       setUploading(false);
     }
   };
 
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (!file.type.startsWith('image/')) {
+      toast({ title: 'Invalid file type', description: 'Please upload an image file', variant: 'destructive' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'File too large', description: 'Please upload an image smaller than 5MB', variant: 'destructive' });
+      return;
+    }
+    setUploadingBanner(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/banner_${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
+      setProfile(p => p ? { ...p, banner_url: publicUrl } : null);
+      toast({ title: 'Banner uploaded!' });
+    } catch (error: any) {
+      toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
+    } finally {
+      setUploadingBanner(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!user || !profile) return;
-
     setSaving(true);
     const { error } = await supabase
       .from('profiles')
@@ -117,15 +112,11 @@ export default function Profile() {
         username: profile.username,
         avatar_url: profile.avatar_url,
         bio: profile.bio,
+        banner_url: profile.banner_url,
       })
       .eq('user_id', user.id);
-
     if (error) {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
       toast({ title: 'Profile updated!' });
     }
@@ -146,20 +137,43 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <div className="minecraft-card glow-border p-6 md:p-8">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="relative group">
-              <Avatar className="h-20 w-20 border-2 border-primary/30">
+      <main className="max-w-2xl mx-auto">
+        {/* Banner */}
+        <div className="relative h-48 bg-secondary/50 group">
+          {profile?.banner_url ? (
+            <img src={profile.banner_url} alt="Banner" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-r from-primary/20 to-primary/5" />
+          )}
+          <button
+            onClick={() => bannerInputRef.current?.click()}
+            disabled={uploadingBanner}
+            className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+          >
+            {uploadingBanner ? (
+              <Loader2 className="h-8 w-8 animate-spin text-white" />
+            ) : (
+              <div className="flex flex-col items-center gap-1 text-white">
+                <ImagePlus className="h-8 w-8" />
+                <span className="mc-text text-xs">CHANGE BANNER</span>
+              </div>
+            )}
+          </button>
+          <input ref={bannerInputRef} type="file" accept="image/*" onChange={handleBannerUpload} className="hidden" />
+
+          {/* Avatar overlapping banner */}
+          <div className="absolute -bottom-16 left-4">
+            <div className="relative group/avatar">
+              <Avatar className="h-32 w-32 border-4 border-background">
                 <AvatarImage src={profile?.avatar_url || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary font-display text-2xl">
-                  {profile?.username?.slice(0, 2).toUpperCase() || <User className="h-8 w-8" />}
+                <AvatarFallback className="bg-primary/20 text-primary font-display text-3xl">
+                  {profile?.username?.slice(0, 2).toUpperCase() || <User className="h-12 w-12" />}
                 </AvatarFallback>
               </Avatar>
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer"
               >
                 {uploading ? (
                   <Loader2 className="h-6 w-6 animate-spin text-white" />
@@ -167,40 +181,37 @@ export default function Profile() {
                   <Camera className="h-6 w-6 text-white" />
                 )}
               </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarUpload}
-                className="hidden"
-              />
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
             </div>
-            <div>
-              <h1 className="font-display text-2xl font-bold text-foreground">Your Profile</h1>
-              <p className="text-muted-foreground">{user?.email}</p>
-              <p className="text-xs text-muted-foreground mt-1">Hover avatar to change</p>
-            </div>
+          </div>
+        </div>
+
+        {/* Profile info */}
+        <div className="pt-20 px-4 pb-8">
+          <div className="mb-6">
+            <h1 className="font-display text-2xl font-bold text-foreground">{profile?.username}</h1>
+            <p className="text-muted-foreground text-sm">{user?.email}</p>
           </div>
 
           <div className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username" className="mc-text text-sm">USERNAME</Label>
               <Input
                 id="username"
                 value={profile?.username || ''}
                 onChange={(e) => setProfile(p => p ? { ...p, username: e.target.value } : null)}
-                className="bg-secondary/50 border-border input-glow"
+                className="bg-secondary/50 border-border"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
+              <Label htmlFor="bio" className="mc-text text-sm">BIO</Label>
               <Textarea
                 id="bio"
                 value={profile?.bio || ''}
                 onChange={(e) => setProfile(p => p ? { ...p, bio: e.target.value } : null)}
                 placeholder="Tell us about yourself..."
-                className="bg-secondary/50 border-border resize-none input-glow"
+                className="bg-secondary/50 border-border resize-none"
                 rows={4}
               />
             </div>

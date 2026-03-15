@@ -5,6 +5,7 @@ import { Gamepad2, LogOut, User, Home, HelpCircle, Shield } from 'lucide-react';
 import { NotificationBell } from './NotificationBell';
 import { SettingsButton } from './SettingsButton';
 import { ChatPopup } from './ChatPopup';
+import { ConnectButton } from './ConnectButton';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useAdmin } from '@/hooks/useAdmin';
 
@@ -15,7 +16,6 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b-2 border-border bg-card/95 backdrop-blur-sm">
-      {/* Redstone accent line */}
       <div className="h-1 bg-primary redstone-glow" />
       
       <div className="max-w-[1300px] mx-auto flex h-12 items-center justify-between px-4">
@@ -35,6 +35,8 @@ export function Header() {
               <span className="hidden md:inline mc-text text-sm">HOME</span>
             </Link>
           </Button>
+          
+          <ConnectButton />
           
           {user ? (
             <>
