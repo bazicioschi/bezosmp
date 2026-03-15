@@ -3,7 +3,6 @@ import { Header } from '@/components/Header';
 import { ServerInfo } from '@/components/ServerInfo';
 import { Feed } from '@/components/Feed';
 import { NewsFeed } from '@/components/NewsFeed';
-import { InternationalNews } from '@/components/InternationalNews';
 import { MinecraftParticles } from '@/components/MinecraftParticles';
 import { TrendingSection } from '@/components/TrendingSection';
 import { WelcomeBanner } from '@/components/WelcomeBanner';
@@ -15,7 +14,7 @@ import { EnchantmentWidget } from '@/components/EnchantmentWidget';
 import { Footer } from '@/components/Footer';
 import { Weather } from '@/components/Weather';
 
-type TabType = 'feed' | 'news' | 'international' | 'weather';
+type TabType = 'feed' | 'news' | 'weather';
 
 export default function Index() {
   const [activeTab, setActiveTab] = useState<TabType>('feed');
@@ -65,24 +64,9 @@ export default function Index() {
                 }`}
               >
                 <span className="mc-text text-lg tracking-wider">
-                  {activeTab === 'news' ? '> BZ NEWS <' : 'BZ NEWS'}
+                  {activeTab === 'news' ? '> NEWS <' : 'NEWS'}
                 </span>
                 {activeTab === 'news' && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary redstone-glow" />
-                )}
-              </button>
-              <button
-                onClick={() => setActiveTab('international')}
-                className={`flex-1 py-3 text-center transition-colors relative ${
-                  activeTab === 'international' 
-                    ? 'bg-secondary/50' 
-                    : 'hover:bg-secondary/30'
-                }`}
-              >
-                <span className="mc-text text-sm tracking-wider">
-                  {activeTab === 'international' ? '> WORLD NEWS <' : 'WORLD NEWS'}
-                </span>
-                {activeTab === 'international' && (
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary redstone-glow" />
                 )}
               </button>
@@ -113,7 +97,6 @@ export default function Index() {
           <div>
             {activeTab === 'feed' && <Feed />}
             {activeTab === 'news' && <NewsFeed />}
-            {activeTab === 'international' && <InternationalNews />}
             {activeTab === 'weather' && <Weather />}
           </div>
         </div>

@@ -12,13 +12,22 @@ import { useTheme, ThemeMode } from '@/hooks/useTheme';
 
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
-  const { playClick, isEnabled, setEnabled } = useSoundEffects();
+  const { playClick } = useSoundEffects();
   const { theme, setTheme, setCustomColor, isDark, isLight, isBaziMazi, isCato, isPizza, isGhast, isBuzzy, isOrange, isCustom } = useTheme();
   const [soundsEnabled, setSoundsEnabled] = useState(true);
+  const { isEnabled, setEnabled } = useSoundEffects();
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [customColor, setCustomColorState] = useState(() => {
     const stored = localStorage.getItem('mc-custom-theme');
     return stored ? JSON.parse(stored).primary : '#e63946';
+  });
+  const [customBgColor, setCustomBgColor] = useState(() => {
+    const stored = localStorage.getItem('mc-custom-theme');
+    return stored ? JSON.parse(stored).background || '#0d0d0d' : '#0d0d0d';
+  });
+  const [customTextColor, setCustomTextColor] = useState(() => {
+    const stored = localStorage.getItem('mc-custom-theme');
+    return stored ? JSON.parse(stored).text || '#ededed' : '#ededed';
   });
   const [customMode, setCustomMode] = useState<'light' | 'dark'>(() => {
     const stored = localStorage.getItem('mc-custom-theme');
@@ -87,7 +96,6 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
   const [slots, setSlots] = useState<{ text: string; cost: number }[]>([]);
   const [isRolling, setIsRolling] = useState(false);
 
-  // Map enchantment slots to themes
   const slotThemes: Record<string, ThemeMode[]> = {
     sword: ['dark', 'ghast', 'pizza'],
     pickaxe: ['light', 'bazimazi', 'cato'],
@@ -140,7 +148,6 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
         <p className="mc-text text-sm text-foreground">ENCHANT</p>
       </div>
 
-      {/* Item row */}
       <div className="flex gap-1.5">
         {enchantItems.map((ei) => {
           const Icon = ei.icon;
@@ -162,7 +169,6 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
         })}
       </div>
 
-      {/* Enchantment slots - Minecraft style */}
       {slots.length > 0 && (
         <div className="space-y-1">
           {slots.map((slot, i) => (
@@ -219,7 +225,7 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-80 p-0 minecraft-card overflow-hidden" 
+        className="w-80 p-0 minecraft-card overflow-hidden max-h-[80vh] overflow-y-auto" 
         align="end"
       >
         <div className="h-1 bg-primary redstone-glow" />
@@ -381,64 +387,90 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
               <div className="ml-12 space-y-3 p-3 rounded-lg border border-border bg-secondary/30">
                 <div className="flex items-center gap-2">
                   <Palette className="h-4 w-4 text-primary" />
-                  <p className="mc-text text-xs text-foreground">PICK YOUR COLOR</p>
+                  <p className="mc-text text-xs text-foreground">CUSTOM THEME</p>
                 </div>
                 
-                <div className="flex items-center gap-3">
-                  <input
-                    type="color"
-                    value={customColor}
-                    onChange={(e) => setCustomColorState(e.target.value)}
-                    className="w-10 h-10 rounded cursor-pointer border-2 border-border bg-transparent"
-                  />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-xs text-muted-foreground">{customColor.toUpperCase()}</p>
-                    <div 
-                      className="h-3 rounded-full" 
-                      style={{ backgroundColor: customColor }}
+                {/* Accent Color */}
+                <div>
+                  <p className="text-[10px] text-muted-foreground mc-text mb-1">ACCENT COLOR</p>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={customColor}
+                      onChange={(e) => setCustomColorState(e.target.value)}
+                      className="w-10 h-10 rounded cursor-pointer border-2 border-border bg-transparent"
                     />
+                    <div className="flex-1 space-y-1">
+                      <p className="text-xs text-muted-foreground">{customColor.toUpperCase()}</p>
+                      <div 
+                        className="h-3 rounded-full" 
+                        style={{ backgroundColor: customColor }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Background Color */}
+                <div>
+                  <p className="text-[10px] text-muted-foreground mc-text mb-1">BACKGROUND COLOR</p>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={customBgColor}
+                      onChange={(e) => setCustomBgColor(e.target.value)}
+                      className="w-10 h-10 rounded cursor-pointer border-2 border-border bg-transparent"
+                    />
+                    <div className="flex-1 space-y-1">
+                      <p className="text-xs text-muted-foreground">{customBgColor.toUpperCase()}</p>
+                      <div 
+                        className="h-3 rounded-full" 
+                        style={{ backgroundColor: customBgColor }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Text Color */}
+                <div>
+                  <p className="text-[10px] text-muted-foreground mc-text mb-1">TEXT COLOR</p>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={customTextColor}
+                      onChange={(e) => setCustomTextColor(e.target.value)}
+                      className="w-10 h-10 rounded cursor-pointer border-2 border-border bg-transparent"
+                    />
+                    <div className="flex-1 space-y-1">
+                      <p className="text-xs text-muted-foreground">{customTextColor.toUpperCase()}</p>
+                      <div 
+                        className="h-3 rounded-full" 
+                        style={{ backgroundColor: customTextColor }}
+                      />
+                    </div>
                   </div>
                 </div>
 
                 {/* Quick preset colors */}
-                <div className="flex gap-1.5 flex-wrap">
-                  {['#e63946', '#457b9d', '#2a9d8f', '#e9c46a', '#f4a261', '#264653', '#6a0572', '#ff006e', '#00b4d8', '#80b918'].map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => setCustomColorState(color)}
-                      className={`w-6 h-6 rounded-full border-2 transition-all hover:scale-110 ${
-                        customColor === color ? 'border-foreground scale-110' : 'border-transparent'
-                      }`}
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
-                </div>
-
-                {/* Base mode toggle */}
-                <div className="flex items-center gap-2">
-                  <p className="text-xs text-muted-foreground mc-text">BASE:</p>
-                  <button
-                    onClick={() => setCustomMode('dark')}
-                    className={`px-2 py-1 text-xs mc-text rounded border transition-all ${
-                      customMode === 'dark' ? 'border-primary bg-primary/20 text-foreground' : 'border-border text-muted-foreground'
-                    }`}
-                  >
-                    Dark
-                  </button>
-                  <button
-                    onClick={() => setCustomMode('light')}
-                    className={`px-2 py-1 text-xs mc-text rounded border transition-all ${
-                      customMode === 'light' ? 'border-primary bg-primary/20 text-foreground' : 'border-border text-muted-foreground'
-                    }`}
-                  >
-                    Light
-                  </button>
+                <div>
+                  <p className="text-[10px] text-muted-foreground mc-text mb-1">QUICK PRESETS</p>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {['#e63946', '#457b9d', '#2a9d8f', '#e9c46a', '#f4a261', '#264653', '#6a0572', '#ff006e', '#00b4d8', '#80b918'].map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => setCustomColorState(color)}
+                        className={`w-6 h-6 rounded-full border-2 transition-all hover:scale-110 ${
+                          customColor === color ? 'border-foreground scale-110' : 'border-transparent'
+                        }`}
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                  </div>
                 </div>
 
                 <button
                   onClick={() => {
                     playClick();
-                    setCustomColor(customColor, customMode);
+                    setCustomColor(customColor, customMode, customBgColor, customTextColor);
                     setShowColorPicker(false);
                   }}
                   className="w-full py-1.5 rounded border border-primary bg-primary/20 hover:bg-primary/30 text-foreground mc-text text-xs transition-all"
@@ -454,7 +486,7 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
 
           <div className="pt-2 border-t border-border">
             <p className="text-xs text-muted-foreground text-center mc-text">
-              bezoSMP 1.24
+              bezoSMP 1.25
             </p>
           </div>
         </div>
