@@ -486,7 +486,7 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
 
           <div className="pt-2 border-t border-border">
             <p className="text-xs text-muted-foreground text-center mc-text">
-              bezoSMP 1.25
+              bezoSMP 1.25.1
             </p>
           </div>
         </div>
