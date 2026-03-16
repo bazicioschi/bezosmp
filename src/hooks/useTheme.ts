@@ -260,6 +260,9 @@ export function useTheme() {
       root.style.setProperty('--sidebar-accent', sec);
       root.style.setProperty('--sidebar-accent-foreground', fg);
       root.style.setProperty('--sidebar-border', `${bgHsl.h} ${Math.max(bgHsl.s - 5, 0)}% ${borderL}%`);
+
+      // Force text color on root to override hardcoded CSS theme class colors
+      root.style.setProperty('color', `hsl(${fg})`);
     } else {
       root.classList.add('dark-mode');
       root.style.setProperty('--background', '0 0% 5%');
