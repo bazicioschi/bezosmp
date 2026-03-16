@@ -61,23 +61,19 @@ export function ConnectButton() {
         <DialogHeader>
           <DialogTitle className="mc-text text-xl text-primary glow-text">CONNECT WITH US</DialogTitle>
         </DialogHeader>
-        <div className="space-y-2 mt-4">
+        <div className="grid grid-cols-2 gap-3 mt-4">
           {socialLinks.map((link) => (
             <a
               key={link.name}
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-4 p-3 rounded-lg border border-border bg-secondary/30 hover:bg-secondary/60 hover:border-primary/50 transition-all group"
+              className="flex flex-col items-center gap-2 p-4 rounded-lg border border-border bg-secondary/30 hover:bg-secondary/60 hover:border-primary/50 transition-all group"
             >
-              <div className="mc-slot h-10 w-10 flex items-center justify-center text-primary group-hover:text-primary">
+              <div className="mc-slot h-12 w-12 flex items-center justify-center text-primary group-hover:text-primary group-hover:scale-110 transition-transform">
                 {link.icon}
               </div>
-              <div className="flex-1">
-                <p className="mc-text text-sm text-foreground">{link.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{link.url}</p>
-              </div>
-              <Link2 className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              <p className="mc-text text-sm text-foreground">{link.name}</p>
             </a>
           ))}
         </div>
