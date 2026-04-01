@@ -22,6 +22,7 @@ interface Ticket {
   admin_response: string | null;
   created_at: string;
   username?: string;
+  avatarUrl?: string | null;
 }
 
 export default function Support() {
@@ -50,15 +51,19 @@ export default function Support() {
       const userIds = [...new Set(data.map(t => t.user_id))];
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('user_id, username')
+        .select('user_id, username, avatar_url')
         .in('user_id', userIds);
 
-      const profileMap = new Map(profiles?.map(p => [p.user_id, p.username]) || []);
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
-      setTickets(data.map(t => ({
-        ...t,
-        username: profileMap.get(t.user_id) || 'Unknown',
-      })));
+      setTickets(data.map(t => {
+        const profile = profileMap.get(t.user_id);
+        return {
+          ...t,
+          username: profile?.username || 'Unknown',
+          avatarUrl: profile?.avatar_url || null,
+        };
+      }));
     }
     setFetchingTickets(false);
   };
@@ -189,6 +194,7 @@ export default function Support() {
                 canModerate={canModerate}
                 onBack={() => setSelectedTicketId(null)}
                 onTicketUpdated={fetchTickets}
+                ticketAvatarUrl={selectedTicket.avatarUrl}
               />
             ) : (
               <div className="flex-1 flex items-center justify-center text-center p-6">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Sparkles, Sword, Pickaxe, Shield, BookOpen, Gem, Citrus, Palette } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Citrus, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -67,150 +67,13 @@ export function SettingsButton() {
     if (isCustom) return 'Custom Color';
     if (isDark) return 'Red & Black (Minecraft)';
     if (isBaziMazi) return 'BaziMazi (Ladybug)';
-    if (isCato) return 'Cato (Rat)';
+    if (isCato) return 'Rat';
     if (isPizza) return 'Pizza (Green)';
     if (isGhast) return 'Ghast (Minecraft)';
     if (isBuzzy) return 'Buzzy (Bee)';
     if (isOrange) return 'Orange (Citrus)';
     return 'Red & White (Clean)';
   };
-
-const enchantGlyphs = 'ᔑʖᓵ↸ᒷ⎓⊣⍑╎⋮ꖌꖎᒲリ𝙹ᑑ∷ᓭℸ⚍⊬∴';
-
-const enchantItems = [
-  { id: 'sword', icon: Sword, label: 'Sword' },
-  { id: 'pickaxe', icon: Pickaxe, label: 'Pick' },
-  { id: 'shield', icon: Shield, label: 'Shield' },
-  { id: 'book', icon: BookOpen, label: 'Book' },
-];
-
-const enchantOptions: Record<string, string[]> = {
-  sword: ['Sharpness V', 'Fire Aspect II', 'Looting III'],
-  pickaxe: ['Fortune III', 'Efficiency V', 'Silk Touch'],
-  shield: ['Unbreaking III', 'Mending', 'Thorns III'],
-  book: ['Mending', 'Infinity', 'Protection IV'],
-};
-
-function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode) => void }) {
-  const [item, setItem] = useState<string | null>(null);
-  const [slots, setSlots] = useState<{ text: string; cost: number }[]>([]);
-  const [isRolling, setIsRolling] = useState(false);
-
-  const slotThemes: Record<string, ThemeMode[]> = {
-    sword: ['dark', 'ghast', 'pizza'],
-    pickaxe: ['light', 'bazimazi', 'cato'],
-    shield: ['buzzy', 'dark', 'ghast'],
-    book: ['bazimazi', 'pizza', 'buzzy'],
-  };
-
-  const generateSlots = (itemId: string) => {
-    setItem(itemId);
-    setIsRolling(true);
-    setSlots([]);
-
-    let count = 0;
-    const interval = setInterval(() => {
-      setSlots(
-        [1, 2, 3].map(() => ({
-          text: Array.from({ length: 12 }, () =>
-            enchantGlyphs[Math.floor(Math.random() * enchantGlyphs.length)]
-          ).join(''),
-          cost: Math.floor(Math.random() * 28) + 2,
-        }))
-      );
-      count++;
-      if (count > 6) {
-        clearInterval(interval);
-        const opts = enchantOptions[itemId];
-        setSlots(
-          opts.map((name, i) => ({
-            text: name,
-            cost: (i + 1) * 10,
-          }))
-        );
-        setIsRolling(false);
-      }
-    }, 100);
-  };
-
-  const handleSlotClick = (index: number) => {
-    if (isRolling || !item) return;
-    const themes = slotThemes[item];
-    if (themes && themes[index]) {
-      onThemeChange(themes[index]);
-    }
-  };
-
-  return (
-    <div className="pt-3 border-t border-border space-y-2">
-      <div className="flex items-center gap-2">
-        <Sparkles className="h-4 w-4 text-primary" />
-        <p className="mc-text text-sm text-foreground">ENCHANT</p>
-      </div>
-
-      <div className="flex gap-1.5">
-        {enchantItems.map((ei) => {
-          const Icon = ei.icon;
-          return (
-            <button
-              key={ei.id}
-              onClick={() => generateSlots(ei.id)}
-              disabled={isRolling}
-              className={`mc-slot flex-1 flex flex-col items-center gap-0.5 py-1.5 transition-all ${
-                item === ei.id ? 'ring-1 ring-primary bg-primary/10' : 'hover:bg-secondary/50'
-              }`}
-            >
-              <Icon className={`h-4 w-4 ${item === ei.id ? 'text-primary' : 'text-muted-foreground'}`} />
-              <span className={`mc-text text-[9px] ${item === ei.id ? 'text-primary' : 'text-muted-foreground/70'}`}>
-                {ei.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {slots.length > 0 && (
-        <div className="space-y-1">
-          {slots.map((slot, i) => (
-            <button
-              key={i}
-              className={`w-full flex items-center justify-between px-2 py-1.5 rounded border transition-all ${
-                isRolling
-                  ? 'border-border bg-secondary/20'
-                  : i === 2
-                    ? 'border-primary/50 bg-primary/10 hover:bg-primary/20'
-                    : 'border-border bg-secondary/30 hover:bg-secondary/50'
-              }`}
-              disabled={isRolling}
-              onClick={() => handleSlotClick(i)}
-            >
-              <div className="flex items-center gap-2">
-                <span className={`mc-text text-[10px] ${i === 2 ? 'text-primary' : 'text-chart-4'}`}>
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <span className={`text-xs ${isRolling ? 'font-mono tracking-widest text-primary/60 animate-pulse' : 'mc-text text-foreground/80'}`}>
-                  {slot.text}
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Gem className={`h-3 w-3 ${i === 2 ? 'text-primary' : 'text-chart-4'}`} />
-                <span className={`mc-text text-xs ${i === 2 ? 'text-primary' : 'text-chart-4'}`}>
-                  {slot.cost}
-                </span>
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {!item && (
-        <p className="text-[10px] text-muted-foreground/50 mc-text text-center py-1">
-          Select an item to enchant
-        </p>
-      )}
-    </div>
-  );
-}
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -276,9 +139,7 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
               <button
                 onClick={() => handleThemeChange('dark')}
                 className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                  isDark 
-                    ? 'border-primary bg-primary/10' 
-                    : 'border-border hover:border-primary/50'
+                  isDark ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
                 }`}
               >
                 <Moon className="h-4 w-4" />
@@ -288,9 +149,7 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
               <button
                 onClick={() => handleThemeChange('ghast')}
                 className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                  isGhast 
-                    ? 'border-primary bg-primary/10' 
-                    : 'border-border hover:border-primary/50'
+                  isGhast ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
                 }`}
               >
                 <Ghost className="h-4 w-4" />
@@ -300,9 +159,7 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
               <button
                 onClick={() => handleThemeChange('light')}
                 className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                  isLight 
-                    ? 'border-primary bg-primary/10' 
-                    : 'border-border hover:border-primary/50'
+                  isLight ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
                 }`}
               >
                 <Sun className="h-4 w-4" />
@@ -312,9 +169,7 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
               <button
                 onClick={() => handleThemeChange('bazimazi')}
                 className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                  isBaziMazi 
-                    ? 'border-primary bg-primary/10' 
-                    : 'border-border hover:border-primary/50'
+                  isBaziMazi ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
                 }`}
               >
                 <Bug className="h-4 w-4" />
@@ -324,21 +179,17 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
               <button
                 onClick={() => handleThemeChange('cato')}
                 className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                  isCato 
-                    ? 'border-primary bg-primary/10' 
-                    : 'border-border hover:border-primary/50'
+                  isCato ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
                 }`}
               >
                 <Rat className="h-4 w-4" />
-                <span className="text-xs mc-text">Cato</span>
+                <span className="text-xs mc-text">Rat</span>
               </button>
               
               <button
                 onClick={() => handleThemeChange('pizza')}
                 className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                  isPizza 
-                    ? 'border-primary bg-primary/10' 
-                    : 'border-border hover:border-primary/50'
+                  isPizza ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
                 }`}
               >
                 <Pizza className="h-4 w-4" />
@@ -348,9 +199,7 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
               <button
                 onClick={() => handleThemeChange('buzzy')}
                 className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                  isBuzzy 
-                    ? 'border-primary bg-primary/10' 
-                    : 'border-border hover:border-primary/50'
+                  isBuzzy ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
                 }`}
               >
                 <Flower className="h-4 w-4" />
@@ -360,9 +209,7 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
               <button
                 onClick={() => handleThemeChange('orange')}
                 className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                  isOrange 
-                    ? 'border-primary bg-primary/10' 
-                    : 'border-border hover:border-primary/50'
+                  isOrange ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
                 }`}
               >
                 <Citrus className="h-4 w-4" />
@@ -372,9 +219,7 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
               <button
                 onClick={() => setShowColorPicker(!showColorPicker)}
                 className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                  isCustom 
-                    ? 'border-primary bg-primary/10' 
-                    : 'border-border hover:border-primary/50'
+                  isCustom ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
                 }`}
               >
                 <Palette className="h-4 w-4" />
@@ -402,10 +247,7 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
                     />
                     <div className="flex-1 space-y-1">
                       <p className="text-xs text-muted-foreground">{customColor.toUpperCase()}</p>
-                      <div 
-                        className="h-3 rounded-full" 
-                        style={{ backgroundColor: customColor }}
-                      />
+                      <div className="h-3 rounded-full" style={{ backgroundColor: customColor }} />
                     </div>
                   </div>
                 </div>
@@ -422,10 +264,7 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
                     />
                     <div className="flex-1 space-y-1">
                       <p className="text-xs text-muted-foreground">{customBgColor.toUpperCase()}</p>
-                      <div 
-                        className="h-3 rounded-full" 
-                        style={{ backgroundColor: customBgColor }}
-                      />
+                      <div className="h-3 rounded-full" style={{ backgroundColor: customBgColor }} />
                     </div>
                   </div>
                 </div>
@@ -442,10 +281,7 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
                     />
                     <div className="flex-1 space-y-1">
                       <p className="text-xs text-muted-foreground">{customTextColor.toUpperCase()}</p>
-                      <div 
-                        className="h-3 rounded-full" 
-                        style={{ backgroundColor: customTextColor }}
-                      />
+                      <div className="h-3 rounded-full" style={{ backgroundColor: customTextColor }} />
                     </div>
                   </div>
                 </div>
@@ -481,12 +317,9 @@ function SettingsEnchantTable({ onThemeChange }: { onThemeChange: (t: ThemeMode)
             )}
           </div>
 
-          {/* Enchantment Table Mini */}
-          <SettingsEnchantTable onThemeChange={handleThemeChange} />
-
           <div className="pt-2 border-t border-border">
             <p className="text-xs text-muted-foreground text-center mc-text">
-              bezoSMP 1.25.2
+              bezoSMP 1.26.10
             </p>
           </div>
         </div>

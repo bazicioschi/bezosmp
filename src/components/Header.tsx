@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { Gamepad2, LogOut, User, Home, HelpCircle, Shield } from 'lucide-react';
+import { LogOut, User, Home, HelpCircle, Shield } from 'lucide-react';
 import { NotificationBell } from './NotificationBell';
 import { SettingsButton } from './SettingsButton';
 import { ChatPopup } from './ChatPopup';
@@ -21,7 +21,7 @@ export function Header() {
       <div className="max-w-[1300px] mx-auto flex h-12 items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2 group">
           <div className="mc-slot h-8 w-8 flex items-center justify-center group-hover:mc-slot-active transition-all">
-            <Gamepad2 className="h-5 w-5 text-primary" />
+            <span className="mc-text text-lg text-primary font-bold" style={{ textShadow: '1px 1px 0 rgba(0,0,0,0.5), -1px -1px 0 rgba(0,0,0,0.3)' }}>B</span>
           </div>
           <span className="mc-text text-2xl text-foreground glow-text hidden sm:block">
             bezoSMP

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Send, ArrowLeft, Loader2, User, Sword } from 'lucide-react';
+import { Send, ArrowLeft, Loader2, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -184,8 +184,8 @@ export default function Messages() {
                 <span className="font-display font-semibold text-foreground glow-text block">
                   {recipient.username}
                 </span>
-                <span className="text-xs text-muted-foreground font-display flex items-center gap-1">
-                  <Sword className="h-3 w-3" /> Player
+                <span className="text-xs text-muted-foreground font-display">
+                  Online
                 </span>
               </div>
             </div>

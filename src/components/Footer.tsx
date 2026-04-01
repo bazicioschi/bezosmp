@@ -1,4 +1,4 @@
-import { Gamepad2, Github, Twitter, MessageCircle } from 'lucide-react';
+import { Github, Twitter, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function Footer() {
@@ -14,13 +14,12 @@ export function Footer() {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-2 mb-3">
               <div className="mc-slot h-10 w-10 flex items-center justify-center">
-                <Gamepad2 className="h-5 w-5 text-primary" />
+                <span className="mc-text text-lg text-primary font-bold">B</span>
               </div>
               <span className="mc-text text-2xl text-foreground glow-text">bezoSMP</span>
             </div>
             <p className="text-sm text-muted-foreground max-w-md">
-              The ultimate Minecraft Bedrock community. Share your builds, connect with players, 
-              and join epic adventures on our server.
+              BezoSMP is an online platform for content YouTube and TikTok. Not associated with Mojang or Microsoft.
             </p>
           </div>
 
@@ -51,22 +50,20 @@ export function Footer() {
             <h4 className="mc-text text-primary mb-3">CONNECT</h4>
             <div className="flex gap-2">
               <a 
-                href="#" 
+                href="https://x.com/Bazicioschi" 
+                target="_blank"
+                rel="noopener noreferrer"
                 className="mc-slot h-9 w-9 flex items-center justify-center hover:mc-slot-active transition-all"
               >
                 <Twitter className="h-4 w-4 text-primary" />
               </a>
               <a 
-                href="#" 
+                href="https://www.reddit.com/user/Bazicioschi/" 
+                target="_blank"
+                rel="noopener noreferrer"
                 className="mc-slot h-9 w-9 flex items-center justify-center hover:mc-slot-active transition-all"
               >
                 <MessageCircle className="h-4 w-4 text-primary" />
-              </a>
-              <a 
-                href="#" 
-                className="mc-slot h-9 w-9 flex items-center justify-center hover:mc-slot-active transition-all"
-              >
-                <Github className="h-4 w-4 text-primary" />
               </a>
             </div>
           </div>

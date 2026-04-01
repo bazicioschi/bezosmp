@@ -3,7 +3,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Send, Loader2, ArrowLeft, CheckCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -26,6 +26,7 @@ interface Reply {
   message: string;
   created_at: string;
   username?: string;
+  avatar_url?: string | null;
   is_staff?: boolean;
 }
 
@@ -34,9 +35,10 @@ interface TicketThreadProps {
   canModerate: boolean;
   onBack: () => void;
   onTicketUpdated: () => void;
+  ticketAvatarUrl?: string | null;
 }
 
-export function TicketThread({ ticket, canModerate, onBack, onTicketUpdated }: TicketThreadProps) {
+export function TicketThread({ ticket, canModerate, onBack, onTicketUpdated, ticketAvatarUrl }: TicketThreadProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [replies, setReplies] = useState<Reply[]>([]);
@@ -54,24 +56,23 @@ export function TicketThread({ ticket, canModerate, onBack, onTicketUpdated }: T
 
     if (data) {
       const userIds = [...new Set(data.map(r => r.user_id))];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, username')
-        .in('user_id', userIds);
+      const [{ data: profiles }, { data: roles }] = await Promise.all([
+        supabase.from('profiles').select('user_id, username, avatar_url').in('user_id', userIds),
+        supabase.from('user_roles').select('user_id, role').in('user_id', userIds),
+      ]);
 
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('user_id, role')
-        .in('user_id', userIds);
-
-      const profileMap = new Map(profiles?.map(p => [p.user_id, p.username]) || []);
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
       const roleMap = new Map(roles?.map(r => [r.user_id, r.role]) || []);
 
-      setReplies(data.map(r => ({
-        ...r,
-        username: profileMap.get(r.user_id) || 'Unknown',
-        is_staff: roleMap.get(r.user_id) === 'admin' || roleMap.get(r.user_id) === 'moderator',
-      })));
+      setReplies(data.map(r => {
+        const profile = profileMap.get(r.user_id);
+        return {
+          ...r,
+          username: profile?.username || 'Unknown',
+          avatar_url: profile?.avatar_url || null,
+          is_staff: roleMap.get(r.user_id) === 'admin' || roleMap.get(r.user_id) === 'moderator',
+        };
+      }));
     }
     setLoading(false);
   };
@@ -111,7 +112,6 @@ export function TicketThread({ ticket, canModerate, onBack, onTicketUpdated }: T
     });
 
     if (!error) {
-      // If staff is replying and ticket is open, update status
       if (canModerate && ticket.status === 'open') {
         await supabase
           .from('support_tickets')
@@ -170,6 +170,7 @@ export function TicketThread({ ticket, canModerate, onBack, onTicketUpdated }: T
         {/* Original message */}
         <div className="flex gap-3">
           <Avatar className="h-8 w-8 shrink-0">
+            <AvatarImage src={ticketAvatarUrl || undefined} />
             <AvatarFallback className="bg-secondary text-xs">
               {(ticket.username || '?')[0].toUpperCase()}
             </AvatarFallback>
@@ -214,6 +215,7 @@ export function TicketThread({ ticket, canModerate, onBack, onTicketUpdated }: T
             <div key={reply.id} className={`flex gap-3 ${isStaff ? 'justify-end' : ''}`}>
               {!isStaff && (
                 <Avatar className="h-8 w-8 shrink-0">
+                  <AvatarImage src={reply.avatar_url || undefined} />
                   <AvatarFallback className="bg-secondary text-xs">
                     {(reply.username || '?')[0].toUpperCase()}
                   </AvatarFallback>
@@ -241,6 +243,7 @@ export function TicketThread({ ticket, canModerate, onBack, onTicketUpdated }: T
               </div>
               {isStaff && (
                 <Avatar className="h-8 w-8 shrink-0">
+                  <AvatarImage src={reply.avatar_url || undefined} />
                   <AvatarFallback className="bg-primary/20 text-primary text-xs">
                     {(reply.username || '?')[0].toUpperCase()}
                   </AvatarFallback>
