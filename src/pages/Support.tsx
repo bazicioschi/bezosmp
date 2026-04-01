@@ -50,10 +50,10 @@ export default function Support() {
       const userIds = [...new Set(data.map(t => t.user_id))];
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('user_id, username')
+        .select('user_id, username, avatar_url')
         .in('user_id', userIds);
 
-      const profileMap = new Map(profiles?.map(p => [p.user_id, p.username]) || []);
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
       setTickets(data.map(t => ({
         ...t,
