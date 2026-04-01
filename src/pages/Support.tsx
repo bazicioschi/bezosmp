@@ -196,7 +196,6 @@ export default function Support() {
                 onTicketUpdated={fetchTickets}
                 ticketAvatarUrl={selectedTicket.avatarUrl}
               />
-              />
             ) : (
               <div className="flex-1 flex items-center justify-center text-center p-6">
                 <div>
