@@ -55,10 +55,14 @@ export default function Support() {
 
       const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
-      setTickets(data.map(t => ({
-        ...t,
-        username: profileMap.get(t.user_id) || 'Unknown',
-      })));
+      setTickets(data.map(t => {
+        const profile = profileMap.get(t.user_id);
+        return {
+          ...t,
+          username: profile?.username || 'Unknown',
+          avatarUrl: profile?.avatar_url || null,
+        };
+      }));
     }
     setFetchingTickets(false);
   };
