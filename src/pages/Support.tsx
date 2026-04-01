@@ -194,6 +194,8 @@ export default function Support() {
                 canModerate={canModerate}
                 onBack={() => setSelectedTicketId(null)}
                 onTicketUpdated={fetchTickets}
+                ticketAvatarUrl={selectedTicket.avatarUrl}
+              />
               />
             ) : (
               <div className="flex-1 flex items-center justify-center text-center p-6">
