@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth';
+import { supabase } from '@/integrations/supabase/client';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 
 const TIPS = [
@@ -17,11 +18,25 @@ export function WelcomeBanner() {
   const { playClick } = useSoundEffects();
   const [isVisible, setIsVisible] = useState(true);
   const [currentTip, setCurrentTip] = useState(0);
+  const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
     const dismissed = localStorage.getItem('welcome-banner-dismissed');
     if (dismissed) setIsVisible(false);
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      supabase
+        .from('profiles')
+        .select('username')
+        .eq('user_id', user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) setUsername(data.username);
+        });
+    }
+  }, [user]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -49,7 +64,7 @@ export function WelcomeBanner() {
           </div>
           <div>
             <h3 className="mc-text text-lg text-foreground glow-text">
-              {user ? `WELCOME BACK, ${user.email?.split('@')[0].toUpperCase()}!` : 'WELCOME TO BEZOSMP!'}
+              {user ? `WELCOME BACK, ${(username || 'PLAYER').toUpperCase()}!` : 'WELCOME TO BEZOSMP!'}
             </h3>
             <p className="text-sm text-muted-foreground mt-0.5 transition-opacity duration-300">
               {TIPS[currentTip]}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Trash2, Share, Bookmark, Pencil, X, Check, Edit3 } from 'lucide-react';
+import { Heart, MessageCircle, Trash2, Share, Bookmark, Pencil, X, Check } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -23,8 +23,6 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useToast } from '@/hooks/use-toast';
 import { ImageLightbox } from './ImageLightbox';
 import { useAdmin } from '@/hooks/useAdmin';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 interface PostCardProps {
   id: string;
@@ -36,7 +34,6 @@ interface PostCardProps {
   username: string;
   avatarUrl?: string | null;
   likesCount: number;
-  likesCountOverride?: number | null;
   commentsCount: number;
   isLiked: boolean;
   onLikeToggle: () => void;
@@ -54,7 +51,6 @@ export function PostCard({
   username,
   avatarUrl,
   likesCount,
-  likesCountOverride,
   commentsCount,
   isLiked,
   onLikeToggle,
@@ -75,11 +71,6 @@ export function PostCard({
   const [isSaving, setIsSaving] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-  const [showLikesDialog, setShowLikesDialog] = useState(false);
-  const [likesOverrideInput, setLikesOverrideInput] = useState('');
-  const { isAdmin } = useAdmin();
-
-  const displayedLikes = likesCountOverride != null ? likesCountOverride : likesCount;
 
   const formatCount = (count: number) => {
     if (count >= 1000000) {
@@ -91,48 +82,60 @@ export function PostCard({
     return count.toString();
   };
 
-  const handleEditLikes = async () => {
-    const value = likesOverrideInput.trim();
-    const newOverride = value === '' ? null : parseInt(value, 10);
-    if (value !== '' && (isNaN(newOverride!) || newOverride! < 0)) return;
-
-    await supabase.from('posts').update({ likes_count_override: newOverride } as any).eq('id', id);
-    setShowLikesDialog(false);
-    onLikeToggle();
-    toast({ title: 'Likes updated', description: newOverride == null ? 'Reset to actual count' : `Set to ${newOverride}` });
-  };
-
-  // Function to render content with clickable mentions
+  // Function to render content with clickable mentions and bz/ links
   const renderContentWithMentions = (text: string) => {
-    const mentionRegex = /@(\w+)/g;
-    const parts = text.split(mentionRegex);
-    
-    return parts.map((part, index) => {
-      // Every odd index is a username (captured group)
-      if (index % 2 === 1) {
-        return (
+    const regex = /@(\w+)|bz\/(\S+)/g;
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(text.slice(lastIndex, match.index));
+      }
+      if (match[1]) {
+        // @mention
+        const mentionUsername = match[1];
+        parts.push(
           <span
-            key={index}
+            key={match.index}
             className="text-primary cursor-pointer hover:underline font-semibold"
             onClick={async (e) => {
               e.stopPropagation();
-              // Look up user by username and navigate to their profile
               const { data } = await supabase
                 .from('profiles')
                 .select('user_id')
-                .eq('username', part)
+                .eq('username', mentionUsername)
                 .maybeSingle();
               if (data) {
                 navigate(`/user/${data.user_id}`);
               }
             }}
           >
-            @{part}
+            @{mentionUsername}
+          </span>
+        );
+      } else if (match[2]) {
+        // bz/subject link
+        const subject = match[2];
+        parts.push(
+          <span
+            key={match.index}
+            className="text-primary cursor-pointer hover:underline font-semibold"
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            bz/{subject}
           </span>
         );
       }
-      return part;
-    });
+      lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < text.length) {
+      parts.push(text.slice(lastIndex));
+    }
+    return parts;
   };
 
   const handleLike = async () => {
@@ -152,7 +155,7 @@ export function PostCard({
   };
 
   const handleDelete = async () => {
-    if (!user || (user.id !== userId && !canModerate)) return;
+    if (!user || user.id !== userId) return;
     setIsDeleting(true);
     playClick();
     await supabase.from('posts').delete().eq('id', id);
@@ -165,6 +168,7 @@ export function PostCard({
   };
 
   const handleEdit = () => {
+    if (user?.id !== userId) return;
     setEditContent(content);
     setIsEditing(true);
     playClick();
@@ -234,7 +238,7 @@ export function PostCard({
             <span className="text-muted-foreground text-sm">
               {formatDistanceToNow(new Date(createdAt), { addSuffix: false })}
             </span>
-            {(user?.id === userId || canModerate) && !isEditing && (
+            {user?.id === userId && !isEditing && (
               <div className="flex items-center gap-1 ml-auto">
                 <Button 
                   variant="ghost" 
@@ -313,7 +317,6 @@ export function PostCard({
           )}
 
           {imageUrl && (() => {
-            // Handle multiple images stored as JSON array or single image URL
             let images: string[] = [];
             try {
               if (imageUrl.startsWith('[')) {
@@ -364,7 +367,6 @@ export function PostCard({
                 controlsList="nodownload"
                 style={{ WebkitTransform: 'translateZ(0)' }}
               >
-                {/* Cross-platform compatibility including iPad/iOS, Galaxy Tab, Xiaomi */}
                 <source src={videoUrl} type="video/mp4; codecs=avc1.42E01E,mp4a.40.2" />
                 <source src={videoUrl} type="video/mp4; codecs=avc1.64001E,mp4a.40.2" />
                 <source src={videoUrl} type="video/mp4; codecs=hvc1" />
@@ -382,7 +384,7 @@ export function PostCard({
             </div>
           )}
 
-          {/* Action Buttons - Minecraft Style */}
+          {/* Action Buttons */}
           <div className="flex items-center gap-1 mt-3 -ml-2">
             <Button
               variant="ghost"
@@ -404,24 +406,8 @@ export function PostCard({
               <Heart 
                 className={`h-4 w-4 transition-all ${isLiked ? 'fill-primary mc-heart' : ''} ${isAnimating ? 'animate-like-pop' : ''}`} 
               />
-              <span className={`mc-text text-sm ${isAnimating ? 'animate-like-pop' : ''}`}>{displayedLikes ? formatCount(displayedLikes) : ''}</span>
+              <span className={`mc-text text-sm ${isAnimating ? 'animate-like-pop' : ''}`}>{likesCount ? formatCount(likesCount) : ''}</span>
             </Button>
-
-            {isAdmin && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setLikesOverrideInput(likesCountOverride != null ? String(likesCountOverride) : '');
-                  setShowLikesDialog(true);
-                }}
-                className="h-7 w-7 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
-                title="Edit like count"
-              >
-                <Edit3 className="h-3 w-3" />
-              </Button>
-            )}
 
             {/* Quick Reactions */}
             <div className="hidden sm:flex items-center gap-0.5 ml-1">
@@ -470,30 +456,6 @@ export function PostCard({
           )}
         </div>
       </div>
-
-      {/* Admin likes edit dialog */}
-      <Dialog open={showLikesDialog} onOpenChange={setShowLikesDialog}>
-        <DialogContent className="minecraft-card minecraft-border sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="mc-text text-xl">Edit Like Count</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">Set a custom like count or leave empty to show the real count ({likesCount}).</p>
-            <Input
-              type="number"
-              min="0"
-              value={likesOverrideInput}
-              onChange={(e) => setLikesOverrideInput(e.target.value)}
-              placeholder={`Actual: ${likesCount}`}
-              className="bg-secondary/50 border-2 border-border"
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowLikesDialog(false)} className="mc-btn">Cancel</Button>
-            <Button onClick={handleEditLikes} className="mc-btn-primary">Save</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </article>
   );
 }

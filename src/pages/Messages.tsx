@@ -184,8 +184,8 @@ export default function Messages() {
                 <span className="font-display font-semibold text-foreground glow-text block">
                   {recipient.username}
                 </span>
-                <span className="text-xs text-muted-foreground font-display flex items-center gap-1">
-                  <Sword className="h-3 w-3" /> Player
+                <span className="text-xs text-muted-foreground font-display">
+                  Online
                 </span>
               </div>
             </div>

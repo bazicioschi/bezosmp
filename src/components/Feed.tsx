@@ -10,7 +10,6 @@ interface Post {
   content: string;
   image_url: string | null;
   video_url: string | null;
-  likes_count_override: number | null;
   created_at: string;
   user_id: string;
   username: string;
@@ -26,7 +25,6 @@ export function Feed() {
   const [loading, setLoading] = useState(true);
 
   const fetchPosts = async () => {
-    // Fetch posts
     const { data: postsData, error: postsError } = await supabase
       .from('posts')
       .select('*')
@@ -37,19 +35,16 @@ export function Feed() {
       return;
     }
 
-    // Fetch profiles for all post authors
     const userIds = [...new Set(postsData.map(p => p.user_id))];
     const { data: profilesData } = await supabase
       .from('profiles')
       .select('user_id, username, avatar_url')
       .in('user_id', userIds);
 
-    // Fetch likes counts
     const { data: likesData } = await supabase
       .from('likes')
       .select('post_id, user_id');
 
-    // Fetch comments counts
     const { data: commentsData } = await supabase
       .from('comments')
       .select('post_id');
@@ -66,7 +61,6 @@ export function Feed() {
         content: post.content,
         image_url: post.image_url,
         video_url: post.video_url,
-        likes_count_override: (post as any).likes_count_override ?? null,
         created_at: post.created_at,
         user_id: post.user_id,
         username: profile?.username || 'Unknown',
@@ -84,7 +78,6 @@ export function Feed() {
   useEffect(() => {
     fetchPosts();
 
-    // Subscribe to realtime updates
     const channel = supabase
       .channel('posts-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, fetchPosts)
@@ -125,7 +118,6 @@ export function Feed() {
             username={post.username}
             avatarUrl={post.avatar_url}
             likesCount={post.likes_count}
-            likesCountOverride={post.likes_count_override}
             commentsCount={post.comments_count}
             isLiked={post.user_liked}
             onLikeToggle={fetchPosts}

@@ -4,13 +4,9 @@ import { ServerInfo } from '@/components/ServerInfo';
 import { Feed } from '@/components/Feed';
 import { NewsFeed } from '@/components/NewsFeed';
 import { MinecraftParticles } from '@/components/MinecraftParticles';
-import { TrendingSection } from '@/components/TrendingSection';
 import { WelcomeBanner } from '@/components/WelcomeBanner';
 import { BackToTop } from '@/components/BackToTop';
-import { WhoToFollow } from '@/components/WhoToFollow';
 import { ServerStats } from '@/components/ServerStats';
-import { DailyChallenge } from '@/components/DailyChallenge';
-import { EnchantmentWidget } from '@/components/EnchantmentWidget';
 import { Footer } from '@/components/Footer';
 import { Weather } from '@/components/Weather';
 
@@ -30,14 +26,13 @@ export default function Index() {
         <aside className="hidden lg:block w-[280px] shrink-0 p-4">
           <div className="sticky top-20 space-y-4">
             <ServerInfo />
-            <TrendingSection />
             <ServerStats />
           </div>
         </aside>
 
         {/* Main Feed */}
         <div className="flex-1 border-x-2 border-border min-h-screen max-w-[600px]">
-          {/* Tab Navigation - Minecraft Style */}
+          {/* Tab Navigation */}
           <div className="sticky top-14 z-40 bg-card/95 backdrop-blur-sm border-b-2 border-border">
             <div className="flex">
               <button
@@ -49,7 +44,7 @@ export default function Index() {
                 }`}
               >
                 <span className="mc-text text-lg tracking-wider">
-                  {activeTab === 'feed' ? '> FOR YOU <' : 'FOR YOU'}
+                  {activeTab === 'feed' ? '> POSTS <' : 'POSTS'}
                 </span>
                 {activeTab === 'feed' && (
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary redstone-glow" />
@@ -108,7 +103,7 @@ export default function Index() {
             <div className="minecraft-card minecraft-card-shine p-4">
               <h3 className="mc-text text-xl text-primary mb-2 glow-text">ABOUT BEZOSMP</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                A friendly Minecraft Bedrock survival server. Join us for building, exploring, and making new friends!
+                BezoSMP is an online platform for content YouTube and TikTok. Not associated with Mojang or Microsoft.
               </p>
               <div className="mt-3 flex gap-2">
                 <div className="mc-slot px-2 py-1 text-xs text-center">
@@ -122,15 +117,6 @@ export default function Index() {
                 </div>
               </div>
             </div>
-
-            {/* Who to Follow */}
-            <WhoToFollow />
-
-            {/* Daily Challenge */}
-            <DailyChallenge />
-
-            {/* Enchantment Widget */}
-            <EnchantmentWidget />
 
             {/* Daily Tip */}
             <div className="minecraft-card p-4">
