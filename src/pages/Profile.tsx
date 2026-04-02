@@ -238,6 +238,72 @@ export default function Profile() {
                 </>
               )}
             </Button>
+
+            {/* Delete Account */}
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full border-destructive text-destructive hover:bg-destructive/10" size="lg">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Account
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="minecraft-card">
+                <DialogHeader>
+                  <DialogTitle className="mc-text text-destructive">DELETE ACCOUNT</DialogTitle>
+                  <DialogDescription>
+                    This action is permanent. All your posts, comments, and data will be deleted. Enter your password to confirm.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-2">
+                  <Label htmlFor="delete-password" className="mc-text text-sm">PASSWORD</Label>
+                  <Input
+                    id="delete-password"
+                    type="password"
+                    value={deletePassword}
+                    onChange={(e) => setDeletePassword(e.target.value)}
+                    placeholder="Enter your password"
+                    className="bg-secondary/50 border-border"
+                  />
+                </div>
+                <DialogFooter>
+                  <Button variant="ghost" onClick={() => { setDeleteDialogOpen(false); setDeletePassword(''); }}>
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    disabled={deleting || !deletePassword}
+                    onClick={async () => {
+                      if (!user || !deletePassword) return;
+                      setDeleting(true);
+                      // Verify password by re-authenticating
+                      const { error: signInError } = await supabase.auth.signInWithPassword({
+                        email: user.email!,
+                        password: deletePassword,
+                      });
+                      if (signInError) {
+                        toast({ title: 'Wrong password', description: 'Please enter the correct password.', variant: 'destructive' });
+                        setDeleting(false);
+                        return;
+                      }
+                      // Delete user data
+                      await supabase.from('posts').delete().eq('user_id', user.id);
+                      await supabase.from('comments').delete().eq('user_id', user.id);
+                      await supabase.from('likes').delete().eq('user_id', user.id);
+                      await supabase.from('follows').delete().eq('follower_id', user.id);
+                      await supabase.from('follows').delete().eq('following_id', user.id);
+                      await supabase.from('profiles').delete().eq('user_id', user.id);
+                      await supabase.auth.signOut();
+                      toast({ title: 'Account deleted', description: 'Your account has been removed.' });
+                      navigate('/login');
+                      setDeleting(false);
+                    }}
+                  >
+                    {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                    Delete Forever
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </main>
