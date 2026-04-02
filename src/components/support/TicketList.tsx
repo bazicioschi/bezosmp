@@ -11,6 +11,7 @@ interface Ticket {
   admin_response: string | null;
   created_at: string;
   username?: string;
+  avatarUrl?: string | null;
 }
 
 interface TicketListProps {
