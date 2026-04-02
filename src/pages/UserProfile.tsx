@@ -38,6 +38,7 @@ export default function UserProfile() {
   const { user } = useAuth();
   const { isFollowing, toggleFollow } = useFollows();
   const { playPop } = useSoundEffects();
+  const { theme } = useTheme();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
