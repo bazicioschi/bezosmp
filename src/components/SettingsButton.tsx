@@ -246,6 +246,12 @@ export function SettingsButton() {
             {showColorPicker && (
               <div className="ml-12 space-y-3 p-3 rounded-lg border border-border bg-secondary/30">
                 <div className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={avatarUrl || undefined} />
+                    <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                      {username?.slice(0, 2).toUpperCase() || <User className="h-3 w-3" />}
+                    </AvatarFallback>
+                  </Avatar>
                   <Palette className="h-4 w-4 text-primary" />
                   <p className="mc-text text-xs text-foreground">CUSTOM THEME</p>
                 </div>
