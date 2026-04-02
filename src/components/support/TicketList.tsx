@@ -59,13 +59,12 @@ export function TicketList({ tickets, selectedTicketId, onSelectTicket, canModer
             )}
           >
             <div className="flex items-start gap-3">
-              <div className="mt-0.5">
-                {isRead ? (
-                  <MailOpen className="h-4 w-4 text-muted-foreground/60" />
-                ) : (
-                  <Mail className="h-4 w-4 text-primary" />
-                )}
-              </div>
+              <Avatar className="h-8 w-8 flex-shrink-0 mt-0.5">
+                <AvatarImage src={ticket.avatarUrl || undefined} />
+                <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                  {ticket.username?.slice(0, 2).toUpperCase() || <User className="h-3 w-3" />}
+                </AvatarFallback>
+              </Avatar>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <h3 className={cn(
