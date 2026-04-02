@@ -42,7 +42,16 @@ export function SettingsButton() {
 
   useEffect(() => {
     setSoundsEnabled(isEnabled());
-  }, []);
+    if (user) {
+      supabase.from('profiles').select('avatar_url, username').eq('user_id', user.id).maybeSingle()
+        .then(({ data }) => {
+          if (data) {
+            setAvatarUrl(data.avatar_url);
+            setUsername(data.username);
+          }
+        });
+    }
+  }, [user]);
 
   const handleSoundsToggle = (checked: boolean) => {
     setSoundsEnabled(checked);
