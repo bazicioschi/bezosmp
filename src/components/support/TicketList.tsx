@@ -1,5 +1,6 @@
 import { formatDistanceToNow } from 'date-fns';
-import { Clock, Loader2, CheckCircle, HelpCircle, Mail, MailOpen } from 'lucide-react';
+import { Clock, Loader2, CheckCircle, HelpCircle, Mail, MailOpen, User } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
 interface Ticket {
