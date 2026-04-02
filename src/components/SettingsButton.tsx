@@ -19,6 +19,9 @@ export function SettingsButton() {
   const { theme, setTheme, setCustomColor, isDark, isLight, isBaziMazi, isCato, isPizza, isGhast, isBuzzy, isOrange, isCustom } = useTheme();
   const [soundsEnabled, setSoundsEnabled] = useState(true);
   const { isEnabled, setEnabled } = useSoundEffects();
+  const { user } = useAuth();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [username, setUsername] = useState<string>('');
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [customColor, setCustomColorState] = useState(() => {
     const stored = localStorage.getItem('mc-custom-theme');
