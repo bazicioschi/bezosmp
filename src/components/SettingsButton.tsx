@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Citrus, Palette } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Citrus, Palette, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -7,8 +7,11 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useTheme, ThemeMode } from '@/hooks/useTheme';
+import { useAuth } from '@/lib/auth';
+import { supabase } from '@/integrations/supabase/client';
 
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
@@ -16,6 +19,9 @@ export function SettingsButton() {
   const { theme, setTheme, setCustomColor, isDark, isLight, isBaziMazi, isCato, isPizza, isGhast, isBuzzy, isOrange, isCustom } = useTheme();
   const [soundsEnabled, setSoundsEnabled] = useState(true);
   const { isEnabled, setEnabled } = useSoundEffects();
+  const { user } = useAuth();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [username, setUsername] = useState<string>('');
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [customColor, setCustomColorState] = useState(() => {
     const stored = localStorage.getItem('mc-custom-theme');
@@ -36,7 +42,16 @@ export function SettingsButton() {
 
   useEffect(() => {
     setSoundsEnabled(isEnabled());
-  }, []);
+    if (user) {
+      supabase.from('profiles').select('avatar_url, username').eq('user_id', user.id).maybeSingle()
+        .then(({ data }) => {
+          if (data) {
+            setAvatarUrl(data.avatar_url);
+            setUsername(data.username);
+          }
+        });
+    }
+  }, [user]);
 
   const handleSoundsToggle = (checked: boolean) => {
     setSoundsEnabled(checked);
@@ -231,6 +246,12 @@ export function SettingsButton() {
             {showColorPicker && (
               <div className="ml-12 space-y-3 p-3 rounded-lg border border-border bg-secondary/30">
                 <div className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={avatarUrl || undefined} />
+                    <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                      {username?.slice(0, 2).toUpperCase() || <User className="h-3 w-3" />}
+                    </AvatarFallback>
+                  </Avatar>
                   <Palette className="h-4 w-4 text-primary" />
                   <p className="mc-text text-xs text-foreground">CUSTOM THEME</p>
                 </div>
@@ -319,7 +340,7 @@ export function SettingsButton() {
 
           <div className="pt-2 border-t border-border">
             <p className="text-xs text-muted-foreground text-center mc-text">
-              bezoSMP 1.26.10
+              bezoSMP 1.26.11
             </p>
           </div>
         </div>

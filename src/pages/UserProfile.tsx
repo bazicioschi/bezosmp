@@ -9,6 +9,7 @@ import { Header } from '@/components/Header';
 import { PostCard } from '@/components/PostCard';
 import { useFollows } from '@/hooks/useFollows';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { useTheme } from '@/hooks/useTheme';
 
 interface Profile {
   id: string;
@@ -37,6 +38,7 @@ export default function UserProfile() {
   const { user } = useAuth();
   const { isFollowing, toggleFollow } = useFollows();
   const { playPop } = useSoundEffects();
+  const { theme } = useTheme();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -130,8 +132,20 @@ export default function UserProfile() {
 
   const isOwnProfile = user?.id === userId;
 
+  const getProfileBgClass = () => {
+    switch (theme) {
+      case 'orange': return 'bg-orange-400 text-black';
+      case 'pizza': return 'bg-black text-white';
+      case 'cato': return 'bg-white text-black';
+      case 'buzzy': return 'bg-yellow-400 text-black';
+      case 'bazimazi': return 'bg-white text-red-600';
+      case 'ghast': return 'bg-gray-300 text-black';
+      default: return 'bg-background text-foreground';
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`min-h-screen ${getProfileBgClass()}`}>
       <Header />
       
       <main className="max-w-2xl mx-auto">
