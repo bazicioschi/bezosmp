@@ -9,6 +9,7 @@ import { Header } from '@/components/Header';
 import { PostCard } from '@/components/PostCard';
 import { useFollows } from '@/hooks/useFollows';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { useTheme } from '@/hooks/useTheme';
 
 interface Profile {
   id: string;
