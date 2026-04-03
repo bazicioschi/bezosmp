@@ -199,7 +199,7 @@ export default function Profile() {
         </div>
 
         {/* Profile info */}
-        <div className="pt-20 px-4 pb-8">
+        <div className="pt-20 px-4 pb-8 bg-white rounded-lg">
           <div className="mb-6">
             <h1 className="font-display text-2xl font-bold text-foreground">{profile?.username}</h1>
             <p className="text-muted-foreground text-sm">{user?.email}</p>
