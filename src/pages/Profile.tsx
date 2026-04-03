@@ -201,7 +201,7 @@ export default function Profile() {
         </div>
 
         {/* Profile info */}
-        <div className={`pt-20 px-4 pb-8 rounded-t-lg min-h-screen ${theme === 'ghast' ? 'bg-gray-300 mx-4' : theme === 'pizza' ? 'bg-black' : 'bg-white'}`}>
+        <div className={`pt-20 px-4 pb-8 rounded-t-lg min-h-screen ${theme === 'ghast' ? 'bg-gray-300' : theme === 'pizza' ? 'bg-black' : 'bg-white'}`}>
           <div className="mb-6">
             <h1 className="font-display text-2xl font-bold text-foreground">{profile?.username}</h1>
             <p className="text-muted-foreground text-sm">{user?.email}</p>
@@ -245,7 +245,7 @@ export default function Profile() {
             <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="w-full border-destructive text-destructive hover:bg-destructive/10" size="lg">
-                  <Trash2 className="h-4 w-4 mr-2" />
+                  <Trash2 className="h-4 w-4 mr-2 text-black" />
                   Delete Account
                 </Button>
               </DialogTrigger>
