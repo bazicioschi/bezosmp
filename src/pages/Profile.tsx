@@ -201,7 +201,7 @@ export default function Profile() {
         </div>
 
         {/* Profile info */}
-        <div className="pt-20 px-4 pb-8 bg-white rounded-t-lg min-h-screen">
+        <div className={`pt-20 px-4 pb-8 rounded-t-lg min-h-screen ${theme === 'ghast' ? 'bg-gray-300 mx-4' : theme === 'pizza' ? 'bg-black' : 'bg-white'}`}>
           <div className="mb-6">
             <h1 className="font-display text-2xl font-bold text-foreground">{profile?.username}</h1>
             <p className="text-muted-foreground text-sm">{user?.email}</p>
