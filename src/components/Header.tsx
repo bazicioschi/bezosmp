@@ -29,7 +29,7 @@ export function Header() {
         </Link>
 
         <nav className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" asChild className="mc-slot hover:mc-slot-active px-3 h-8" onClick={() => playClick()}>
+          <Button variant="ghost" size="sm" asChild className="mc-slot hover:mc-slot-active px-3 h-8 text-black" onClick={() => playClick()}>
             <Link to="/" className="flex items-center gap-2">
               <Home className="h-4 w-4" />
               <span className="hidden md:inline mc-text text-sm">HOME</span>
@@ -75,10 +75,10 @@ export function Header() {
           ) : (
             <>
               <SettingsButton />
-              <Button variant="ghost" size="sm" asChild className="mc-slot hover:mc-slot-active px-3 h-8" onClick={() => playClick()}>
+              <Button variant="ghost" size="sm" asChild className="mc-slot hover:mc-slot-active px-3 h-8 text-black" onClick={() => playClick()}>
                 <Link to="/login" className="mc-text text-sm">LOGIN</Link>
               </Button>
-              <Button size="sm" asChild className="mc-btn-primary px-4 h-8" onClick={() => playClick()}>
+              <Button size="sm" asChild className="mc-btn-primary px-4 h-8 text-black" onClick={() => playClick()}>
                 <Link to="/signup" className="mc-text text-sm">SIGN UP</Link>
               </Button>
             </>
