@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Trash2, Share, Bookmark, Pencil, X, Check } from 'lucide-react';
+import { Heart, MessageCircle, Trash2, Share, Bookmark, BookmarkCheck, Pencil, X, Check } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -71,6 +71,31 @@ export function PostCard({
   const [isSaving, setIsSaving] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      supabase
+        .from('saved_posts')
+        .select('id')
+        .eq('post_id', id)
+        .eq('user_id', user.id)
+        .maybeSingle()
+        .then(({ data }) => setIsSaved(!!data));
+    }
+  }, [user, id]);
+
+  const handleSavePost = async () => {
+    if (!user) return;
+    playClick();
+    if (isSaved) {
+      await supabase.from('saved_posts').delete().eq('post_id', id).eq('user_id', user.id);
+      setIsSaved(false);
+    } else {
+      await supabase.from('saved_posts').insert({ post_id: id, user_id: user.id });
+      setIsSaved(true);
+    }
+  };
 
   const formatCount = (count: number) => {
     if (count >= 1000000) {
@@ -429,10 +454,10 @@ export function PostCard({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => playClick()}
-              className="text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 px-3"
+              onClick={handleSavePost}
+              className={`hover:bg-primary/10 h-8 px-3 ${isSaved ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
             >
-              <Bookmark className="h-4 w-4" />
+              {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
             </Button>
 
             <Button

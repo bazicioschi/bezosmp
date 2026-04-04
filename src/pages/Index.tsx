@@ -118,11 +118,11 @@ export default function Index() {
               </div>
             </div>
 
-            {/* Daily Tip */}
+            {/* Fun Fact */}
             <div className="minecraft-card p-4">
-              <h3 className="mc-text text-lg text-primary mb-2 glow-text">💡 DAILY TIP</h3>
+              <h3 className="mc-text text-lg text-primary mb-2 glow-text">💡 DID YOU KNOW?</h3>
               <p className="text-sm text-muted-foreground">
-                Hold shift while crafting to craft the maximum amount instantly!
+                BezoSMP was created to bring content creators together and build a creative community!
               </p>
             </div>
           </div>

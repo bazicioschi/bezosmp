@@ -140,6 +140,7 @@ export default function UserProfile() {
       case 'buzzy': return 'bg-yellow-400 text-black';
       case 'bazimazi': return 'bg-background text-foreground';
       case 'ghast': return 'bg-gray-300 text-black';
+      case 'dark': return 'bg-black text-white';
       default: return 'bg-background text-foreground';
     }
   };
