@@ -71,6 +71,31 @@ export function PostCard({
   const [isSaving, setIsSaving] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      supabase
+        .from('saved_posts')
+        .select('id')
+        .eq('post_id', id)
+        .eq('user_id', user.id)
+        .maybeSingle()
+        .then(({ data }) => setIsSaved(!!data));
+    }
+  }, [user, id]);
+
+  const handleSavePost = async () => {
+    if (!user) return;
+    playClick();
+    if (isSaved) {
+      await supabase.from('saved_posts').delete().eq('post_id', id).eq('user_id', user.id);
+      setIsSaved(false);
+    } else {
+      await supabase.from('saved_posts').insert({ post_id: id, user_id: user.id });
+      setIsSaved(true);
+    }
+  };
 
   const formatCount = (count: number) => {
     if (count >= 1000000) {
