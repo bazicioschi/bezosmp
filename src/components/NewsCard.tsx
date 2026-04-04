@@ -104,10 +104,6 @@ export function NewsCard({
         variant: 'destructive',
       });
     } else {
-      toast({
-        title: 'News updated',
-        description: 'Your news has been updated successfully.',
-      });
       setIsEditing(false);
       onEdit?.();
     }
