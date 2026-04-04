@@ -138,7 +138,7 @@ export default function UserProfile() {
       case 'pizza': return 'bg-black text-white';
       case 'cato': return 'bg-white text-black';
       case 'buzzy': return 'bg-yellow-400 text-black';
-      case 'bazimazi': return 'bg-background text-foreground';
+      case 'bazimazi': return 'bg-red-600 text-white';
       case 'ghast': return 'bg-gray-300 text-black';
       case 'dark': return 'bg-black text-white';
       default: return 'bg-background text-foreground';
