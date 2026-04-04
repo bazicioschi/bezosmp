@@ -222,7 +222,7 @@ export default function UserProfile() {
             <p className="text-sm text-foreground mt-2">{profile.bio}</p>
           )}
 
-          <div className="flex items-center gap-1 mt-2 text-muted-foreground">
+          <div className="flex items-center gap-1 mt-2 text-white">
             <CalendarDays className="h-4 w-4" />
             <span className="text-sm">Joined {formatDate(profile.created_at)}</span>
           </div>
