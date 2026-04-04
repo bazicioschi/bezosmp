@@ -454,10 +454,10 @@ export function PostCard({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => playClick()}
-              className="text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 px-3"
+              onClick={handleSavePost}
+              className={`hover:bg-primary/10 h-8 px-3 ${isSaved ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
             >
-              <Bookmark className="h-4 w-4" />
+              {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
             </Button>
 
             <Button
