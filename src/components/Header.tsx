@@ -1,18 +1,20 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Home, HelpCircle, Shield } from 'lucide-react';
+import { LogOut, User, Home, HelpCircle, Shield, Code } from 'lucide-react';
 import { NotificationBell } from './NotificationBell';
 import { SettingsButton } from './SettingsButton';
 import { ChatPopup } from './ChatPopup';
 import { ConnectButton } from './ConnectButton';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useAdmin } from '@/hooks/useAdmin';
+import { useTheme } from '@/hooks/useTheme';
 
 export function Header() {
   const { playClick } = useSoundEffects();
   const { user, signOut } = useAuth();
-  const { isAdmin } = useAdmin();
+  const { isAdmin, isOwner } = useAdmin();
+  const { theme } = useTheme();
 
   return (
     <header className="sticky top-0 z-50 border-b-2 border-border bg-card/95 backdrop-blur-sm">
