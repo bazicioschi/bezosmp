@@ -39,6 +39,7 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/support" element={<Support />} />
             <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/ai-coder" element={<AICoder />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
