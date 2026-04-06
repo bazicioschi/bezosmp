@@ -50,6 +50,9 @@ export default function UserProfile() {
     if (userId) {
       fetchProfileAndPosts();
       fetchCounts();
+      // Check if this user is an owner
+      supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'owner').maybeSingle()
+        .then(({ data }) => setIsProfileOwner(!!data));
     }
   }, [userId, user]);
 
