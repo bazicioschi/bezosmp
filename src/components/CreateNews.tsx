@@ -205,9 +205,9 @@ export function CreateNews({ onNewsCreated }: CreateNewsProps) {
         </Button>
       </div>
 
-      <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="News title..." className="bg-secondary/50 border-2 border-border input-glow h-12 font-display" maxLength={100} required />
+      <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="News title..." className="bg-secondary/50 border-2 border-border input-glow h-12 font-display" required />
 
-      <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="What's the news?" className="min-h-32 bg-secondary/50 border-2 border-border resize-none input-glow" maxLength={2000} required />
+      <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="What's the news?" className="min-h-32 bg-secondary/50 border-2 border-border resize-none input-glow" required />
 
       <div className="space-y-2">
         <input ref={fileInputRef} type="file" multiple accept="image/*" onChange={handleImageUpload} className="hidden" />

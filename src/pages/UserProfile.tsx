@@ -44,11 +44,15 @@ export default function UserProfile() {
   const [loading, setLoading] = useState(true);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [isProfileOwner, setIsProfileOwner] = useState(false);
 
   useEffect(() => {
     if (userId) {
       fetchProfileAndPosts();
       fetchCounts();
+      // Check if this user is an owner
+      supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'owner').maybeSingle()
+        .then(({ data }) => setIsProfileOwner(!!data));
     }
   }, [userId, user]);
 
@@ -171,7 +175,7 @@ export default function UserProfile() {
 
           {/* Avatar */}
           <div className="absolute -bottom-16 left-4">
-            <Avatar className="h-32 w-32 border-4 border-background">
+            <Avatar className={`h-32 w-32 border-4 border-background ${isProfileOwner ? 'profile-shiny profile-shiny-border' : ''}`}>
               <AvatarImage src={profile.avatar_url || undefined} />
               <AvatarFallback className="bg-primary/20 text-primary font-display text-3xl">
                 {profile.username?.slice(0, 2).toUpperCase() || <User className="h-12 w-12" />}
@@ -216,7 +220,10 @@ export default function UserProfile() {
 
         {/* Profile info */}
         <div className="px-4 pt-12 pb-4">
-          <h1 className="font-display text-xl font-bold text-white">{profile.username}</h1>
+          <h1 className="font-display text-xl font-bold text-white flex items-center gap-2">
+            {profile.username}
+            {isProfileOwner && <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded font-bold border border-yellow-500/30">👑 OWNER</span>}
+          </h1>
           
           {profile.bio && (
             <p className="text-sm text-foreground mt-2">{profile.bio}</p>

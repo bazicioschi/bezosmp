@@ -1930,3 +1930,40 @@
     background-color: hsl(0 0% 100%) !important;
   }
 }
+
+/* Shiny profile effect for owners */
+@keyframes shiny-profile {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.profile-shiny {
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-shiny::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 215, 0, 0.15) 25%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 215, 0, 0.15) 75%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shiny-profile 3s linear infinite;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.profile-shiny-border {
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.4), 0 0 30px rgba(255, 215, 0, 0.2), inset 0 0 15px rgba(255, 215, 0, 0.1);
+  border: 2px solid rgba(255, 215, 0, 0.5) !important;
+}

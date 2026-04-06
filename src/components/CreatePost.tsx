@@ -348,7 +348,6 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             onChange={setContent}
             placeholder="What's happening on the server? Use @username to mention"
             className="min-h-[80px] bg-transparent border-0 resize-none text-lg placeholder:text-muted-foreground focus-visible:ring-0 p-0 mc-text"
-            maxLength={280}
           />
 
           {imagePreviews.length > 0 && (
@@ -476,8 +475,8 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             </div>
 
             <div className="flex items-center gap-3">
-              <span className={`mc-text text-sm ${content.length > 250 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                {content.length}/280
+              <span className="mc-text text-sm text-muted-foreground">
+                {content.length}
               </span>
               <Button 
                 type="submit" 
