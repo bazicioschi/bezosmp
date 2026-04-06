@@ -175,7 +175,7 @@ export default function UserProfile() {
 
           {/* Avatar */}
           <div className="absolute -bottom-16 left-4">
-            <Avatar className="h-32 w-32 border-4 border-background">
+            <Avatar className={`h-32 w-32 border-4 border-background ${isProfileOwner ? 'profile-shiny profile-shiny-border' : ''}`}>
               <AvatarImage src={profile.avatar_url || undefined} />
               <AvatarFallback className="bg-primary/20 text-primary font-display text-3xl">
                 {profile.username?.slice(0, 2).toUpperCase() || <User className="h-12 w-12" />}
