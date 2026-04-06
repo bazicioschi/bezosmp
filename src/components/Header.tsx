@@ -31,7 +31,7 @@ export function Header() {
         </Link>
 
         <nav className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" asChild className="mc-slot hover:mc-slot-active px-3 h-8 text-black" onClick={() => playClick()}>
+          <Button variant="ghost" size="sm" asChild className={`mc-slot hover:mc-slot-active px-3 h-8 ${theme === 'dark' ? 'text-white' : 'text-black'}`} onClick={() => playClick()}>
             <Link to="/" className="flex items-center gap-2">
               <Home className="h-4 w-4" />
               <span className="hidden md:inline mc-text text-sm">HOME</span>

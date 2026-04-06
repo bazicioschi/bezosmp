@@ -6,15 +6,16 @@ export function useAdmin() {
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isModerator, setIsModerator] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // True if user is admin OR moderator (both can moderate content)
-  const canModerate = isAdmin || isModerator;
+  const canModerate = isAdmin || isModerator || isOwner;
 
   useEffect(() => {
     if (!user) {
       setIsAdmin(false);
       setIsModerator(false);
+      setIsOwner(false);
       setLoading(false);
       return;
     }
@@ -28,11 +29,12 @@ export function useAdmin() {
       const roles = data?.map(r => r.role) || [];
       setIsAdmin(roles.includes('admin'));
       setIsModerator(roles.includes('moderator'));
+      setIsOwner(roles.includes('owner'));
       setLoading(false);
     };
 
     checkRoles();
   }, [user]);
 
-  return { isAdmin, isModerator, canModerate, loading };
+  return { isAdmin, isModerator, isOwner, canModerate, loading };
 }
