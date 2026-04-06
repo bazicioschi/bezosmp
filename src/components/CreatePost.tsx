@@ -348,7 +348,6 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             onChange={setContent}
             placeholder="What's happening on the server? Use @username to mention"
             className="min-h-[80px] bg-transparent border-0 resize-none text-lg placeholder:text-muted-foreground focus-visible:ring-0 p-0 mc-text"
-            maxLength={280}
           />
 
           {imagePreviews.length > 0 && (
