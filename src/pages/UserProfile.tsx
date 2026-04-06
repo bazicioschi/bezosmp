@@ -220,7 +220,10 @@ export default function UserProfile() {
 
         {/* Profile info */}
         <div className="px-4 pt-12 pb-4">
-          <h1 className="font-display text-xl font-bold text-white">{profile.username}</h1>
+          <h1 className="font-display text-xl font-bold text-white flex items-center gap-2">
+            {profile.username}
+            {isProfileOwner && <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded font-bold border border-yellow-500/30">👑 OWNER</span>}
+          </h1>
           
           {profile.bio && (
             <p className="text-sm text-foreground mt-2">{profile.bio}</p>
