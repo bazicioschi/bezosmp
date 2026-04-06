@@ -475,8 +475,8 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             </div>
 
             <div className="flex items-center gap-3">
-              <span className={`mc-text text-sm ${content.length > 250 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                {content.length}/280
+              <span className="mc-text text-sm text-muted-foreground">
+                {content.length}
               </span>
               <Button 
                 type="submit" 

@@ -340,7 +340,7 @@ export function SettingsButton() {
 
           <div className="pt-2 border-t border-border">
             <p className="text-xs text-muted-foreground text-center mc-text">
-              bezoSMP 2.0
+              bezoSMP 2.1
             </p>
           </div>
         </div>

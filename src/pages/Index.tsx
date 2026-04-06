@@ -120,9 +120,9 @@ export default function Index() {
 
             {/* Fun Fact */}
             <div className="minecraft-card p-4">
-              <h3 className="mc-text text-lg text-primary mb-2 glow-text">💡 DID YOU KNOW?</h3>
+            <h3 className="mc-text text-lg text-primary mb-2 glow-text">💡 DID YOU KNOW?</h3>
               <p className="text-sm text-muted-foreground">
-                BezoSMP was created to bring content creators together and build a creative community!
+                BezoSMP was created by Bazicioschi and his friend help Cato the rat, baz 2019 Cato 2013
               </p>
             </div>
           </div>
