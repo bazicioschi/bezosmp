@@ -16,6 +16,7 @@ import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import Support from "./pages/Support";
 import AdminPanel from "./pages/AdminPanel";
+import AICoder from "./pages/AICoder";
 
 const queryClient = new QueryClient();
 
