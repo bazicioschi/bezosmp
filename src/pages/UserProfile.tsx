@@ -44,6 +44,7 @@ export default function UserProfile() {
   const [loading, setLoading] = useState(true);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [isProfileOwner, setIsProfileOwner] = useState(false);
 
   useEffect(() => {
     if (userId) {
