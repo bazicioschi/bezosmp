@@ -85,10 +85,10 @@ export function Header() {
           ) : (
             <>
               <SettingsButton />
-              <Button variant="ghost" size="sm" asChild className="mc-slot hover:mc-slot-active px-3 h-8 text-black" onClick={() => playClick()}>
+              <Button variant="ghost" size="sm" asChild className={`mc-slot hover:mc-slot-active px-3 h-8 ${theme === 'dark' ? 'text-white' : 'text-black'}`} onClick={() => playClick()}>
                 <Link to="/login" className="mc-text text-sm">LOGIN</Link>
               </Button>
-              <Button size="sm" asChild className="mc-btn-primary px-4 h-8 text-black" onClick={() => playClick()}>
+              <Button size="sm" asChild className={`mc-btn-primary px-4 h-8 ${theme === 'dark' ? 'text-white' : 'text-black'}`} onClick={() => playClick()}>
                 <Link to="/signup" className="mc-text text-sm">SIGN UP</Link>
               </Button>
             </>

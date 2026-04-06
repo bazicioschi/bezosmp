@@ -60,7 +60,7 @@ export function ConnectButton() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="mc-slot hover:mc-slot-active px-3 h-8 text-black">
+        <Button variant="ghost" size="sm" className="mc-slot hover:mc-slot-active px-3 h-8">
           <Link2 className="h-4 w-4" />
           <span className="hidden md:inline mc-text text-sm ml-1">CONNECT</span>
         </Button>
