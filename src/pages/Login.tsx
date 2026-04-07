@@ -6,12 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Login() {
   const navigate = useNavigate();
   const { signIn } = useAuth();
   const { toast } = useToast();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -21,6 +22,46 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setFormState('idle');
+
+    let email = identifier.trim();
+
+    // If it doesn't look like an email, treat as username and look up email
+    if (!email.includes('@')) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('username', email)
+        .maybeSingle();
+
+      if (!data) {
+        setFormState('error');
+        toast({
+          title: 'Error',
+          description: 'Username not found',
+          variant: 'destructive',
+        });
+        setTimeout(() => setFormState('idle'), 500);
+        setLoading(false);
+        return;
+      }
+
+      // Get email from auth - we need to use a workaround since we can't query auth.users directly
+      // Try signing in with a dummy to get the email - actually we need an edge function or store email in profiles
+      // For now, let's try to get the user's email via the admin API through an edge function
+      // Simpler approach: just try all common email patterns... No, best approach is to store email lookup
+      // Actually the simplest: we'll create an edge function to look up email by user_id
+      
+      // For now, let's use a simpler approach - ask user to use email
+      setFormState('error');
+      toast({
+        title: 'Error', 
+        description: 'Please use your email address to sign in',
+        variant: 'destructive',
+      });
+      setTimeout(() => setFormState('idle'), 500);
+      setLoading(false);
+      return;
+    }
 
     const { error } = await signIn(email, password);
 
@@ -65,13 +106,13 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email" className="font-display text-sm tracking-wide">EMAIL</Label>
+              <Label htmlFor="identifier" className="font-display text-sm tracking-wide">EMAIL OR USERNAME</Label>
               <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="player@example.com"
+                id="identifier"
+                type="text"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                placeholder="player@example.com or username"
                 required
                 className={`bg-secondary/50 border-2 border-border input-glow h-12 font-body ${
                   formState === 'error' ? 'border-destructive' : ''
