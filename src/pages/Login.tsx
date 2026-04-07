@@ -27,51 +27,41 @@ export default function Login() {
 
     // If it doesn't look like an email, treat as username and look up email
     if (!email.includes('@')) {
-      const { data } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .eq('username', email)
-        .maybeSingle();
-
-      if (!data) {
+      try {
+        const resp = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/lookup-email`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({ username: email }),
+          }
+        );
+        const data = await resp.json();
+        if (!resp.ok || !data.email) {
+          setFormState('error');
+          toast({ title: 'Error', description: 'Username not found', variant: 'destructive' });
+          setTimeout(() => setFormState('idle'), 500);
+          setLoading(false);
+          return;
+        }
+        email = data.email;
+      } catch {
         setFormState('error');
-        toast({
-          title: 'Error',
-          description: 'Username not found',
-          variant: 'destructive',
-        });
+        toast({ title: 'Error', description: 'Could not look up username', variant: 'destructive' });
         setTimeout(() => setFormState('idle'), 500);
         setLoading(false);
         return;
       }
-
-      // Get email from auth - we need to use a workaround since we can't query auth.users directly
-      // Try signing in with a dummy to get the email - actually we need an edge function or store email in profiles
-      // For now, let's try to get the user's email via the admin API through an edge function
-      // Simpler approach: just try all common email patterns... No, best approach is to store email lookup
-      // Actually the simplest: we'll create an edge function to look up email by user_id
-      
-      // For now, let's use a simpler approach - ask user to use email
-      setFormState('error');
-      toast({
-        title: 'Error', 
-        description: 'Please use your email address to sign in',
-        variant: 'destructive',
-      });
-      setTimeout(() => setFormState('idle'), 500);
-      setLoading(false);
-      return;
     }
 
     const { error } = await signIn(email, password);
 
     if (error) {
       setFormState('error');
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
       setTimeout(() => setFormState('idle'), 500);
     } else {
       setFormState('success');
@@ -84,7 +74,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-background to-secondary/20">
-      {/* Minecraft-style decorative blocks */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-10 left-10 w-8 h-8 bg-primary/20 border-2 border-primary/30 rotate-12 animate-float" />
         <div className="absolute top-32 right-20 w-6 h-6 bg-primary/10 border-2 border-primary/20 -rotate-12 animate-float" style={{ animationDelay: '1s' }} />
