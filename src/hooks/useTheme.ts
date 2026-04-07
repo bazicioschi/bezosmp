@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export type ThemeMode = 'dark' | 'light' | 'bazimazi' | 'cato' | 'pizza' | 'ghast' | 'buzzy' | 'orange' | 'custom';
+export type ThemeMode = 'dark' | 'light' | 'bazimazi' | 'cato' | 'pizza' | 'ghast' | 'buzzy' | 'custom';
 
 export interface CustomThemeColors {
   primary: string;
