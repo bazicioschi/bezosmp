@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Citrus, Palette, User } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Palette, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
