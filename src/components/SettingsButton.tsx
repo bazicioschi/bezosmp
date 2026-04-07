@@ -74,7 +74,6 @@ export function SettingsButton() {
     if (isPizza) return <Pizza className="h-4 w-4 text-primary" />;
     if (isGhast) return <Ghost className="h-4 w-4 text-primary" />;
     if (isBuzzy) return <Flower className="h-4 w-4 text-primary" />;
-    if (isOrange) return <Citrus className="h-4 w-4 text-primary" />;
     return <Sun className="h-4 w-4 text-primary" />;
   };
 
