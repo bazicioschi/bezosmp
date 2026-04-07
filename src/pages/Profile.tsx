@@ -245,7 +245,7 @@ export default function Profile() {
             <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="w-full border-destructive text-destructive hover:bg-destructive/10" size="lg">
-                  <Trash2 className="h-4 w-4 mr-2 text-black" />
+                  <Trash2 className={`h-4 w-4 mr-2 ${theme === 'bazimazi' ? 'text-white' : 'text-black'}`} />
                   Delete Account
                 </Button>
               </DialogTrigger>

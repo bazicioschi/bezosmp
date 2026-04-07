@@ -298,7 +298,6 @@ export function useTheme() {
     isPizza: theme === 'pizza',
     isGhast: theme === 'ghast',
     isBuzzy: theme === 'buzzy',
-    isOrange: theme === 'orange',
     isCustom: theme === 'custom',
   };
 }
