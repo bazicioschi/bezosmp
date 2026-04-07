@@ -85,7 +85,6 @@ export function SettingsButton() {
     if (isPizza) return 'Pizza (Green)';
     if (isGhast) return 'Ghast (Minecraft)';
     if (isBuzzy) return 'Buzzy (Bee)';
-    if (isOrange) return 'Orange (Citrus)';
     return 'Red & White (Clean)';
   };
 
