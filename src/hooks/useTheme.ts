@@ -39,7 +39,7 @@ export function useTheme() {
     
     const root = document.documentElement;
     
-    root.classList.remove('light-mode', 'dark-mode', 'bazimazi-mode', 'cato-mode', 'pizza-mode', 'ghast-mode', 'buzzy-mode', 'orange-mode');
+    root.classList.remove('light-mode', 'dark-mode', 'bazimazi-mode', 'cato-mode', 'pizza-mode', 'ghast-mode', 'buzzy-mode');
     root.style.removeProperty('color');
     
     if (newTheme === 'light') {
