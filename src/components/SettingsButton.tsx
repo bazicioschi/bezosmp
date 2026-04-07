@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Citrus, Palette, User } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Palette, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
   const { playClick } = useSoundEffects();
-  const { theme, setTheme, setCustomColor, isDark, isLight, isBaziMazi, isCato, isPizza, isGhast, isBuzzy, isOrange, isCustom } = useTheme();
+  const { theme, setTheme, setCustomColor, isDark, isLight, isBaziMazi, isCato, isPizza, isGhast, isBuzzy, isCustom } = useTheme();
   const [soundsEnabled, setSoundsEnabled] = useState(true);
   const { isEnabled, setEnabled } = useSoundEffects();
   const { user } = useAuth();
@@ -74,7 +74,6 @@ export function SettingsButton() {
     if (isPizza) return <Pizza className="h-4 w-4 text-primary" />;
     if (isGhast) return <Ghost className="h-4 w-4 text-primary" />;
     if (isBuzzy) return <Flower className="h-4 w-4 text-primary" />;
-    if (isOrange) return <Citrus className="h-4 w-4 text-primary" />;
     return <Sun className="h-4 w-4 text-primary" />;
   };
 
@@ -86,7 +85,6 @@ export function SettingsButton() {
     if (isPizza) return 'Pizza (Green)';
     if (isGhast) return 'Ghast (Minecraft)';
     if (isBuzzy) return 'Buzzy (Bee)';
-    if (isOrange) return 'Orange (Citrus)';
     return 'Red & White (Clean)';
   };
 
@@ -222,16 +220,6 @@ export function SettingsButton() {
               </button>
               
               <button
-                onClick={() => handleThemeChange('orange')}
-                className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                  isOrange ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
-                }`}
-              >
-                <Citrus className="h-4 w-4" />
-                <span className="text-xs mc-text">Orange</span>
-              </button>
-
-              <button
                 onClick={() => setShowColorPicker(!showColorPicker)}
                 className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
                   isCustom ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
@@ -340,7 +328,7 @@ export function SettingsButton() {
 
           <div className="pt-2 border-t border-border">
             <p className="text-xs text-muted-foreground text-center mc-text">
-              bezoSMP 2.1
+              bezoSMP 2.2
             </p>
           </div>
         </div>

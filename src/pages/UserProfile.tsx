@@ -138,7 +138,6 @@ export default function UserProfile() {
 
   const getProfileBgClass = () => {
     switch (theme) {
-      case 'orange': return 'bg-orange-400 text-black';
       case 'pizza': return 'bg-black text-white';
       case 'cato': return 'bg-white text-black';
       case 'buzzy': return 'bg-yellow-400 text-black';

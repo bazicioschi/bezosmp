@@ -6,12 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Login() {
   const navigate = useNavigate();
   const { signIn } = useAuth();
   const { toast } = useToast();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -22,15 +23,45 @@ export default function Login() {
     setLoading(true);
     setFormState('idle');
 
+    let email = identifier.trim();
+
+    // If it doesn't look like an email, treat as username and look up email
+    if (!email.includes('@')) {
+      try {
+        const resp = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/lookup-email`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({ username: email }),
+          }
+        );
+        const data = await resp.json();
+        if (!resp.ok || !data.email) {
+          setFormState('error');
+          toast({ title: 'Error', description: 'Username not found', variant: 'destructive' });
+          setTimeout(() => setFormState('idle'), 500);
+          setLoading(false);
+          return;
+        }
+        email = data.email;
+      } catch {
+        setFormState('error');
+        toast({ title: 'Error', description: 'Could not look up username', variant: 'destructive' });
+        setTimeout(() => setFormState('idle'), 500);
+        setLoading(false);
+        return;
+      }
+    }
+
     const { error } = await signIn(email, password);
 
     if (error) {
       setFormState('error');
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
       setTimeout(() => setFormState('idle'), 500);
     } else {
       setFormState('success');
@@ -43,7 +74,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-background to-secondary/20">
-      {/* Minecraft-style decorative blocks */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-10 left-10 w-8 h-8 bg-primary/20 border-2 border-primary/30 rotate-12 animate-float" />
         <div className="absolute top-32 right-20 w-6 h-6 bg-primary/10 border-2 border-primary/20 -rotate-12 animate-float" style={{ animationDelay: '1s' }} />
@@ -65,13 +95,13 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email" className="font-display text-sm tracking-wide">EMAIL</Label>
+              <Label htmlFor="identifier" className="font-display text-sm tracking-wide">EMAIL OR USERNAME</Label>
               <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="player@example.com"
+                id="identifier"
+                type="text"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                placeholder="player@example.com or username"
                 required
                 className={`bg-secondary/50 border-2 border-border input-glow h-12 font-body ${
                   formState === 'error' ? 'border-destructive' : ''

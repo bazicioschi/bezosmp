@@ -74,9 +74,6 @@ export function Footer() {
           <p className="text-xs text-muted-foreground">
             © {currentYear} bezoSMP. Not affiliated with Mojang or Microsoft.
           </p>
-          <p className="text-xs text-muted-foreground mc-text">
-            ⛏️ BUILT WITH BLOCKS OF LOVE ⛏️
-          </p>
         </div>
       </div>
     </footer>
