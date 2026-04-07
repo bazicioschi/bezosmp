@@ -201,7 +201,7 @@ export default function Profile() {
         </div>
 
         {/* Profile info */}
-        <div className={`pt-20 px-4 pb-8 rounded-t-lg min-h-screen ${theme === 'ghast' ? 'bg-gray-300' : (theme === 'pizza' || theme === 'dark') ? 'bg-black' : theme === 'orange' ? 'bg-orange-400' : theme === 'buzzy' ? 'bg-yellow-400' : theme === 'bazimazi' ? 'bg-red-600' : 'bg-white'}`}>
+        <div className={`pt-20 px-4 pb-8 rounded-t-lg min-h-screen ${theme === 'ghast' ? 'bg-gray-300' : (theme === 'pizza' || theme === 'dark') ? 'bg-black' : theme === 'buzzy' ? 'bg-yellow-400' : theme === 'bazimazi' ? 'bg-red-600' : 'bg-white'}`}>
           <div className="mb-6">
             <h1 className="font-display text-2xl font-bold text-foreground">{profile?.username}</h1>
             <p className="text-muted-foreground text-sm">{user?.email}</p>
