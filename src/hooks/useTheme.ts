@@ -280,7 +280,7 @@ export function useTheme() {
   }, []);
 
   const toggleTheme = useCallback(() => {
-    const themes: ThemeMode[] = ['dark', 'light', 'bazimazi', 'cato', 'pizza', 'ghast', 'buzzy', 'orange', 'custom'];
+    const themes: ThemeMode[] = ['dark', 'light', 'bazimazi', 'cato', 'pizza', 'ghast', 'buzzy', 'custom'];
     const currentIndex = themes.indexOf(theme);
     const nextIndex = (currentIndex + 1) % themes.length;
     setTheme(themes[nextIndex]);
