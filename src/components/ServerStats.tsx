@@ -71,7 +71,7 @@ export function ServerStats() {
         <div className="mc-slot h-8 w-8 flex items-center justify-center animate-pulse">
           <Zap className="h-4 w-4 text-primary" />
         </div>
-        <h3 className="mc-text text-lg text-foreground glow-text">SERVER STATS</h3>
+        <h3 className="mc-text text-lg text-foreground glow-text">BEZO USERS</h3>
       </div>
 
       <div className="grid grid-cols-3 gap-2">

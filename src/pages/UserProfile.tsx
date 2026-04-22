@@ -141,7 +141,7 @@ export default function UserProfile() {
       case 'pizza': return 'bg-black text-white';
       case 'cato': return 'bg-white text-black';
       case 'buzzy': return 'bg-yellow-400 text-black';
-      case 'bazimazi': return 'bg-red-600 text-white';
+      case 'bazimazi': return 'bg-white text-red-600';
       case 'ghast': return 'bg-gray-300 text-black';
       case 'dark': return 'bg-black text-white';
       default: return 'bg-background text-foreground';
@@ -221,7 +221,7 @@ export default function UserProfile() {
         <div className="px-4 pt-12 pb-4">
           <h1 className="font-display text-xl font-bold text-white flex items-center gap-2">
             {profile.username}
-            {isProfileOwner && <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded font-bold border border-yellow-500/30">👑 OWNER</span>}
+            {isProfileOwner && <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded font-bold border border-yellow-500/30">OWNER</span>}
           </h1>
           
           {profile.bio && (

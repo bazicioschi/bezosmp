@@ -105,22 +105,12 @@ export default function Index() {
               <p className="text-sm text-muted-foreground leading-relaxed">
                 BezoSMP is an online platform for content YouTube and TikTok. Not associated with Mojang or Microsoft.
               </p>
-              <div className="mt-3 flex gap-2">
-                <div className="mc-slot px-2 py-1 text-xs text-center">
-                  <span className="text-primary mc-text">⚔️ PVP</span>
-                </div>
-                <div className="mc-slot px-2 py-1 text-xs text-center">
-                  <span className="text-primary mc-text">🏠 SMP</span>
-                </div>
-                <div className="mc-slot px-2 py-1 text-xs text-center">
-                  <span className="text-primary mc-text">⛏️ BUILD</span>
-                </div>
-              </div>
+
             </div>
 
             {/* Fun Fact */}
             <div className="minecraft-card p-4">
-            <h3 className="mc-text text-lg text-primary mb-2 glow-text">💡 DID YOU KNOW?</h3>
+            <h3 className="mc-text text-lg text-primary mb-2 glow-text">DID YOU KNOW?</h3>
               <p className="text-sm text-muted-foreground">
                 BezoSMP was created by Bazicioschi and his friend's help Cato. Cato-2013 Bazicioschi-2019
               </p>
