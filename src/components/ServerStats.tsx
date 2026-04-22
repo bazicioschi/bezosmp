@@ -58,7 +58,7 @@ export function ServerStats() {
   };
 
   const statItems = [
-    { icon: Users, label: 'PLAYERS', value: animatedStats.users, color: 'text-primary' },
+    { icon: Users, label: 'USERS', value: animatedStats.users, color: 'text-primary' },
     { icon: MessageSquare, label: 'POSTS', value: animatedStats.posts, color: 'text-primary' },
     { icon: Heart, label: 'LIKES', value: animatedStats.likes, color: 'text-primary' },
   ];
