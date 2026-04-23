@@ -14,6 +14,18 @@ export function ServerStats() {
 
   useEffect(() => {
     fetchStats();
+
+    const channel = supabase
+      .channel('stats-changes')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'profiles' }, fetchStats)
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'profiles' }, fetchStats)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, fetchStats)
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'posts' }, fetchStats)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'likes' }, fetchStats)
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'likes' }, fetchStats)
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   useEffect(() => {

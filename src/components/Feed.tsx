@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { PostCard } from './PostCard';
 import { CreatePost } from './CreatePost';
+
+const PAGE_SIZE = 10;
 
 interface Post {
   id: string;
@@ -19,43 +21,47 @@ interface Post {
   user_liked: boolean;
 }
 
-export function Feed() {
+interface FeedProps {
+  refreshTrigger?: number;
+}
+
+export function Feed({ refreshTrigger }: FeedProps) {
   const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const pageRef = useRef(0);
+  const hasMoreRef = useRef(true);
+  const loadingMoreRef = useRef(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const loadMoreFnRef = useRef<() => Promise<void>>();
 
-  const fetchPosts = async () => {
-    const { data: postsData, error: postsError } = await supabase
-      .from('posts')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (postsError || !postsData) {
-      setLoading(false);
-      return;
-    }
-
+  const enrichPosts = async (postsData: any[]) => {
+    if (!postsData.length) return [];
     const userIds = [...new Set(postsData.map(p => p.user_id))];
     const { data: profilesData } = await supabase
       .from('profiles')
       .select('user_id, username, avatar_url')
       .in('user_id', userIds);
 
+    const postIds = postsData.map(p => p.id);
     const { data: likesData } = await supabase
       .from('likes')
-      .select('post_id, user_id');
+      .select('post_id, user_id')
+      .in('post_id', postIds);
 
     const { data: commentsData } = await supabase
       .from('comments')
-      .select('post_id');
+      .select('post_id')
+      .in('post_id', postIds);
 
     const profilesMap = new Map(profilesData?.map(p => [p.user_id, p]) || []);
-    
-    const enrichedPosts: Post[] = postsData.map(post => {
+
+    return postsData.map(post => {
       const profile = profilesMap.get(post.user_id);
       const postLikes = likesData?.filter(l => l.post_id === post.id) || [];
       const postComments = commentsData?.filter(c => c.post_id === post.id) || [];
-      
       return {
         id: post.id,
         content: post.content,
@@ -67,27 +73,104 @@ export function Feed() {
         avatar_url: profile?.avatar_url || null,
         likes_count: postLikes.length,
         comments_count: postComments.length,
-        user_liked: user ? postLikes.some(l => l.user_id === user.id) : false,
+        user_liked: user ? postLikes.some((l: any) => l.user_id === user.id) : false,
       };
     });
-
-    setPosts(enrichedPosts);
-    setLoading(false);
   };
+
+  // Initial load / full refresh (page 0)
+  const fetchPosts = useCallback(async () => {
+    setLoading(true);
+    pageRef.current = 0;
+    hasMoreRef.current = true;
+    setHasMore(true);
+    const { data: postsData, error } = await supabase
+      .from('posts')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .range(0, PAGE_SIZE - 1);
+
+    if (error || !postsData) { setLoading(false); return; }
+
+    const enriched = await enrichPosts(postsData);
+    setPosts(enriched);
+    const more = postsData.length === PAGE_SIZE;
+    hasMoreRef.current = more;
+    setHasMore(more);
+    setLoading(false);
+  }, [user]);
+
+  // Load next page and append
+  const loadMore = useCallback(async () => {
+    if (loadingMoreRef.current || !hasMoreRef.current) return;
+    loadingMoreRef.current = true;
+    setLoadingMore(true);
+    const nextPage = pageRef.current + 1;
+    const from = nextPage * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+
+    const { data: postsData, error } = await supabase
+      .from('posts')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (!error && postsData) {
+      const enriched = await enrichPosts(postsData);
+      setPosts(prev => {
+        const existingIds = new Set(prev.map(p => p.id));
+        const newPosts = enriched.filter(p => !existingIds.has(p.id));
+        return [...prev, ...newPosts];
+      });
+      const more = postsData.length === PAGE_SIZE;
+      hasMoreRef.current = more;
+      setHasMore(more);
+      pageRef.current = nextPage;
+    }
+    loadingMoreRef.current = false;
+    setLoadingMore(false);
+  }, [user]);
+
+  // Keep ref always pointing to latest loadMore (avoids stale closures in scroll handler)
+  useEffect(() => { loadMoreFnRef.current = loadMore; }, [loadMore]);
+
+  // Scroll-based infinite scroll — fires reliably on every scroll near bottom
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrolled = window.scrollY + window.innerHeight;
+      const threshold = document.documentElement.scrollHeight - 300;
+      if (scrolled >= threshold) loadMoreFnRef.current?.();
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     fetchPosts();
 
     const channel = supabase
       .channel('posts-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, fetchPosts)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, fetchPosts)
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'posts' }, fetchPosts)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'likes' }, fetchPosts)
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [user]);
+
+  // Listen for admin-triggered feed refreshes
+  useEffect(() => {
+    const adminChannel = supabase
+      .channel('admin-feed-control')
+      .on('broadcast', { event: 'feed_refresh' }, () => { fetchPosts(); })
+      .subscribe();
+    return () => { supabase.removeChannel(adminChannel); };
+  }, []);
+
+  // Re-fetch when parent passes a new refreshTrigger value
+  useEffect(() => {
+    if (refreshTrigger !== undefined && refreshTrigger > 0) fetchPosts();
+  }, [refreshTrigger]);
 
   if (loading) {
     return (
@@ -106,25 +189,35 @@ export function Feed() {
           <p className="text-muted-foreground">No posts yet. Be the first to share something!</p>
         </div>
       ) : (
-        posts.map((post) => (
-          <PostCard
-            key={post.id}
-            id={post.id}
-            content={post.content}
-            imageUrl={post.image_url}
-            videoUrl={post.video_url}
-            createdAt={post.created_at}
-            userId={post.user_id}
-            username={post.username}
-            avatarUrl={post.avatar_url}
-            likesCount={post.likes_count}
-            commentsCount={post.comments_count}
-            isLiked={post.user_liked}
-            onLikeToggle={fetchPosts}
-            onDelete={fetchPosts}
-            onEdit={fetchPosts}
-          />
-        ))
+        <>
+          {posts.map((post) => (
+            <PostCard
+              key={post.id}
+              id={post.id}
+              content={post.content}
+              imageUrl={post.image_url}
+              videoUrl={post.video_url}
+              createdAt={post.created_at}
+              userId={post.user_id}
+              username={post.username}
+              avatarUrl={post.avatar_url}
+              likesCount={post.likes_count}
+              commentsCount={post.comments_count}
+              isLiked={post.user_liked}
+              onLikeToggle={fetchPosts}
+              onDelete={fetchPosts}
+              onEdit={fetchPosts}
+            />
+          ))}
+
+          {/* Sentinel for IntersectionObserver */}
+          <div ref={sentinelRef} className="py-4 flex justify-center">
+            {loadingMore && <Loader2 className="h-6 w-6 animate-spin text-primary" />}
+            {!hasMore && !loadingMore && (
+              <p className="text-xs text-muted-foreground mc-text">You're all caught up!</p>
+            )}
+          </div>
+        </>
       )}
     </div>
   );

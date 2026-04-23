@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Ban, UserX, MessageSquareOff, PenOff, Loader2, Crown, ShieldCheck } from 'lucide-react';
+import { Shield, Ban, UserX, MessageSquareOff, PenOff, Loader2, Crown, ShieldCheck, RefreshCw } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -25,12 +25,23 @@ export default function AdminPanel() {
   const [search, setSearch] = useState('');
   const [users, setUsers] = useState<UserWithRestrictions[]>([]);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (!adminLoading && !isAdmin) {
       navigate('/');
     }
   }, [isAdmin, adminLoading]);
+
+  const refreshFeed = async () => {
+    setRefreshing(true);
+    const channel = supabase.channel('admin-feed-control');
+    await channel.subscribe();
+    await channel.send({ type: 'broadcast', event: 'feed_refresh', payload: {} });
+    supabase.removeChannel(channel);
+    toast({ title: 'Feed refreshed', description: 'All clients will reload the post feed.' });
+    setRefreshing(false);
+  };
 
   const searchUsers = async () => {
     if (!search.trim()) return;
@@ -124,6 +135,12 @@ export default function AdminPanel() {
             ADMIN PANEL
           </h1>
           <p className="text-muted-foreground text-sm">Manage user roles and restrictions.</p>
+          <div className="mt-4">
+            <Button onClick={refreshFeed} disabled={refreshing} className="gap-2">
+              {refreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              Refresh Feed
+            </Button>
+          </div>
         </div>
 
         {/* Search users */}

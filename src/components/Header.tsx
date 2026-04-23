@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Home, HelpCircle, Shield, Code } from 'lucide-react';
+import { LogOut, User, Home, HelpCircle, Shield, Code, FolderOpen } from 'lucide-react';
 import { NotificationBell } from './NotificationBell';
 import { SettingsButton } from './SettingsButton';
 import { ChatPopup } from './ChatPopup';
@@ -67,10 +67,16 @@ export function Header() {
                 <Button variant="ghost" size="sm" asChild className="mc-slot hover:mc-slot-active px-3 h-8" onClick={() => playClick()}>
                   <Link to="/ai-coder" className="flex items-center gap-2">
                     <Code className="h-4 w-4" />
-                    <span className="hidden md:inline mc-text text-sm">AI</span>
+                    <span className="hidden md:inline mc-text text-sm">BEZO AI</span>
                   </Link>
                 </Button>
               )}
+              <Button variant="ghost" size="sm" asChild className="mc-slot hover:mc-slot-active px-3 h-8" onClick={() => playClick()}>
+                <Link to="/files" className="flex items-center gap-2">
+                  <FolderOpen className="h-4 w-4" />
+                  <span className="hidden md:inline mc-text text-sm">FILES</span>
+                </Link>
+              </Button>
               <SettingsButton />
               <ChatPopup />
               <Button

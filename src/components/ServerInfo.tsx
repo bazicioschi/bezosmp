@@ -1,4 +1,4 @@
-import { Copy, Check, Globe, Sword, Shield, Pickaxe } from 'lucide-react';
+import { Copy, Check, Globe } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 
@@ -29,24 +29,7 @@ export function ServerInfo() {
           <Globe className="h-6 w-6 text-primary" />
         </div>
         <div>
-          <h2 className="mc-text text-xl text-foreground glow-text">JOIN SERVER</h2>
-          <p className="text-xs text-muted-foreground">Minecraft Bedrock Edition</p>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-2 mb-4">
-        <div className="mc-slot p-2 text-center hover:mc-slot-active transition-all cursor-pointer">
-          <Sword className="h-4 w-4 text-primary mx-auto mb-1" />
-          <span className="text-xs text-muted-foreground mc-text">PVP</span>
-        </div>
-        <div className="mc-slot p-2 text-center hover:mc-slot-active transition-all cursor-pointer">
-          <Shield className="h-4 w-4 text-primary mx-auto mb-1" />
-          <span className="text-xs text-muted-foreground mc-text">SMP</span>
-        </div>
-        <div className="mc-slot p-2 text-center hover:mc-slot-active transition-all cursor-pointer">
-          <Pickaxe className="h-4 w-4 text-primary mx-auto mb-1" />
-          <span className="text-xs text-muted-foreground mc-text">BUILD</span>
+          <h2 className="mc-text text-xl text-foreground glow-text">BEZO COMMUNITY</h2>
         </div>
       </div>
 

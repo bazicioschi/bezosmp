@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 import Support from "./pages/Support";
 import AdminPanel from "./pages/AdminPanel";
 import AICoder from "./pages/AICoder";
+import BezoFiles from "./pages/BezoFiles";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/support" element={<Support />} />
             <Route path="/admin" element={<AdminPanel />} />
             <Route path="/ai-coder" element={<AICoder />} />
+            <Route path="/files" element={<BezoFiles />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
