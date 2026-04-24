@@ -99,15 +99,6 @@ export default function Index() {
         {/* Right Sidebar */}
         <aside className="hidden xl:block w-[350px] shrink-0 p-4">
           <div className="sticky top-20 space-y-4">
-            {/* About Card */}
-            <div className="minecraft-card minecraft-card-shine p-4">
-              <h3 className="mc-text text-xl text-primary mb-2 glow-text">ABOUT BEZOSMP</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                BezoSMP is an online platform for content YouTube and TikTok. Not associated with Mojang or Microsoft.
-              </p>
-
-            </div>
-
             {/* Fun Fact */}
             <div className="minecraft-card p-4">
             <h3 className="mc-text text-lg text-primary mb-2 glow-text">DID YOU KNOW?</h3>

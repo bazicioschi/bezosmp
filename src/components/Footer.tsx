@@ -19,7 +19,7 @@ export function Footer() {
               <span className="mc-text text-2xl text-foreground glow-text">bezoSMP</span>
             </div>
             <p className="text-sm text-muted-foreground max-w-md">
-              BezoSMP is an online platform for content YouTube and TikTok. Not associated with Mojang or Microsoft.
+              BezoSMP is an online platform created by Bazicioschi in late january 2026
             </p>
           </div>
 

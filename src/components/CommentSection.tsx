@@ -19,6 +19,7 @@ interface Comment {
   avatar_url: string | null;
   likes_count: number;
   is_liked: boolean;
+  author_banned: boolean;
 }
 
 interface CommentSectionProps {
@@ -31,7 +32,11 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
   const { user } = useAuth();
   const { playClick, playPop, playUnpop } = useSoundEffects();
   const { canComment } = useRestrictions();
-  const { canModerate } = useAdmin();
+  const { isAdmin, isModerator, isOwner } = useAdmin();
+  // Admins cannot manually delete comments per policy; only Moderators and Owners can.
+  const canDeleteAnyComment = isModerator || isOwner;
+  // Admins, Moderators, and Owners can still edit comments.
+  const canEditAnyComment = isAdmin || isModerator || isOwner;
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
@@ -58,6 +63,16 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
       .from('profiles')
       .select('user_id, username, avatar_url')
       .in('user_id', userIds);
+
+    // Fetch ban status for comment authors (banned users' comments are replaced with system text)
+    const { data: bannedData } = userIds.length
+      ? await supabase
+          .from('user_restrictions')
+          .select('user_id')
+          .eq('restriction_type', 'banned')
+          .in('user_id', userIds)
+      : { data: [] as { user_id: string }[] };
+    const bannedSet = new Set((bannedData || []).map(r => r.user_id));
 
     // Fetch likes for comments if user is logged in
     let userLikes: string[] = [];
@@ -95,6 +110,7 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
         avatar_url: profile?.avatar_url || null,
         likes_count: likesCountMap.get(comment.id) || 0,
         is_liked: userLikes.includes(comment.id),
+        author_banned: bannedSet.has(comment.user_id),
       };
     });
 
@@ -289,25 +305,25 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
                       </Button>
                     </>
                   )}
-                  {(user?.id === comment.user_id || canModerate) && (
-                    <>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-6 w-6 text-muted-foreground hover:text-primary"
-                        onClick={() => startEditing(comment)}
-                      >
-                        <Pencil className="h-3 w-3" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                        onClick={() => handleDelete(comment.id)}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </>
+                  {(user?.id === comment.user_id || canEditAnyComment) && !comment.author_banned && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6 text-muted-foreground hover:text-primary"
+                      onClick={() => startEditing(comment)}
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                  )}
+                  {(user?.id === comment.user_id || canDeleteAnyComment) && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                      onClick={() => handleDelete(comment.id)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
                   )}
                 </div>
               </div>
@@ -326,6 +342,10 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
+              ) : comment.author_banned ? (
+                <p className="text-sm italic text-muted-foreground mt-1">
+                  Comment has been deleted due to user ban.
+                </p>
               ) : (
                 <p className="text-sm text-foreground/90 mt-1">{renderCommentContent(comment.content)}</p>
               )}

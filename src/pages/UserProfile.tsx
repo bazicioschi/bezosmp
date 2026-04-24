@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { User, Loader2, MessageCircle, ArrowLeft, UserPlus, CalendarDays } from 'lucide-react';
+import { User, Loader2, MessageCircle, ArrowLeft, UserPlus, CalendarDays, Crown, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/lib/auth';
@@ -45,14 +45,21 @@ export default function UserProfile() {
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [isProfileOwner, setIsProfileOwner] = useState(false);
+  const [isProfileAdmin, setIsProfileAdmin] = useState(false);
+  const [isProfileModerator, setIsProfileModerator] = useState(false);
 
   useEffect(() => {
     if (userId) {
       fetchProfileAndPosts();
       fetchCounts();
-      // Check if this user is an owner
-      supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'owner').maybeSingle()
-        .then(({ data }) => setIsProfileOwner(!!data));
+      // Fetch all roles for this user
+      supabase.from('user_roles').select('role').eq('user_id', userId)
+        .then(({ data }) => {
+          const roles = data?.map(r => r.role) || [];
+          setIsProfileOwner(roles.includes('owner'));
+          setIsProfileAdmin(roles.includes('admin'));
+          setIsProfileModerator(roles.includes('moderator'));
+        });
     }
   }, [userId, user]);
 
@@ -174,12 +181,38 @@ export default function UserProfile() {
 
           {/* Avatar */}
           <div className="absolute -bottom-16 left-4">
-            <Avatar className={`h-32 w-32 border-4 border-background ${isProfileOwner ? 'profile-shiny profile-shiny-border' : ''}`}>
-              <AvatarImage src={profile.avatar_url || undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary font-display text-3xl">
-                {profile.username?.slice(0, 2).toUpperCase() || <User className="h-12 w-12" />}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative inline-flex items-end gap-2">
+              <Avatar className={`h-32 w-32 border-4 border-background ${
+                isProfileOwner
+                  ? 'profile-shiny profile-shiny-border'
+                  : isProfileAdmin
+                    ? 'profile-glint-admin profile-glint-admin-border'
+                    : isProfileModerator
+                      ? 'profile-glint-mod profile-glint-mod-border'
+                      : ''
+              }`}>
+                <AvatarImage src={profile.avatar_url || undefined} />
+                <AvatarFallback className="bg-primary/20 text-primary font-display text-3xl">
+                  {profile.username?.slice(0, 2).toUpperCase() || <User className="h-12 w-12" />}
+                </AvatarFallback>
+              </Avatar>
+              {/* Role badge next to the avatar */}
+              {isProfileOwner && (
+                <span className="mb-2 text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded font-bold border border-yellow-500/40 inline-flex items-center gap-1 shadow-lg whitespace-nowrap">
+                  <Crown className="h-3 w-3" /> OWNER
+                </span>
+              )}
+              {!isProfileOwner && isProfileAdmin && (
+                <span className="mb-2 text-xs bg-red-500/20 text-red-300 px-2 py-0.5 rounded font-bold border border-red-500/40 inline-flex items-center gap-1 shadow-lg whitespace-nowrap">
+                  <Shield className="h-3 w-3" /> ADMIN
+                </span>
+              )}
+              {!isProfileOwner && !isProfileAdmin && isProfileModerator && (
+                <span className="mb-2 text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded font-bold border border-purple-500/40 inline-flex items-center gap-1 shadow-lg whitespace-nowrap">
+                  <Shield className="h-3 w-3" /> MOD
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -221,7 +254,6 @@ export default function UserProfile() {
         <div className="px-4 pt-12 pb-4">
           <h1 className="font-display text-xl font-bold text-white flex items-center gap-2">
             {profile.username}
-            {isProfileOwner && <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded font-bold border border-yellow-500/30">OWNER</span>}
           </h1>
           
           {profile.bio && (

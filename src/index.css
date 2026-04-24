@@ -1967,3 +1967,67 @@
   box-shadow: 0 0 15px rgba(255, 215, 0, 0.4), 0 0 30px rgba(255, 215, 0, 0.2), inset 0 0 15px rgba(255, 215, 0, 0.1);
   border: 2px solid rgba(255, 215, 0, 0.5) !important;
 }
+
+/* Enchantment glint effect for Admins (red — same style as owner shiny) */
+.profile-glint-admin {
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-glint-admin::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 60, 60, 0.15) 25%,
+    rgba(255, 200, 200, 0.3) 50%,
+    rgba(255, 60, 60, 0.15) 75%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shiny-profile 3s linear infinite;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.profile-glint-admin-border {
+  box-shadow: 0 0 15px rgba(255, 60, 60, 0.4), 0 0 30px rgba(255, 60, 60, 0.2), inset 0 0 15px rgba(255, 60, 60, 0.1);
+  border: 2px solid rgba(255, 60, 60, 0.5) !important;
+}
+
+/* Enchantment glint effect for Moderators (purple — same style as owner shiny) */
+.profile-glint-mod {
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-glint-mod::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(170, 90, 255, 0.15) 25%,
+    rgba(220, 180, 255, 0.3) 50%,
+    rgba(170, 90, 255, 0.15) 75%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shiny-profile 3s linear infinite;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.profile-glint-mod-border {
+  box-shadow: 0 0 15px rgba(170, 90, 255, 0.4), 0 0 30px rgba(170, 90, 255, 0.2), inset 0 0 15px rgba(170, 90, 255, 0.1);
+  border: 2px solid rgba(170, 90, 255, 0.5) !important;
+}
