@@ -147,8 +147,8 @@ export default function UserProfile() {
     switch (theme) {
       case 'pizza': return 'bg-black text-white';
       case 'cato': return 'bg-white text-black';
-      case 'buzzy': return 'bg-white text-black';
-      case 'bazimazi': return 'bg-white text-red-600';
+      case 'buzzy': return 'bg-yellow-400 text-black';
+      case 'bazimazi': return 'bg-red-600 text-white';
       case 'ghast': return 'bg-gray-300 text-black';
       case 'dark': return 'bg-black text-white';
       default: return 'bg-background text-foreground';
@@ -287,6 +287,13 @@ export default function UserProfile() {
         </div>
 
         {/* Posts */}
+        <div className={
+          theme === 'buzzy' || theme === 'bazimazi' || theme === 'cato' || theme === 'light'
+            ? 'bg-white text-black'
+            : theme === 'ghast'
+              ? 'bg-gray-300 text-black'
+              : ''
+        }>
         {posts.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-muted-foreground">No posts yet</p>
@@ -312,6 +319,7 @@ export default function UserProfile() {
             ))}
           </div>
         )}
+        </div>
       </main>
     </div>
   );

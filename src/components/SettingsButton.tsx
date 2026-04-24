@@ -156,7 +156,7 @@ export function SettingsButton() {
                 }`}
               >
                 <Moon className="h-4 w-4" />
-                <span className="text-xs mc-text">MC</span>
+                <span className="text-xs mc-text">Dark</span>
               </button>
               
               <button
