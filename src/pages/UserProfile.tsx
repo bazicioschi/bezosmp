@@ -172,11 +172,11 @@ export default function UserProfile() {
         </div>
 
         {/* Banner */}
-        <div className="relative h-48 bg-secondary/50">
+        <div className="profile-banner relative h-48 bg-secondary/50">
           {profile.banner_url ? (
             <img src={profile.banner_url} alt="Banner" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full bg-gradient-to-r from-primary/20 to-primary/5" />
+            <div className="profile-banner-placeholder w-full h-full bg-gradient-to-r from-primary/20 to-primary/5" />
           )}
 
           {/* Avatar */}

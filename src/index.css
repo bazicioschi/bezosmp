@@ -704,6 +704,24 @@
     background: hsl(0 0% 100%) !important;
   }
 
+  /* Profile banner needs to remain visible against the white bazimazi page */
+  .bazimazi-mode .profile-banner {
+    background: hsl(0 75% 55%) !important;
+    border-bottom: 2px solid hsl(0 0% 0% / 0.15);
+  }
+  .bazimazi-mode .profile-banner-placeholder {
+    background: linear-gradient(to right, hsl(0 80% 45%), hsl(0 70% 60%)) !important;
+  }
+
+  /* Buzzy mode: profile banner is white to contrast the yellow page */
+  .buzzy-mode .profile-banner {
+    background: hsl(0 0% 100%) !important;
+    border-bottom: 2px solid hsl(0 0% 0% / 0.15);
+  }
+  .buzzy-mode .profile-banner-placeholder {
+    background: hsl(0 0% 100%) !important;
+  }
+
   /* Post content areas - solid white */
   .bazimazi-mode article {
     background: hsl(0 0% 100%);

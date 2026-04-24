@@ -153,11 +153,11 @@ export default function Profile() {
       <Header />
       <main className="max-w-2xl mx-auto">
         {/* Banner */}
-        <div className="relative h-48 bg-secondary/50 group">
+        <div className="profile-banner relative h-48 bg-secondary/50 group">
           {profile?.banner_url ? (
             <img src={profile.banner_url} alt="Banner" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full bg-gradient-to-r from-primary/20 to-primary/5" />
+            <div className="profile-banner-placeholder w-full h-full bg-gradient-to-r from-primary/20 to-primary/5" />
           )}
           <button
             onClick={() => bannerInputRef.current?.click()}
