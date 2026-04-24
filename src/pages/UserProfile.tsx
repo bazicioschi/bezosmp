@@ -147,7 +147,7 @@ export default function UserProfile() {
     switch (theme) {
       case 'pizza': return 'bg-black text-white';
       case 'cato': return 'bg-white text-black';
-      case 'buzzy': return 'bg-yellow-400 text-black';
+      case 'buzzy': return 'bg-white text-black';
       case 'bazimazi': return 'bg-white text-red-600';
       case 'ghast': return 'bg-gray-300 text-black';
       case 'dark': return 'bg-black text-white';
