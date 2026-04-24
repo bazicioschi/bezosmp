@@ -198,7 +198,7 @@ export default function UserProfile() {
               </Avatar>
               {/* Role badge next to the avatar */}
               {isProfileOwner && (
-                <span className="mb-2 text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded font-bold border border-yellow-500/40 inline-flex items-center gap-1 shadow-lg whitespace-nowrap">
+                <span className="mb-2 text-xs bg-yellow-900/80 text-yellow-200 px-2 py-0.5 rounded font-bold border border-yellow-500/60 inline-flex items-center gap-1 shadow-lg whitespace-nowrap">
                   <Crown className="h-3 w-3" /> OWNER
                 </span>
               )}
