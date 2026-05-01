@@ -300,6 +300,48 @@ export function PostCard({
             </span>
             {user?.id === userId && !isEditing && (
               <div className="flex items-center gap-1 ml-auto">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    const handle = window.prompt('Invite a collaborator by username (without @):');
+                    if (!handle) return;
+                    const cleaned = handle.replace(/^@/, '').trim();
+                    const { data: prof } = await supabase
+                      .from('profiles')
+                      .select('user_id, username')
+                      .eq('username', cleaned)
+                      .maybeSingle();
+                    if (!prof) {
+                      toast({ title: 'User not found', variant: 'destructive' });
+                      return;
+                    }
+                    if (prof.user_id === user!.id) {
+                      toast({ title: "You can't invite yourself", variant: 'destructive' });
+                      return;
+                    }
+                    const { error: invErr } = await supabase
+                      .from('collab_invites')
+                      .insert({ post_id: id, inviter_id: user!.id, invitee_id: prof.user_id });
+                    if (invErr) {
+                      toast({ title: 'Could not send invite', description: invErr.message, variant: 'destructive' });
+                      return;
+                    }
+                    await supabase.from('inbox_messages').insert({
+                      user_id: prof.user_id,
+                      type: 'collab_invite',
+                      subject: `${username} invited you to collaborate`,
+                      body: content.slice(0, 140),
+                      data: { post_id: id, inviter_id: user!.id, inviter_username: username },
+                    });
+                    toast({ title: 'Invite sent!', description: `Invited @${prof.username}` });
+                  }}
+                  className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/20"
+                  title="Invite collaborator"
+                >
+                  <UserPlus className="h-4 w-4" />
+                </Button>
                 <Button 
                   variant="ghost" 
                   size="icon" 
