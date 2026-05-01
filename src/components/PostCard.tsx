@@ -73,6 +73,7 @@ export function PostCard({
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
+  const [collaborators, setCollaborators] = useState<{ user_id: string; username: string }[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -85,6 +86,23 @@ export function PostCard({
         .then(({ data }) => setIsSaved(!!data));
     }
   }, [user, id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('post_collaborators')
+        .select('user_id')
+        .eq('post_id', id);
+      if (!data || data.length === 0) { if (!cancelled) setCollaborators([]); return; }
+      const { data: profs } = await supabase
+        .from('profiles')
+        .select('user_id, username')
+        .in('user_id', data.map(d => d.user_id));
+      if (!cancelled) setCollaborators(profs ?? []);
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
 
   const handleSavePost = async () => {
     if (!user) return;
