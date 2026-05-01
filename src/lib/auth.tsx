@@ -38,6 +38,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Global presence: as long as the user has BezoSMP open in any tab, they show as online
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase.channel('online-users', {
+      config: { presence: { key: user.id } },
+    });
+    channel.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        await channel.track({ online_at: new Date().toISOString() });
+      }
+    });
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
+
   const signUp = async (email: string, password: string, username: string) => {
     const { error } = await supabase.auth.signUp({
       email,

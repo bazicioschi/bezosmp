@@ -33,6 +33,7 @@ export default function Messages() {
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [recipient, setRecipient] = useState<Profile | null>(null);
+  const [recipientOnline, setRecipientOnline] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -51,6 +52,25 @@ export default function Messages() {
       supabase.channel('messages').unsubscribe();
     };
   }, [user, recipientId, authLoading, navigate]);
+
+  // Presence: any logged-in user with the site open joins this channel
+  useEffect(() => {
+    if (!user || !recipientId) return;
+    const channel = supabase.channel('online-users', {
+      config: { presence: { key: user.id } },
+    });
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        setRecipientOnline(Boolean(state[recipientId] && (state[recipientId] as any[]).length > 0));
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({ online_at: new Date().toISOString() });
+        }
+      });
+    return () => { supabase.removeChannel(channel); };
+  }, [user, recipientId]);
 
   useEffect(() => {
     scrollToBottom();
@@ -184,8 +204,8 @@ export default function Messages() {
                 <span className="font-display font-semibold text-foreground glow-text block">
                   {recipient.username}
                 </span>
-                <span className="text-xs text-muted-foreground font-display">
-                  Online
+                <span className={`text-xs font-display ${recipientOnline ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {recipientOnline ? 'Online' : 'Offline'}
                 </span>
               </div>
             </div>

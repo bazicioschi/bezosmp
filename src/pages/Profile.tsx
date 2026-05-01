@@ -241,6 +241,9 @@ export default function Profile() {
               )}
             </Button>
 
+            {/* Change email */}
+            <ChangeEmailSection currentEmail={user?.email ?? ''} />
+
             {/* Delete Account */}
             <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
               <DialogTrigger asChild>
@@ -309,6 +312,49 @@ export default function Profile() {
           </div>
         </div>
       </main>
+    </div>
+  );
+}
+
+function ChangeEmailSection({ currentEmail }: { currentEmail: string }) {
+  const [newEmail, setNewEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const { toast } = useToast();
+  const handle = async () => {
+    if (!newEmail || newEmail === currentEmail) return;
+    setSubmitting(true);
+    const { error } = await supabase.auth.updateUser({ email: newEmail });
+    if (error) {
+      toast({ title: 'Could not update email', description: error.message, variant: 'destructive' });
+    } else {
+      toast({
+        title: 'Confirmation sent',
+        description: `Check ${newEmail} to confirm the change.`,
+      });
+      setNewEmail('');
+    }
+    setSubmitting(false);
+  };
+  return (
+    <div className="space-y-2 pt-2 border-t border-border">
+      <Label htmlFor="new-email" className="mc-text text-sm">CHANGE EMAIL</Label>
+      <p className="text-xs text-muted-foreground">Current: {currentEmail || '—'}</p>
+      <div className="flex gap-2">
+        <Input
+          id="new-email"
+          type="email"
+          value={newEmail}
+          onChange={(e) => setNewEmail(e.target.value)}
+          placeholder="new@email.com"
+          className="bg-secondary/50 border-border flex-1"
+        />
+        <Button onClick={handle} disabled={submitting || !newEmail || newEmail === currentEmail}>
+          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Update'}
+        </Button>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        We'll send a confirmation link to your new address. Sign-in works with the new email after you confirm.
+      </p>
     </div>
   );
 }

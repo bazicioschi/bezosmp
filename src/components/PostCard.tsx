@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Trash2, Share, Bookmark, BookmarkCheck, Pencil, X, Check } from 'lucide-react';
+import { Heart, MessageCircle, Trash2, Share, Bookmark, BookmarkCheck, Pencil, X, Check, UserPlus } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -23,6 +23,7 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useToast } from '@/hooks/use-toast';
 import { ImageLightbox } from './ImageLightbox';
 import { useAdmin } from '@/hooks/useAdmin';
+import { QuickReactions } from './QuickReactions';
 
 interface PostCardProps {
   id: string;
@@ -72,6 +73,7 @@ export function PostCard({
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
+  const [collaborators, setCollaborators] = useState<{ user_id: string; username: string }[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -84,6 +86,23 @@ export function PostCard({
         .then(({ data }) => setIsSaved(!!data));
     }
   }, [user, id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('post_collaborators')
+        .select('user_id')
+        .eq('post_id', id);
+      if (!data || data.length === 0) { if (!cancelled) setCollaborators([]); return; }
+      const { data: profs } = await supabase
+        .from('profiles')
+        .select('user_id, username')
+        .in('user_id', data.map(d => d.user_id));
+      if (!cancelled) setCollaborators(profs ?? []);
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
 
   const handleSavePost = async () => {
     if (!user) return;
@@ -258,6 +277,22 @@ export function PostCard({
             >
               {username}
             </span>
+            {collaborators.length > 0 && (
+              <span className="text-muted-foreground text-sm mc-text">
+                {' '}and{' '}
+                {collaborators.map((c, i) => (
+                  <span key={c.user_id}>
+                    {i > 0 && ' and '}
+                    <span
+                      className="text-foreground hover:text-primary cursor-pointer font-semibold"
+                      onClick={(e) => { e.stopPropagation(); navigate(`/user/${c.user_id}`); }}
+                    >
+                      {c.username}
+                    </span>
+                  </span>
+                ))}
+              </span>
+            )}
             <span className="text-muted-foreground text-sm">@{username.toLowerCase()}</span>
             <span className="text-muted-foreground">·</span>
             <span className="text-muted-foreground text-sm">
@@ -265,6 +300,48 @@ export function PostCard({
             </span>
             {user?.id === userId && !isEditing && (
               <div className="flex items-center gap-1 ml-auto">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    const handle = window.prompt('Invite a collaborator by username (without @):');
+                    if (!handle) return;
+                    const cleaned = handle.replace(/^@/, '').trim();
+                    const { data: prof } = await supabase
+                      .from('profiles')
+                      .select('user_id, username')
+                      .eq('username', cleaned)
+                      .maybeSingle();
+                    if (!prof) {
+                      toast({ title: 'User not found', variant: 'destructive' });
+                      return;
+                    }
+                    if (prof.user_id === user!.id) {
+                      toast({ title: "You can't invite yourself", variant: 'destructive' });
+                      return;
+                    }
+                    const { error: invErr } = await supabase
+                      .from('collab_invites')
+                      .insert({ post_id: id, inviter_id: user!.id, invitee_id: prof.user_id });
+                    if (invErr) {
+                      toast({ title: 'Could not send invite', description: invErr.message, variant: 'destructive' });
+                      return;
+                    }
+                    await supabase.from('inbox_messages').insert({
+                      user_id: prof.user_id,
+                      type: 'collab_invite',
+                      subject: `${username} invited you to collaborate`,
+                      body: content.slice(0, 140),
+                      data: { post_id: id, inviter_id: user!.id, inviter_username: username },
+                    });
+                    toast({ title: 'Invite sent!', description: `Invited @${prof.username}` });
+                  }}
+                  className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/20"
+                  title="Invite collaborator"
+                >
+                  <UserPlus className="h-4 w-4" />
+                </Button>
                 <Button 
                   variant="ghost" 
                   size="icon" 
@@ -434,19 +511,9 @@ export function PostCard({
               <span className={`mc-text text-sm ${isAnimating ? 'animate-like-pop' : ''}`}>{likesCount ? formatCount(likesCount) : ''}</span>
             </Button>
 
-            {/* Quick Reactions */}
+            {/* Quick Reactions (persistent) */}
             <div className="hidden sm:flex items-center gap-0.5 ml-1">
-              {['⚔️', '💎', '🔥'].map((emoji) => (
-                <Button
-                  key={emoji}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => playPop()}
-                  className="h-7 px-1.5 text-base hover:bg-secondary/50 hover:scale-110 transition-all"
-                >
-                  {emoji}
-                </Button>
-              ))}
+              <QuickReactions postId={id} compact emojis={['⚔️', '💎', '🔥']} />
             </div>
 
             <div className="flex-1" />
