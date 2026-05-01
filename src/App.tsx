@@ -43,6 +43,7 @@ const App = () => (
             <Route path="/admin" element={<AdminPanel />} />
             <Route path="/ai-coder" element={<AICoder />} />
             <Route path="/files" element={<BezoFiles />} />
+            <Route path="/inbox" element={<Inbox />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
