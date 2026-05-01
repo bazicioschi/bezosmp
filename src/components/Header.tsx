@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Home, HelpCircle, Shield, Code, FolderOpen } from 'lucide-react';
+import { LogOut, User, Home, HelpCircle, Shield, Code, FolderOpen, Inbox } from 'lucide-react';
 import { NotificationBell } from './NotificationBell';
 import { SettingsButton } from './SettingsButton';
 import { ChatPopup } from './ChatPopup';
