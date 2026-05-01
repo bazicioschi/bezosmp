@@ -53,6 +53,25 @@ export default function Messages() {
     };
   }, [user, recipientId, authLoading, navigate]);
 
+  // Presence: any logged-in user with the site open joins this channel
+  useEffect(() => {
+    if (!user || !recipientId) return;
+    const channel = supabase.channel('online-users', {
+      config: { presence: { key: user.id } },
+    });
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        setRecipientOnline(Boolean(state[recipientId] && (state[recipientId] as any[]).length > 0));
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({ online_at: new Date().toISOString() });
+        }
+      });
+    return () => { supabase.removeChannel(channel); };
+  }, [user, recipientId]);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
