@@ -33,6 +33,7 @@ export default function Messages() {
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [recipient, setRecipient] = useState<Profile | null>(null);
+  const [recipientOnline, setRecipientOnline] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
