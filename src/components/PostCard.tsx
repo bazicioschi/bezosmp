@@ -23,6 +23,7 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useToast } from '@/hooks/use-toast';
 import { ImageLightbox } from './ImageLightbox';
 import { useAdmin } from '@/hooks/useAdmin';
+import { QuickReactions } from './QuickReactions';
 
 interface PostCardProps {
   id: string;
