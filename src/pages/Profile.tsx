@@ -241,6 +241,9 @@ export default function Profile() {
               )}
             </Button>
 
+            {/* Change email */}
+            <ChangeEmailSection currentEmail={user?.email ?? ''} />
+
             {/* Delete Account */}
             <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
               <DialogTrigger asChild>
