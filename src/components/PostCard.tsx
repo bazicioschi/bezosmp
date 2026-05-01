@@ -277,6 +277,22 @@ export function PostCard({
             >
               {username}
             </span>
+            {collaborators.length > 0 && (
+              <span className="text-muted-foreground text-sm mc-text">
+                {' '}and{' '}
+                {collaborators.map((c, i) => (
+                  <span key={c.user_id}>
+                    {i > 0 && ' and '}
+                    <span
+                      className="text-foreground hover:text-primary cursor-pointer font-semibold"
+                      onClick={(e) => { e.stopPropagation(); navigate(`/user/${c.user_id}`); }}
+                    >
+                      {c.username}
+                    </span>
+                  </span>
+                ))}
+              </span>
+            )}
             <span className="text-muted-foreground text-sm">@{username.toLowerCase()}</span>
             <span className="text-muted-foreground">·</span>
             <span className="text-muted-foreground text-sm">
