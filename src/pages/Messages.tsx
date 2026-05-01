@@ -204,8 +204,8 @@ export default function Messages() {
                 <span className="font-display font-semibold text-foreground glow-text block">
                   {recipient.username}
                 </span>
-                <span className="text-xs text-muted-foreground font-display">
-                  Online
+                <span className={`text-xs font-display ${recipientOnline ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {recipientOnline ? 'Online' : 'Offline'}
                 </span>
               </div>
             </div>
