@@ -18,6 +18,7 @@ import Support from "./pages/Support";
 import AdminPanel from "./pages/AdminPanel";
 import AICoder from "./pages/AICoder";
 import BezoFiles from "./pages/BezoFiles";
+import Inbox from "./pages/Inbox";
 
 const queryClient = new QueryClient();
 
