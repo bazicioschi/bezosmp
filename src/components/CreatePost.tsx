@@ -317,7 +317,48 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     setLoading(false);
   };
 
+  const sendStandaloneInvite = async () => {
+    if (!user) return;
+    const handle = inviteUsername.replace(/^@/, '').trim();
+    if (!handle) return;
+    setLoading(true);
+    const { data: invitee } = await supabase
+      .from('profiles')
+      .select('user_id, username')
+      .eq('username', handle)
+      .maybeSingle();
+
+    if (!invitee) {
+      toast({ title: 'User not found', description: `No user named @${handle}`, variant: 'destructive' });
+      setLoading(false);
+      return;
+    }
+    if (invitee.user_id === user.id) {
+      toast({ title: 'You cannot invite yourself', variant: 'destructive' });
+      setLoading(false);
+      return;
+    }
+
+    const { error: inboxError } = await supabase.from('inbox_messages').insert({
+      user_id: invitee.user_id,
+      type: 'collab_invite_request',
+      subject: `${profile?.username || 'Someone'} wants to collaborate with you`,
+      body: `Create a post together! Reply or DM @${profile?.username || 'them'} to start.`,
+      data: { inviter_id: user.id, inviter_username: profile?.username || 'Someone' },
+    });
+
+    if (inboxError) {
+      toast({ title: 'Could not send invite', description: inboxError.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Invite sent!', description: `@${invitee.username} was notified in their inbox.` });
+      setInviteUsername('');
+      setShowInviteTab(false);
+    }
+    setLoading(false);
+  };
+
   const clearImage = (index: number) => {
+
     setImageUrls(prev => prev.filter((_, i) => i !== index));
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
@@ -407,6 +448,15 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                   placeholder="Username to invite"
                   className="minecraft-input h-10 flex-1 px-3 mc-text bg-background text-foreground placeholder:text-muted-foreground"
                 />
+                <Button
+                  type="button"
+                  onClick={sendStandaloneInvite}
+                  disabled={!inviteUsername.trim() || loading}
+                  className="mc-btn-primary h-10"
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  Send invite
+                </Button>
                 {inviteUsername && (
                   <Button
                     type="button"
@@ -419,6 +469,11 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                   </Button>
                 )}
               </div>
+            )}
+            {showInviteTab && (
+              <p className="mt-1 text-xs text-muted-foreground mc-text">
+                Tip: "Send invite" notifies the user instantly. Or write a post + invite — they'll be added as collaborator when they accept.
+              </p>
             )}
           </div>
 
