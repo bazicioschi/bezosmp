@@ -256,7 +256,9 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !content.trim() || loading) return;
+    if (!user || loading) return;
+    const hasMedia = imageUrls.length > 0 || !!videoUrl;
+    if (!content.trim() && !hasMedia) return;
 
     setLoading(true);
     // Store first image in image_url for backward compatibility, store all as JSON if multiple
@@ -480,7 +482,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
               </span>
               <Button 
                 type="submit" 
-                disabled={loading || !content.trim() || uploading} 
+                disabled={loading || uploading || (!content.trim() && imageUrls.length === 0 && !videoUrl)} 
                 className="mc-btn-primary px-4 h-9"
               >
                 <Send className="h-4 w-4 mr-2" />
