@@ -317,7 +317,48 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     setLoading(false);
   };
 
+  const sendStandaloneInvite = async () => {
+    if (!user) return;
+    const handle = inviteUsername.replace(/^@/, '').trim();
+    if (!handle) return;
+    setLoading(true);
+    const { data: invitee } = await supabase
+      .from('profiles')
+      .select('user_id, username')
+      .eq('username', handle)
+      .maybeSingle();
+
+    if (!invitee) {
+      toast({ title: 'User not found', description: `No user named @${handle}`, variant: 'destructive' });
+      setLoading(false);
+      return;
+    }
+    if (invitee.user_id === user.id) {
+      toast({ title: 'You cannot invite yourself', variant: 'destructive' });
+      setLoading(false);
+      return;
+    }
+
+    const { error: inboxError } = await supabase.from('inbox_messages').insert({
+      user_id: invitee.user_id,
+      type: 'collab_invite_request',
+      subject: `${profile?.username || 'Someone'} wants to collaborate with you`,
+      body: `Create a post together! Reply or DM @${profile?.username || 'them'} to start.`,
+      data: { inviter_id: user.id, inviter_username: profile?.username || 'Someone' },
+    });
+
+    if (inboxError) {
+      toast({ title: 'Could not send invite', description: inboxError.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Invite sent!', description: `@${invitee.username} was notified in their inbox.` });
+      setInviteUsername('');
+      setShowInviteTab(false);
+    }
+    setLoading(false);
+  };
+
   const clearImage = (index: number) => {
+
     setImageUrls(prev => prev.filter((_, i) => i !== index));
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
