@@ -337,10 +337,11 @@ export function PostCard({
                     });
                     toast({ title: 'Invite sent!', description: `Invited @${prof.username}` });
                   }}
-                  className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/20"
+                  className="h-8 w-auto px-2 gap-1 text-primary border border-primary/40 hover:bg-primary/20"
                   title="Invite collaborator"
                 >
                   <UserPlus className="h-4 w-4" />
+                  <span className="mc-text text-xs hidden sm:inline">Invite</span>
                 </Button>
                 <Button 
                   variant="ghost" 
