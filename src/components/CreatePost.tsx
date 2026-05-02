@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { ImagePlus, Video, X, Loader2, Send, Upload } from 'lucide-react';
+import { ImagePlus, Video, X, Send, Upload, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/lib/auth';
@@ -40,6 +40,8 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [showInviteTab, setShowInviteTab] = useState(false);
+  const [inviteUsername, setInviteUsername] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const uploadXhrRef = useRef<XMLHttpRequest | null>(null);
@@ -261,21 +263,56 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     if (!content.trim() && !hasMedia) return;
 
     setLoading(true);
+    const inviteHandle = inviteUsername.replace(/^@/, '').trim();
     // Store first image in image_url for backward compatibility, store all as JSON if multiple
-    const { error } = await supabase.from('posts').insert({
+    const { data: newPost, error } = await supabase.from('posts').insert({
       user_id: user.id,
       content: content.trim(),
       image_url: imageUrls.length > 0 ? (imageUrls.length === 1 ? imageUrls[0] : JSON.stringify(imageUrls)) : null,
       video_url: videoUrl || null,
-    });
+    }).select('id').single();
 
     if (!error) {
+      if (inviteHandle && newPost?.id) {
+        const { data: invitee } = await supabase
+          .from('profiles')
+          .select('user_id, username')
+          .eq('username', inviteHandle)
+          .maybeSingle();
+
+        if (!invitee) {
+          toast({ title: 'Post created, but user was not found', variant: 'destructive' });
+        } else if (invitee.user_id === user.id) {
+          toast({ title: 'Post created, but you cannot invite yourself', variant: 'destructive' });
+        } else {
+          const { error: inviteError } = await supabase
+            .from('collab_invites')
+            .insert({ post_id: newPost.id, inviter_id: user.id, invitee_id: invitee.user_id });
+
+          if (inviteError) {
+            toast({ title: 'Post created, but invite failed', description: inviteError.message, variant: 'destructive' });
+          } else {
+            await supabase.from('inbox_messages').insert({
+              user_id: invitee.user_id,
+              type: 'collab_invite',
+              subject: `${profile?.username || 'Someone'} invited you to collaborate`,
+              body: content.trim().slice(0, 140),
+              data: { post_id: newPost.id, inviter_id: user.id, inviter_username: profile?.username || 'Someone' },
+            });
+            toast({ title: 'Post created and invite sent!', description: `Invited @${invitee.username}` });
+          }
+        }
+      }
       setContent('');
       setImageUrls([]);
       setImagePreviews([]);
       setVideoUrl('');
       setVideoPreview('');
+      setInviteUsername('');
+      setShowInviteTab(false);
       onPostCreated();
+    } else {
+      toast({ title: 'Could not create post', description: error.message, variant: 'destructive' });
     }
     setLoading(false);
   };
@@ -351,6 +388,39 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             placeholder="What's happening on the server? Use @username to mention"
             className="min-h-[80px] bg-transparent border-0 resize-none text-lg placeholder:text-muted-foreground focus-visible:ring-0 p-0 mc-text"
           />
+
+          <div className="mt-3">
+            <Button
+              type="button"
+              variant={showInviteTab ? 'default' : 'outline'}
+              onClick={() => setShowInviteTab((open) => !open)}
+              className="mc-btn-primary h-9 w-full justify-center gap-2 sm:w-auto"
+            >
+              <UserPlus className="h-4 w-4" />
+              <span className="mc-text">Invite user to colab</span>
+            </Button>
+            {showInviteTab && (
+              <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                <input
+                  value={inviteUsername}
+                  onChange={(e) => setInviteUsername(e.target.value)}
+                  placeholder="Username to invite"
+                  className="minecraft-input h-10 flex-1 px-3 mc-text bg-background text-foreground placeholder:text-muted-foreground"
+                />
+                {inviteUsername && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setInviteUsername('')}
+                    className="mc-btn h-10"
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Clear
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
 
           {imagePreviews.length > 0 && (
             <div className="mt-3 space-y-2">
