@@ -407,6 +407,15 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                   placeholder="Username to invite"
                   className="minecraft-input h-10 flex-1 px-3 mc-text bg-background text-foreground placeholder:text-muted-foreground"
                 />
+                <Button
+                  type="button"
+                  onClick={sendStandaloneInvite}
+                  disabled={!inviteUsername.trim() || loading}
+                  className="mc-btn-primary h-10"
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  Send invite
+                </Button>
                 {inviteUsername && (
                   <Button
                     type="button"
@@ -419,6 +428,11 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                   </Button>
                 )}
               </div>
+            )}
+            {showInviteTab && (
+              <p className="mt-1 text-xs text-muted-foreground mc-text">
+                Tip: "Send invite" notifies the user instantly. Or write a post + invite — they'll be added as collaborator when they accept.
+              </p>
             )}
           </div>
 
