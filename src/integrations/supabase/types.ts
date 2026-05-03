@@ -248,6 +248,44 @@ export type Database = {
         }
         Relationships: []
       }
+      post_collaborations: {
+        Row: {
+          created_at: string
+          id: string
+          invitee_id: string
+          inviter_id: string
+          post_id: string | null
+          status: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invitee_id: string
+          inviter_id: string
+          post_id?: string | null
+          status?: string
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invitee_id?: string
+          inviter_id?: string
+          post_id?: string | null
+          status?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_collaborations_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_collaborators: {
         Row: {
           created_at: string
@@ -295,6 +333,7 @@ export type Database = {
       }
       posts: {
         Row: {
+          co_author_id: string | null
           content: string
           created_at: string
           id: string
@@ -305,6 +344,7 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
+          co_author_id?: string | null
           content: string
           created_at?: string
           id?: string
@@ -315,6 +355,7 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
+          co_author_id?: string | null
           content?: string
           created_at?: string
           id?: string
