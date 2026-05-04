@@ -216,9 +216,6 @@ export function Feed({ refreshTrigger }: FeedProps) {
               onLikeToggle={fetchPosts}
               onDelete={fetchPosts}
               onEdit={fetchPosts}
-              coAuthorId={post.co_author_id}
-              coAuthorUsername={post.co_author_username}
-              coAuthorAvatarUrl={post.co_author_avatar_url}
             />
           ))}
 
