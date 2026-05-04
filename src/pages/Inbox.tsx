@@ -33,6 +33,24 @@ export default function Inbox() {
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
+  const [suggestions, setSuggestions] = useState<{ user_id: string; username: string; avatar_url: string | null }[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const debounceRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    const q = toUsername.trim();
+    if (!q || !composeOpen) { setSuggestions([]); return; }
+    debounceRef.current = window.setTimeout(async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('user_id, username, avatar_url')
+        .ilike('username', `${q}%`)
+        .neq('user_id', user?.id ?? '')
+        .limit(6);
+      setSuggestions(data ?? []);
+    }, 200);
+  }, [toUsername, composeOpen, user?.id]);
 
   const sendEmail = async () => {
     if (!user || !toUsername.trim() || !subject.trim()) return;
