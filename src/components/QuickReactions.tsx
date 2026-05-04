@@ -84,10 +84,10 @@ export function QuickReactions({ postId, compact = false, emojis }: QuickReactio
           className={cn(
             compact ? 'h-7 px-1.5' : 'h-7 px-2',
             'text-base transition-all',
-            myEmoji === emoji ? 'bg-primary/20 scale-110' : 'hover:bg-secondary/50 hover:scale-105'
+            myEmojis.has(emoji) ? 'bg-primary/20 scale-110' : 'hover:bg-secondary/50 hover:scale-105'
           )}
         >
-          <span className={cn('transition-transform', myEmoji === emoji && 'animate-bounce')}>
+          <span className={cn('transition-transform', myEmojis.has(emoji) && 'animate-bounce')}>
             {emoji}
           </span>
           {counts[emoji] > 0 && (
