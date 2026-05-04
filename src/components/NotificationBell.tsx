@@ -34,6 +34,8 @@ export function NotificationBell() {
       navigate(`/messages/${notification.senderId}`);
     } else if (notification.type === 'ticket_reply' || notification.type === 'new_ticket') {
       navigate('/support');
+    } else if (notification.type === 'inbox') {
+      navigate('/inbox');
     }
     clearNotification(notification.id);
     setOpen(false);
