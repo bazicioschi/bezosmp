@@ -27,6 +27,46 @@ export default function Inbox() {
   const { toast } = useToast();
   const [messages, setMessages] = useState<InboxMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [toUsername, setToUsername] = useState('');
+  const [subject, setSubject] = useState('');
+  const [body, setBody] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const sendEmail = async () => {
+    if (!user || !toUsername.trim() || !subject.trim()) return;
+    setSending(true);
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('user_id, username')
+      .ilike('username', toUsername.trim())
+      .maybeSingle();
+    if (!profile) {
+      toast({ title: 'User not found', variant: 'destructive' });
+      setSending(false);
+      return;
+    }
+    const { data: me } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    const { error } = await supabase.from('inbox_messages').insert({
+      user_id: profile.user_id,
+      type: 'mail',
+      subject: subject.trim(),
+      body: body.trim() || null,
+      data: { from_user_id: user.id, from_username: me?.username },
+    });
+    if (error) {
+      toast({ title: 'Failed to send', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: `Email sent to ${profile.username}` });
+      setComposeOpen(false);
+      setToUsername(''); setSubject(''); setBody('');
+    }
+    setSending(false);
+  };
 
   useEffect(() => {
     if (!authLoading && !user) { navigate('/login'); return; }
