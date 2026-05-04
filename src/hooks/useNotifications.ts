@@ -109,7 +109,45 @@ export function useNotifications() {
           }
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'inbox_messages',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const m = payload.new as { id: string; type: string; subject: string; data: any; created_at: string };
+          handleInboxNotification(m);
+        }
+      )
       .subscribe();
+  };
+
+  const handleInboxNotification = async (m: { id: string; type: string; subject: string; data: any; created_at: string }) => {
+    const senderId = m.data?.from_user_id || m.data?.inviter_id || '';
+    let senderName = m.data?.from_username || '';
+    if (!senderName && senderId) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('user_id', senderId)
+        .maybeSingle();
+      senderName = profile?.username || 'Someone';
+    }
+    const isCollab = m.type === 'collab_invite';
+    const notification: Notification = {
+      id: `inbox-${m.id}`,
+      type: 'inbox',
+      senderId,
+      senderName: senderName || 'Someone',
+      content: isCollab ? `Collab invite: ${m.subject}` : m.subject,
+      createdAt: m.created_at,
+      read: false,
+    };
+    setUnreadMessages((prev) => prev + 1);
+    setNotifications((prev) => [notification, ...prev].slice(0, 10));
   };
 
   const handleNewTicketNotification = async (ticket: { user_id: string; id: string; subject: string; message: string; created_at: string }) => {
