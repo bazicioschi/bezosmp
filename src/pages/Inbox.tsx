@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, Mail, MailOpen, Trash2, Check, X, Inbox as InboxIcon, PenSquare, Send } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
