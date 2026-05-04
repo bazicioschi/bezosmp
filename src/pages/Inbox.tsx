@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, Mail, MailOpen, Trash2, Check, X, Inbox as InboxIcon, PenSquare, Send } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -32,6 +33,24 @@ export default function Inbox() {
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
+  const [suggestions, setSuggestions] = useState<{ user_id: string; username: string; avatar_url: string | null }[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const debounceRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    const q = toUsername.trim();
+    if (!q || !composeOpen) { setSuggestions([]); return; }
+    debounceRef.current = window.setTimeout(async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('user_id, username, avatar_url')
+        .ilike('username', `${q}%`)
+        .neq('user_id', user?.id ?? '')
+        .limit(6);
+      setSuggestions(data ?? []);
+    }, 200);
+  }, [toUsername, composeOpen, user?.id]);
 
   const sendEmail = async () => {
     if (!user || !toUsername.trim() || !subject.trim()) return;
@@ -243,7 +262,30 @@ export default function Inbox() {
             <DialogTitle className="mc-text">New Email</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <Input placeholder="To (username)" value={toUsername} onChange={(e) => setToUsername(e.target.value)} />
+            <div className="relative">
+              <Input
+                placeholder="To (username)"
+                value={toUsername}
+                onChange={(e) => { setToUsername(e.target.value); setShowSuggestions(true); }}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                autoComplete="off"
+              />
+              {showSuggestions && suggestions.length > 0 && (
+                <ul className="absolute z-50 left-0 right-0 mt-1 minecraft-card bg-background border border-border rounded-md max-h-60 overflow-auto">
+                  {suggestions.map(s => (
+                    <li
+                      key={s.user_id}
+                      onMouseDown={(e) => { e.preventDefault(); setToUsername(s.username); setShowSuggestions(false); }}
+                      className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-secondary/50"
+                    >
+                      <Avatar className="h-6 w-6"><AvatarImage src={s.avatar_url || undefined} /><AvatarFallback>{s.username.slice(0,2).toUpperCase()}</AvatarFallback></Avatar>
+                      <span className="text-sm">{s.username}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
             <Input placeholder="Subject" value={subject} onChange={(e) => setSubject(e.target.value)} />
             <Textarea placeholder="Message..." rows={6} value={body} onChange={(e) => setBody(e.target.value)} />
           </div>
