@@ -179,9 +179,14 @@ export default function Inbox() {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="max-w-2xl mx-auto px-4 py-6">
-        <h1 className="mc-text text-2xl text-foreground glow-text mb-4 flex items-center gap-2">
-          <InboxIcon className="h-6 w-6 text-primary" /> BEZO INBOX
-        </h1>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="mc-text text-2xl text-foreground glow-text flex items-center gap-2">
+            <InboxIcon className="h-6 w-6 text-primary" /> BEZO INBOX
+          </h1>
+          <Button onClick={() => setComposeOpen(true)} size="sm" className="gap-1">
+            <PenSquare className="h-4 w-4" /> Compose
+          </Button>
+        </div>
         {messages.length === 0 ? (
           <div className="minecraft-card p-8 text-center text-muted-foreground">
             Your inbox is empty.
