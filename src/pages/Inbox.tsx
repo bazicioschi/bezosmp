@@ -236,6 +236,25 @@ export default function Inbox() {
           </ul>
         )}
       </main>
+
+      <Dialog open={composeOpen} onOpenChange={setComposeOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="mc-text">New Email</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input placeholder="To (username)" value={toUsername} onChange={(e) => setToUsername(e.target.value)} />
+            <Input placeholder="Subject" value={subject} onChange={(e) => setSubject(e.target.value)} />
+            <Textarea placeholder="Message..." rows={6} value={body} onChange={(e) => setBody(e.target.value)} />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setComposeOpen(false)}>Cancel</Button>
+            <Button onClick={sendEmail} disabled={sending || !toUsername.trim() || !subject.trim()} className="gap-1">
+              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Send
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
