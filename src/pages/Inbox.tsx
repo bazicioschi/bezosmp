@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, Mail, MailOpen, Trash2, Check, X, Inbox as InboxIcon } from 'lucide-react';
+import { Loader2, Mail, MailOpen, Trash2, Check, X, Inbox as InboxIcon, PenSquare, Send } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
@@ -24,6 +27,46 @@ export default function Inbox() {
   const { toast } = useToast();
   const [messages, setMessages] = useState<InboxMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [toUsername, setToUsername] = useState('');
+  const [subject, setSubject] = useState('');
+  const [body, setBody] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const sendEmail = async () => {
+    if (!user || !toUsername.trim() || !subject.trim()) return;
+    setSending(true);
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('user_id, username')
+      .ilike('username', toUsername.trim())
+      .maybeSingle();
+    if (!profile) {
+      toast({ title: 'User not found', variant: 'destructive' });
+      setSending(false);
+      return;
+    }
+    const { data: me } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    const { error } = await supabase.from('inbox_messages').insert({
+      user_id: profile.user_id,
+      type: 'mail',
+      subject: subject.trim(),
+      body: body.trim() || null,
+      data: { from_user_id: user.id, from_username: me?.username },
+    });
+    if (error) {
+      toast({ title: 'Failed to send', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: `Email sent to ${profile.username}` });
+      setComposeOpen(false);
+      setToUsername(''); setSubject(''); setBody('');
+    }
+    setSending(false);
+  };
 
   useEffect(() => {
     if (!authLoading && !user) { navigate('/login'); return; }
@@ -136,9 +179,14 @@ export default function Inbox() {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="max-w-2xl mx-auto px-4 py-6">
-        <h1 className="mc-text text-2xl text-foreground glow-text mb-4 flex items-center gap-2">
-          <InboxIcon className="h-6 w-6 text-primary" /> BEZO INBOX
-        </h1>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="mc-text text-2xl text-foreground glow-text flex items-center gap-2">
+            <InboxIcon className="h-6 w-6 text-primary" /> BEZO INBOX
+          </h1>
+          <Button onClick={() => setComposeOpen(true)} size="sm" className="gap-1">
+            <PenSquare className="h-4 w-4" /> Compose
+          </Button>
+        </div>
         {messages.length === 0 ? (
           <div className="minecraft-card p-8 text-center text-muted-foreground">
             Your inbox is empty.
@@ -188,6 +236,25 @@ export default function Inbox() {
           </ul>
         )}
       </main>
+
+      <Dialog open={composeOpen} onOpenChange={setComposeOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="mc-text">New Email</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input placeholder="To (username)" value={toUsername} onChange={(e) => setToUsername(e.target.value)} />
+            <Input placeholder="Subject" value={subject} onChange={(e) => setSubject(e.target.value)} />
+            <Textarea placeholder="Message..." rows={6} value={body} onChange={(e) => setBody(e.target.value)} />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setComposeOpen(false)}>Cancel</Button>
+            <Button onClick={sendEmail} disabled={sending || !toUsername.trim() || !subject.trim()} className="gap-1">
+              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Send
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
