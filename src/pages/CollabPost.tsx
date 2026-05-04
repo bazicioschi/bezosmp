@@ -1,0 +1,292 @@
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Loader2, Users, ImagePlus, X, Send } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Textarea } from '@/components/ui/textarea';
+import { useAuth } from '@/lib/auth';
+import { supabase } from '@/integrations/supabase/client';
+import { Header } from '@/components/Header';
+import { useToast } from '@/hooks/use-toast';
+import { MentionInput } from '@/components/MentionInput';
+
+interface CollabDetails {
+  id: string;
+  inviter_id: string;
+  invitee_id: string;
+  subject: string;
+  status: string;
+  inviterUsername: string;
+  inviterAvatar: string | null;
+  inviteeUsername: string;
+  inviteeAvatar: string | null;
+}
+
+const MAX_IMAGES = 10;
+
+export default function CollabPost() {
+  const { inviteId } = useParams<{ inviteId: string }>();
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
+  const { toast } = useToast();
+  const [collab, setCollab] = useState<CollabDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [content, setContent] = useState('');
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/login');
+      return;
+    }
+    if (user && inviteId) {
+      fetchCollabDetails();
+    }
+  }, [user, inviteId, authLoading]);
+
+  const fetchCollabDetails = async () => {
+    if (!user || !inviteId) return;
+
+    const { data: collabData, error } = await supabase
+      .from('post_collaborations')
+      .select('*')
+      .eq('id', inviteId)
+      .single();
+
+    if (error || !collabData) {
+      toast({ title: 'Not found', description: 'Collaboration invite not found.', variant: 'destructive' });
+      navigate('/');
+      return;
+    }
+
+    // Only the invitee can write the collab post
+    if (collabData.invitee_id !== user.id) {
+      toast({ title: 'Unauthorized', description: 'This invite is not for you.', variant: 'destructive' });
+      navigate('/');
+      return;
+    }
+
+    if (collabData.status !== 'accepted') {
+      toast({ title: 'Invalid invite', description: 'This invite has not been accepted.', variant: 'destructive' });
+      navigate('/');
+      return;
+    }
+
+    // Fetch both user profiles
+    const [inviterRes, inviteeRes] = await Promise.all([
+      supabase.from('profiles').select('username, avatar_url').eq('user_id', collabData.inviter_id).single(),
+      supabase.from('profiles').select('username, avatar_url').eq('user_id', collabData.invitee_id).single(),
+    ]);
+
+    setCollab({
+      ...collabData,
+      inviterUsername: inviterRes.data?.username || 'Unknown',
+      inviterAvatar: inviterRes.data?.avatar_url || null,
+      inviteeUsername: inviteeRes.data?.username || 'Unknown',
+      inviteeAvatar: inviteeRes.data?.avatar_url || null,
+    });
+
+    // Pre-fill subject as starter text hint
+    setContent('');
+    setLoading(false);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !user) return;
+
+    const remaining = MAX_IMAGES - imageUrls.length;
+    const toUpload = Array.from(files).slice(0, remaining);
+
+    for (const file of toUpload) {
+      if (!file.type.startsWith('image/')) continue;
+      if (file.size > 5 * 1024 * 1024) {
+        toast({ title: 'File too large', description: `${file.name} must be under 5MB`, variant: 'destructive' });
+        continue;
+      }
+
+      setUploading(true);
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreviews(prev => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+
+      const { error } = await supabase.storage.from('post-images').upload(fileName, file);
+      if (!error) {
+        const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(fileName);
+        setImageUrls(prev => [...prev, urlData.publicUrl]);
+      }
+      setUploading(false);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setImageUrls(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handlePublish = async () => {
+    if (!user || !collab || !content.trim() || publishing) return;
+    setPublishing(true);
+
+    try {
+      // Create the post with co_author_id
+      const { data: post, error: postError } = await supabase
+        .from('posts')
+        .insert({
+          user_id: user.id,
+          content: content.trim(),
+          image_url: imageUrls.length > 0
+            ? (imageUrls.length === 1 ? imageUrls[0] : JSON.stringify(imageUrls))
+            : null,
+          co_author_id: collab.inviter_id,
+        })
+        .select()
+        .single();
+
+      if (postError || !post) throw postError ?? new Error('Failed to create post');
+
+      // Link the post to the collaboration
+      await supabase
+        .from('post_collaborations')
+        .update({ post_id: post.id })
+        .eq('id', collab.id);
+
+      toast({ title: 'Post published!', description: 'Your collaborative post is now live.' });
+      navigate('/');
+    } catch {
+      toast({ title: 'Error', description: 'Failed to publish post. Please try again.', variant: 'destructive' });
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="container mx-auto px-4 py-6 max-w-2xl">
+        {/* Collab header card */}
+        <div className="minecraft-card minecraft-border p-5 mb-4 animate-fade-in">
+          <div className="flex items-center gap-2 mb-4">
+            <Users className="h-5 w-5 text-primary" />
+            <h1 className="font-display text-lg font-bold text-foreground">Collaborative Post</h1>
+          </div>
+
+          <div className="bg-primary/10 rounded-lg p-3 mb-4 border border-primary/30">
+            <p className="text-sm text-muted-foreground font-display mb-1">Proposed subject</p>
+            <p className="font-semibold text-foreground">{collab?.subject}</p>
+          </div>
+
+          {/* Co-authors display */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={collab?.inviterAvatar || undefined} />
+                <AvatarFallback className="bg-primary/20 text-primary font-display text-xs">
+                  {collab?.inviterUsername?.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm font-display font-medium text-foreground">@{collab?.inviterUsername}</span>
+            </div>
+            <span className="text-muted-foreground text-sm">+</span>
+            <div className="flex items-center gap-2">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={collab?.inviteeAvatar || undefined} />
+                <AvatarFallback className="bg-primary/20 text-primary font-display text-xs">
+                  {collab?.inviteeUsername?.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm font-display font-medium text-foreground">@{collab?.inviteeUsername}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Post editor */}
+        <div className="minecraft-card minecraft-border p-5 animate-fade-in">
+          <MentionInput
+            value={content}
+            onChange={setContent}
+            placeholder={`Write about "${collab?.subject}"… Use @username to mention`}
+            className="min-h-[160px] bg-transparent border-0 resize-none text-base placeholder:text-muted-foreground focus-visible:ring-0 p-0 w-full"
+          />
+
+          {/* Image previews */}
+          {imagePreviews.length > 0 && (
+            <div className={`mt-3 grid gap-2 ${imagePreviews.length === 1 ? 'grid-cols-1' : imagePreviews.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+              {imagePreviews.map((src, i) => (
+                <div key={i} className="relative rounded overflow-hidden aspect-square minecraft-border">
+                  <img src={src} alt="" className="w-full h-full object-cover" />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="icon"
+                    className="absolute top-1 right-1 h-6 w-6"
+                    onClick={() => removeImage(i)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between pt-3 border-t border-border mt-3">
+            <div className="flex items-center gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handleImageUpload}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading || imageUrls.length >= MAX_IMAGES}
+                title="Add images"
+              >
+                <ImagePlus className="h-5 w-5 text-primary" />
+              </Button>
+              {uploading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            </div>
+
+            <Button
+              onClick={handlePublish}
+              disabled={!content.trim() || publishing || uploading}
+              className="font-display gap-2"
+            >
+              {publishing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+              {publishing ? 'Publishing…' : 'Publish'}
+            </Button>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}

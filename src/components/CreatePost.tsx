@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ImagePlus, Video, X, Send, Upload, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -42,9 +42,49 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showInviteTab, setShowInviteTab] = useState(false);
   const [inviteUsername, setInviteUsername] = useState('');
+  const [inviteSubject, setInviteSubject] = useState('');
+  const [inviteSuggestions, setInviteSuggestions] = useState<{ user_id: string; username: string; avatar_url: string | null }[]>([]);
+  const [showInviteSuggestions, setShowInviteSuggestions] = useState(false);
+  const inviteInputRef = useRef<HTMLInputElement>(null);
+  const inviteSuggestionsRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const uploadXhrRef = useRef<XMLHttpRequest | null>(null);
+
+  // Fetch autocomplete suggestions for invite username
+  useEffect(() => {
+    const query = inviteUsername.replace(/^@/, '').trim();
+    if (!query) {
+      setInviteSuggestions([]);
+      setShowInviteSuggestions(false);
+      return;
+    }
+    const timeout = setTimeout(async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('user_id, username, avatar_url')
+        .ilike('username', `${query}%`)
+        .neq('user_id', user?.id ?? '')
+        .limit(6);
+      setInviteSuggestions(data ?? []);
+      setShowInviteSuggestions((data ?? []).length > 0);
+    }, 200);
+    return () => clearTimeout(timeout);
+  }, [inviteUsername, user?.id]);
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (
+        inviteInputRef.current && !inviteInputRef.current.contains(e.target as Node) &&
+        inviteSuggestionsRef.current && !inviteSuggestionsRef.current.contains(e.target as Node)
+      ) {
+        setShowInviteSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const { data: profile } = useQuery({
     queryKey: ['profile', user?.id],
@@ -339,12 +379,26 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
       return;
     }
 
+    // Create a post_collaborations record so the invitee can accept/deny
+    const subject = inviteSubject.trim() || content.trim() || 'Let\'s collaborate on a post!';
+    const { data: collab, error: collabError } = await supabase
+      .from('post_collaborations')
+      .insert({ inviter_id: user.id, invitee_id: invitee.user_id, subject, status: 'pending' })
+      .select()
+      .single();
+
+    if (collabError || !collab) {
+      toast({ title: 'Could not send invite', description: collabError?.message, variant: 'destructive' });
+      setLoading(false);
+      return;
+    }
+
     const { error: inboxError } = await supabase.from('inbox_messages').insert({
       user_id: invitee.user_id,
-      type: 'collab_invite_request',
+      type: 'collab_invite',
       subject: `${profile?.username || 'Someone'} wants to collaborate with you`,
-      body: `Create a post together! Reply or DM @${profile?.username || 'them'} to start.`,
-      data: { inviter_id: user.id, inviter_username: profile?.username || 'Someone' },
+      body: `Proposed subject: "${subject}"`,
+      data: { collab_id: collab.id, inviter_id: user.id, inviter_username: profile?.username || 'Someone', subject },
     });
 
     if (inboxError) {
@@ -352,6 +406,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     } else {
       toast({ title: 'Invite sent!', description: `@${invitee.username} was notified in their inbox.` });
       setInviteUsername('');
+      setInviteSubject('');
       setShowInviteTab(false);
     }
     setLoading(false);
@@ -441,13 +496,44 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
               <span className="mc-text">Invite user to colab</span>
             </Button>
             {showInviteTab && (
-              <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                <input
-                  value={inviteUsername}
-                  onChange={(e) => setInviteUsername(e.target.value)}
-                  placeholder="Username to invite"
-                  className="minecraft-input h-10 flex-1 px-3 mc-text bg-background text-foreground placeholder:text-muted-foreground"
-                />
+              <div className="mt-2 flex flex-col gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row">
+                <div className="relative flex-1">
+                  <input
+                    ref={inviteInputRef}
+                    value={inviteUsername}
+                    onChange={(e) => setInviteUsername(e.target.value)}
+                    onFocus={() => inviteSuggestions.length > 0 && setShowInviteSuggestions(true)}
+                    placeholder="Username to invite"
+                    className="minecraft-input h-10 w-full px-3 mc-text bg-background text-foreground placeholder:text-muted-foreground"
+                  />
+                  {showInviteSuggestions && (
+                    <div
+                      ref={inviteSuggestionsRef}
+                      className="absolute z-50 mt-1 w-full rounded-md border border-border bg-popover shadow-lg"
+                    >
+                      {inviteSuggestions.map((s) => (
+                        <button
+                          key={s.user_id}
+                          type="button"
+                          className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setInviteUsername(s.username);
+                            setShowInviteSuggestions(false);
+                          }}
+                        >
+                          <img
+                            src={s.avatar_url ?? `https://api.dicebear.com/7.x/pixel-art/svg?seed=${s.username}`}
+                            alt={s.username}
+                            className="h-6 w-6 rounded-full object-cover"
+                          />
+                          <span className="mc-text">@{s.username}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <Button
                   type="button"
                   onClick={sendStandaloneInvite}
@@ -461,13 +547,21 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                   <Button
                     type="button"
                     variant="ghost"
-                    onClick={() => setInviteUsername('')}
+                    onClick={() => { setInviteUsername(''); setInviteSubject(''); }}
                     className="mc-btn h-10"
                   >
                     <X className="h-4 w-4 mr-2" />
                     Clear
                   </Button>
                 )}
+                </div>
+                <input
+                  value={inviteSubject}
+                  onChange={(e) => setInviteSubject(e.target.value)}
+                  placeholder="Post subject (e.g. Our adventure in the Nether…)"
+                  maxLength={200}
+                  className="minecraft-input h-10 w-full px-3 mc-text bg-background text-foreground placeholder:text-muted-foreground"
+                />
               </div>
             )}
             {showInviteTab && (

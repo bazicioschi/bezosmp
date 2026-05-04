@@ -58,32 +58,67 @@ export default function Inbox() {
   };
 
   const acceptInvite = async (m: InboxMessage) => {
-    const postId = m.data?.post_id;
-    if (!postId || !user) return;
+    const collabId = m.data?.collab_id;
+    const inviterId = m.data?.inviter_id;
+    if (!collabId || !inviterId || !user) return;
+
+    const { data: myProfile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('user_id', user.id)
+      .single();
+
     const { error } = await supabase
-      .from('post_collaborators')
-      .insert({ post_id: postId, user_id: user.id });
-    if (error && !error.message.includes('duplicate')) {
+      .from('post_collaborations')
+      .update({ status: 'accepted' })
+      .eq('id', collabId)
+      .eq('invitee_id', user.id);
+
+    if (error) {
       toast({ title: 'Could not accept', description: error.message, variant: 'destructive' });
       return;
     }
-    await supabase
-      .from('collab_invites')
-      .update({ status: 'accepted', responded_at: new Date().toISOString() })
-      .eq('post_id', postId)
-      .eq('invitee_id', user.id);
+
+    // Notify the inviter
+    await supabase.from('inbox_messages').insert({
+      user_id: inviterId,
+      type: 'collab_response',
+      subject: `${myProfile?.username ?? 'Someone'} has accepted your invitation`,
+      body: `They are ready to write the post about "${m.data?.subject}"`,
+      data: { collab_id: collabId },
+    });
+
     await supabase.from('inbox_messages').update({ read: true }).eq('id', m.id);
     toast({ title: 'Collaboration accepted!' });
+    navigate(`/collab/${collabId}`);
   };
 
   const declineInvite = async (m: InboxMessage) => {
-    const postId = m.data?.post_id;
-    if (!postId || !user) return;
+    const collabId = m.data?.collab_id;
+    const inviterId = m.data?.inviter_id;
+    if (!collabId || !inviterId || !user) return;
+
+    const { data: myProfile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('user_id', user.id)
+      .single();
+
     await supabase
-      .from('collab_invites')
-      .update({ status: 'declined', responded_at: new Date().toISOString() })
-      .eq('post_id', postId)
+      .from('post_collaborations')
+      .update({ status: 'denied' })
+      .eq('id', collabId)
       .eq('invitee_id', user.id);
+
+    // Notify the inviter
+    await supabase.from('inbox_messages').insert({
+      user_id: inviterId,
+      type: 'collab_response',
+      subject: `${myProfile?.username ?? 'Someone'} has denied your invitation`,
+      body: `They declined to collaborate on "${m.data?.subject}"`,
+      data: { collab_id: collabId },
+    });
+
     await remove(m);
     toast({ title: 'Invite declined' });
   };

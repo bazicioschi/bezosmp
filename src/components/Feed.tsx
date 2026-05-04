@@ -19,6 +19,8 @@ interface Post {
   likes_count: number;
   comments_count: number;
   user_liked: boolean;
+  co_author_id: string | null;
+  co_author_username: string | null;
 }
 
 interface FeedProps {
@@ -39,11 +41,14 @@ export function Feed({ refreshTrigger }: FeedProps) {
 
   const enrichPosts = async (postsData: any[]) => {
     if (!postsData.length) return [];
-    const userIds = [...new Set(postsData.map(p => p.user_id))];
+    const authorIds = [...new Set(postsData.map(p => p.user_id))];
+    const coAuthorIds = postsData.map(p => p.co_author_id).filter(Boolean) as string[];
+    const allUserIds = [...new Set([...authorIds, ...coAuthorIds])];
+
     const { data: profilesData } = await supabase
       .from('profiles')
       .select('user_id, username, avatar_url')
-      .in('user_id', userIds);
+      .in('user_id', allUserIds);
 
     const postIds = postsData.map(p => p.id);
     const { data: likesData } = await supabase
@@ -60,6 +65,7 @@ export function Feed({ refreshTrigger }: FeedProps) {
 
     return postsData.map(post => {
       const profile = profilesMap.get(post.user_id);
+      const coAuthorProfile = post.co_author_id ? profilesMap.get(post.co_author_id) : null;
       const postLikes = likesData?.filter(l => l.post_id === post.id) || [];
       const postComments = commentsData?.filter(c => c.post_id === post.id) || [];
       return {
@@ -74,6 +80,9 @@ export function Feed({ refreshTrigger }: FeedProps) {
         likes_count: postLikes.length,
         comments_count: postComments.length,
         user_liked: user ? postLikes.some((l: any) => l.user_id === user.id) : false,
+        co_author_id: post.co_author_id || null,
+        co_author_username: coAuthorProfile?.username || null,
+        co_author_avatar_url: coAuthorProfile?.avatar_url || null,
       };
     });
   };
@@ -207,6 +216,9 @@ export function Feed({ refreshTrigger }: FeedProps) {
               onLikeToggle={fetchPosts}
               onDelete={fetchPosts}
               onEdit={fetchPosts}
+              coAuthorId={post.co_author_id}
+              coAuthorUsername={post.co_author_username}
+              coAuthorAvatarUrl={post.co_author_avatar_url}
             />
           ))}
 

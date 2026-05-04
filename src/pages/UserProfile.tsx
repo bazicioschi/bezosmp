@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { PostCard } from '@/components/PostCard';
+import { InviteCollabDialog } from '@/components/InviteCollabDialog';
 import { useFollows } from '@/hooks/useFollows';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useTheme } from '@/hooks/useTheme';
@@ -228,6 +229,7 @@ export default function UserProfile() {
               >
                 <MessageCircle className="h-4 w-4" />
               </Button>
+              <InviteCollabDialog inviteeId={userId!} inviteeUsername={profile.username} />
               <Button
                 onClick={() => { playPop(); toggleFollow(userId!); fetchCounts(); }}
                 variant={isFollowing(userId!) ? "outline" : "default"}
