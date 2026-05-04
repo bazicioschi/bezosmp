@@ -22,7 +22,7 @@ interface QuickReactionsProps {
 export function QuickReactions({ postId, compact = false, emojis }: QuickReactionsProps) {
   const { playPop } = useSoundEffects();
   const { user } = useAuth();
-  const [myEmoji, setMyEmoji] = useState<string | null>(null);
+  const [myEmojis, setMyEmojis] = useState<Set<string>>(new Set());
   const [counts, setCounts] = useState<Record<string, number>>({});
 
   const list = (emojis ? REACTIONS.filter(r => emojis.includes(r.emoji)) : REACTIONS);
@@ -36,7 +36,7 @@ export function QuickReactions({ postId, compact = false, emojis }: QuickReactio
     const c: Record<string, number> = {};
     for (const row of data) c[row.emoji] = (c[row.emoji] || 0) + 1;
     setCounts(c);
-    setMyEmoji(user ? (data.find(r => r.user_id === user.id)?.emoji ?? null) : null);
+    setMyEmojis(user ? new Set(data.filter(r => r.user_id === user.id).map(r => r.emoji)) : new Set());
   };
 
   useEffect(() => {
