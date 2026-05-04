@@ -43,7 +43,13 @@ export function useNotifications() {
       .eq('receiver_id', user.id)
       .eq('read', false);
 
-    setUnreadMessages(count || 0);
+    const { count: inboxCount } = await supabase
+      .from('inbox_messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('read', false);
+
+    setUnreadMessages((count || 0) + (inboxCount || 0));
   };
 
   const setupRealtimeSubscription = () => {
