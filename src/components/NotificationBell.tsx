@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, MessageCircle, X, Ticket, AlertCircle } from 'lucide-react';
+import { Bell, MessageCircle, X, Ticket, AlertCircle, Inbox } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -32,6 +32,8 @@ export function NotificationBell() {
     playClick();
     if (notification.type === 'message') {
       navigate(`/messages/${notification.senderId}`);
+    } else if (notification.type === 'inbox_message') {
+      navigate('/inbox');
     } else if (notification.type === 'ticket_reply' || notification.type === 'new_ticket') {
       navigate('/support');
     } else if (notification.type === 'inbox') {
@@ -93,6 +95,9 @@ export function NotificationBell() {
                     {notification.type === 'message' && (
                       <MessageCircle className="h-4 w-4 text-primary" />
                     )}
+                    {notification.type === 'inbox_message' && (
+                      <Inbox className="h-4 w-4 text-primary" />
+                    )}
                     {notification.type === 'ticket_reply' && (
                       <Ticket className="h-4 w-4 text-primary" />
                     )}
@@ -104,8 +109,9 @@ export function NotificationBell() {
                     <p className="text-sm">
                       <span className="font-semibold text-primary mc-text">{notification.senderName}</span>
                       <span className="text-muted-foreground">
-                        {notification.type === 'message' ? ' sent you a message' : 
-                         notification.type === 'new_ticket' ? ' submitted a new ticket' : 
+                        {notification.type === 'message' ? ' sent you a message' :
+                         notification.type === 'inbox_message' ? (notification.inboxType === 'collab_invite' ? ' sent you a collaboration invite' : ' sent you an inbox message') :
+                         notification.type === 'new_ticket' ? ' submitted a new ticket' :
                          ' replied to your ticket'}
                       </span>
                     </p>

@@ -34,6 +34,7 @@ export function CreateNews({ onNewsCreated }: CreateNewsProps) {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const uploadXhrRef = useRef<XMLHttpRequest | null>(null);
@@ -156,11 +157,12 @@ export function CreateNews({ onNewsCreated }: CreateNewsProps) {
       title: title.trim(),
       content: content.trim(),
       image_url: imageUrls.length > 0 ? (imageUrls.length === 1 ? imageUrls[0] : JSON.stringify(imageUrls)) : (videoUrl || null),
+      tag: selectedTag || null,
     });
 
     if (!error) {
       setTitle(''); setContent(''); setImageUrls([]); setImagePreviews([]);
-      setVideoUrl(''); setVideoPreview(''); setShowForm(false);
+      setVideoUrl(''); setVideoPreview(''); setShowForm(false); setSelectedTag(null);
       onNewsCreated();
       toast({ title: 'News posted successfully!' });
     } else {
@@ -206,6 +208,40 @@ export function CreateNews({ onNewsCreated }: CreateNewsProps) {
       </div>
 
       <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="News title..." className="bg-secondary/50 border-2 border-border input-glow h-12 font-display" required />
+
+      {/* GitHub-style tag selector */}
+      <div className="flex flex-wrap gap-2">
+        {['announcement', 'update', 'event', 'warning', 'bug-fix', 'feature'].map((tag) => {
+          const tagStyles: Record<string, string> = {
+            announcement: 'border-blue-500/60 text-blue-400 hover:bg-blue-500/20',
+            update: 'border-green-500/60 text-green-400 hover:bg-green-500/20',
+            event: 'border-purple-500/60 text-purple-400 hover:bg-purple-500/20',
+            warning: 'border-yellow-500/60 text-yellow-400 hover:bg-yellow-500/20',
+            'bug-fix': 'border-red-500/60 text-red-400 hover:bg-red-500/20',
+            feature: 'border-emerald-500/60 text-emerald-400 hover:bg-emerald-500/20',
+          };
+          const activeStyles: Record<string, string> = {
+            announcement: 'bg-blue-500/20',
+            update: 'bg-green-500/20',
+            event: 'bg-purple-500/20',
+            warning: 'bg-yellow-500/20',
+            'bug-fix': 'bg-red-500/20',
+            feature: 'bg-emerald-500/20',
+          };
+          return (
+            <button
+              key={tag}
+              type="button"
+              onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
+              className={`px-2 py-0.5 rounded-full text-xs font-medium mc-text border transition-colors ${
+                tagStyles[tag]
+              } ${selectedTag === tag ? activeStyles[tag] : ''}`}
+            >
+              {tag}
+            </button>
+          );
+        })}
+      </div>
 
       <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="What's the news?" className="min-h-32 bg-secondary/50 border-2 border-border resize-none input-glow" required />
 

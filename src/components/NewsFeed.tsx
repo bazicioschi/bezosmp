@@ -10,6 +10,7 @@ interface NewsItem {
   title: string;
   content: string;
   image_url: string | null;
+  tag: string | null;
   created_at: string;
   username: string;
   avatar_url: string | null;
@@ -47,6 +48,7 @@ export function NewsFeed() {
         ...item,
         username: profile?.username || 'Unknown',
         avatar_url: profile?.avatar_url || null,
+        tag: item.tag ?? null,
       };
     });
 
@@ -107,6 +109,7 @@ export function NewsFeed() {
               title={item.title}
               content={item.content}
               imageUrl={item.image_url}
+              tag={item.tag}
               createdAt={item.created_at}
               userId={item.user_id}
               username={item.username}

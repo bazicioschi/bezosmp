@@ -11,6 +11,7 @@ interface Notification {
   createdAt: string;
   read: boolean;
   ticketId?: string;
+  inboxType?: string;
 }
 
 export function useNotifications() {
@@ -36,20 +37,21 @@ export function useNotifications() {
   const fetchUnreadCount = async () => {
     if (!user) return;
 
-    // Count unread messages
-    const { count } = await supabase
+    // Count unread DMs
+    const { count: dmCount } = await supabase
       .from('messages')
       .select('id', { count: 'exact', head: true })
       .eq('receiver_id', user.id)
       .eq('read', false);
 
+    // Count unread inbox messages
     const { count: inboxCount } = await supabase
       .from('inbox_messages')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', user.id)
       .eq('read', false);
 
-    setUnreadMessages((count || 0) + (inboxCount || 0));
+    setUnreadMessages((dmCount || 0) + (inboxCount || 0));
   };
 
   const setupRealtimeSubscription = () => {
@@ -86,6 +88,29 @@ export function useNotifications() {
             fetchUnreadCount();
           }
         }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'inbox_messages',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const msg = payload.new as { id: string; type: string; subject: string; data: any; created_at: string };
+          handleInboxMessageNotification(msg);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'inbox_messages',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => { fetchUnreadCount(); }
       )
       .on(
         'postgres_changes',
@@ -211,6 +236,31 @@ export function useNotifications() {
       createdAt: reply.created_at,
       read: false,
       ticketId: reply.ticket_id,
+    };
+    setUnreadMessages((prev) => prev + 1);
+    setNotifications((prev) => [notification, ...prev].slice(0, 10));
+  };
+
+  const handleInboxMessageNotification = async (msg: { id: string; type: string; subject: string; data: any; created_at: string }) => {
+    const senderId = msg.data?.inviter_id || msg.data?.sender_id || '';
+    let senderName = 'Someone';
+    if (senderId) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('user_id', senderId)
+        .maybeSingle();
+      if (profile) senderName = profile.username;
+    }
+    const notification: Notification = {
+      id: `inbox-${msg.id}`,
+      type: 'inbox_message',
+      senderId,
+      senderName,
+      content: msg.subject,
+      createdAt: msg.created_at,
+      read: false,
+      inboxType: msg.type,
     };
     setUnreadMessages((prev) => prev + 1);
     setNotifications((prev) => [notification, ...prev].slice(0, 10));

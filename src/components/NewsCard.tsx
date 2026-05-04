@@ -28,6 +28,7 @@ interface NewsCardProps {
   title: string;
   content: string;
   imageUrl?: string | null;
+  tag?: string | null;
   createdAt: string;
   userId: string;
   username: string;
@@ -41,6 +42,7 @@ export function NewsCard({
   title,
   content,
   imageUrl,
+  tag,
   createdAt,
   userId,
   username,
@@ -183,11 +185,26 @@ export function NewsCard({
             )}
           </div>
 
-          {/* News Badge */}
-          <div className="mt-2 mb-2">
+          {/* News Badge + Tag */}
+          <div className="mt-2 mb-2 flex items-center gap-2 flex-wrap">
             <span className="mc-slot inline-flex items-center px-2 py-0.5 mc-text text-sm text-primary">
               📰 SERVER NEWS
             </span>
+            {tag && (() => {
+              const tagStyles: Record<string, string> = {
+                announcement: 'bg-blue-500/20 text-blue-400 border border-blue-500/40',
+                update: 'bg-green-500/20 text-green-400 border border-green-500/40',
+                event: 'bg-purple-500/20 text-purple-400 border border-purple-500/40',
+                warning: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40',
+                'bug-fix': 'bg-red-500/20 text-red-400 border border-red-500/40',
+                feature: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40',
+              };
+              return (
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mc-text ${tagStyles[tag] ?? 'bg-muted text-muted-foreground border border-border'}`}>
+                  {tag}
+                </span>
+              );
+            })()}
           </div>
 
           {isEditing ? (

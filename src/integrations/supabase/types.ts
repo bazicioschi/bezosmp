@@ -193,30 +193,44 @@ export type Database = {
       }
       messages: {
         Row: {
+          collab_invite_id: string | null
           content: string
           created_at: string
           id: string
+          message_type: string
           read: boolean
           receiver_id: string
           sender_id: string
         }
         Insert: {
+          collab_invite_id?: string | null
           content: string
           created_at?: string
           id?: string
+          message_type?: string
           read?: boolean
           receiver_id: string
           sender_id: string
         }
         Update: {
+          collab_invite_id?: string | null
           content?: string
           created_at?: string
           id?: string
+          message_type?: string
           read?: boolean
           receiver_id?: string
           sender_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "messages_collab_invite_id_fkey"
+            columns: ["collab_invite_id"]
+            isOneToOne: false
+            referencedRelation: "post_collaborations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       news: {
         Row: {
@@ -244,6 +258,27 @@ export type Database = {
           image_url?: string | null
           title?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      post_collaborators: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
           user_id?: string
         }
         Relationships: []
@@ -285,27 +320,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      post_collaborators: {
-        Row: {
-          created_at: string
-          id: string
-          post_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          post_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          post_id?: string
-          user_id?: string
-        }
-        Relationships: []
       }
       post_reactions: {
         Row: {

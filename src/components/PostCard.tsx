@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Trash2, Share, Bookmark, BookmarkCheck, Pencil, X, Check, UserPlus } from 'lucide-react';
+import { Heart, MessageCircle, Trash2, Share, Bookmark, BookmarkCheck, Pencil, X, Check } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -40,6 +40,9 @@ interface PostCardProps {
   onLikeToggle: () => void;
   onDelete: () => void;
   onEdit?: () => void;
+  coAuthorId?: string | null;
+  coAuthorUsername?: string | null;
+  coAuthorAvatarUrl?: string | null;
 }
 
 export function PostCard({
@@ -57,6 +60,9 @@ export function PostCard({
   onLikeToggle,
   onDelete,
   onEdit,
+  coAuthorId,
+  coAuthorUsername,
+  coAuthorAvatarUrl,
 }: PostCardProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -73,7 +79,7 @@ export function PostCard({
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
-  const [collaborators, setCollaborators] = useState<{ user_id: string; username: string }[]>([]);
+  const [collaborators, setCollaborators] = useState<{ user_id: string; username: string; avatar_url: string | null }[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -97,7 +103,7 @@ export function PostCard({
       if (!data || data.length === 0) { if (!cancelled) setCollaborators([]); return; }
       const { data: profs } = await supabase
         .from('profiles')
-        .select('user_id, username')
+        .select('user_id, username, avatar_url')
         .in('user_id', data.map(d => d.user_id));
       if (!cancelled) setCollaborators(profs ?? []);
     })();
@@ -277,72 +283,70 @@ export function PostCard({
             >
               {username}
             </span>
-            {collaborators.length > 0 && (
-              <span className="text-muted-foreground text-sm mc-text">
-                {' '}and{' '}
-                {collaborators.map((c, i) => (
-                  <span key={c.user_id}>
-                    {i > 0 && ' and '}
+            {(coAuthorId && coAuthorUsername) || collaborators.length > 0 ? (
+              <span className="flex items-center gap-1 text-muted-foreground text-sm">
+                <span>by</span>
+                {/* post author avatar + name */}
+                <span
+                  className="flex items-center gap-1 cursor-pointer hover:text-primary"
+                  onClick={handleProfileClick}
+                >
+                  <img
+                    src={avatarUrl ?? `https://api.dicebear.com/7.x/pixel-art/svg?seed=${username}`}
+                    alt={username}
+                    className="h-5 w-5 rounded-full object-cover inline-block"
+                    style={{ imageRendering: 'pixelated' }}
+                  />
+                  <span className="font-semibold text-foreground">@{username}</span>
+                </span>
+                {/* co-author from post_collaborations */}
+                {coAuthorId && coAuthorUsername && (
+                  <>
+                    <span>and</span>
                     <span
-                      className="text-foreground hover:text-primary cursor-pointer font-semibold"
+                      className="flex items-center gap-1 cursor-pointer hover:text-primary"
+                      onClick={(e) => { e.stopPropagation(); navigate(`/user/${coAuthorId}`); }}
+                    >
+                      <img
+                        src={coAuthorAvatarUrl ?? `https://api.dicebear.com/7.x/pixel-art/svg?seed=${coAuthorUsername}`}
+                        alt={coAuthorUsername}
+                        className="h-5 w-5 rounded-full object-cover inline-block"
+                        style={{ imageRendering: 'pixelated' }}
+                      />
+                      <span className="font-semibold text-foreground">@{coAuthorUsername}</span>
+                    </span>
+                  </>
+                )}
+                {/* collaborators from post_collaborators table */}
+                {collaborators.map((c) => (
+                  <>
+                    <span key={`sep-${c.user_id}`}>and</span>
+                    <span
+                      key={c.user_id}
+                      className="flex items-center gap-1 cursor-pointer hover:text-primary"
                       onClick={(e) => { e.stopPropagation(); navigate(`/user/${c.user_id}`); }}
                     >
-                      {c.username}
+                      <img
+                        src={c.avatar_url ?? `https://api.dicebear.com/7.x/pixel-art/svg?seed=${c.username}`}
+                        alt={c.username}
+                        className="h-5 w-5 rounded-full object-cover inline-block"
+                        style={{ imageRendering: 'pixelated' }}
+                      />
+                      <span className="font-semibold text-foreground">@{c.username}</span>
                     </span>
-                  </span>
+                  </>
                 ))}
               </span>
+            ) : null}
+            {!(coAuthorId || collaborators.length > 0) && (
+              <span className="text-muted-foreground text-sm">@{username.toLowerCase()}</span>
             )}
-            <span className="text-muted-foreground text-sm">@{username.toLowerCase()}</span>
             <span className="text-muted-foreground">·</span>
             <span className="text-muted-foreground text-sm">
               {formatDistanceToNow(new Date(createdAt), { addSuffix: false })}
             </span>
             {user?.id === userId && !isEditing && (
               <div className="flex items-center gap-1 ml-auto">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={async (e) => {
-                    e.stopPropagation();
-                    const handle = window.prompt('Invite a collaborator by username (without @):');
-                    if (!handle) return;
-                    const cleaned = handle.replace(/^@/, '').trim();
-                    const { data: prof } = await supabase
-                      .from('profiles')
-                      .select('user_id, username')
-                      .eq('username', cleaned)
-                      .maybeSingle();
-                    if (!prof) {
-                      toast({ title: 'User not found', variant: 'destructive' });
-                      return;
-                    }
-                    if (prof.user_id === user!.id) {
-                      toast({ title: "You can't invite yourself", variant: 'destructive' });
-                      return;
-                    }
-                    const { error: invErr } = await supabase
-                      .from('collab_invites')
-                      .insert({ post_id: id, inviter_id: user!.id, invitee_id: prof.user_id });
-                    if (invErr) {
-                      toast({ title: 'Could not send invite', description: invErr.message, variant: 'destructive' });
-                      return;
-                    }
-                    await supabase.from('inbox_messages').insert({
-                      user_id: prof.user_id,
-                      type: 'collab_invite',
-                      subject: `${username} invited you to collaborate`,
-                      body: content.slice(0, 140),
-                      data: { post_id: id, inviter_id: user!.id, inviter_username: username },
-                    });
-                    toast({ title: 'Invite sent!', description: `Invited @${prof.username}` });
-                  }}
-                  className="h-8 w-auto px-2 gap-1 text-primary border border-primary/40 hover:bg-primary/20"
-                  title="Invite collaborator"
-                >
-                  <UserPlus className="h-4 w-4" />
-                  <span className="mc-text text-xs hidden sm:inline">Invite</span>
-                </Button>
                 <Button 
                   variant="ghost" 
                   size="icon" 

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, Mail, MailOpen, Trash2, Check, X, Inbox as InboxIcon, PenSquare, Send } from 'lucide-react';
+import { Loader2, Mail, MailOpen, Trash2, Check, X, Inbox as InboxIcon, PenSquare, Reply, Send } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -86,6 +86,9 @@ export default function Inbox() {
     }
     setSending(false);
   };
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [replySending, setReplySending] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) { navigate('/login'); return; }
@@ -119,10 +122,43 @@ export default function Inbox() {
     await supabase.from('inbox_messages').delete().eq('id', m.id);
   };
 
+  const sendReply = async (m: InboxMessage) => {
+    if (!user || !replyText.trim()) return;
+    const recipientId = m.data?.inviter_id || m.data?.sender_id;
+    if (!recipientId) {
+      toast({ title: 'Cannot reply', description: 'No sender info found.', variant: 'destructive' });
+      return;
+    }
+    setReplySending(true);
+    const { data: myProfile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('user_id', user.id)
+      .single();
+    const { error } = await supabase.from('inbox_messages').insert({
+      user_id: recipientId,
+      type: 'inbox_reply',
+      subject: `Re: ${m.subject}`,
+      body: replyText.trim(),
+      data: { sender_id: user.id, sender_username: myProfile?.username ?? 'Someone' },
+    });
+    if (error) {
+      toast({ title: 'Failed to send reply', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Reply sent!' });
+      setReplyingTo(null);
+      setReplyText('');
+    }
+    setReplySending(false);
+  };
+
   const acceptInvite = async (m: InboxMessage) => {
     const collabId = m.data?.collab_id;
     const inviterId = m.data?.inviter_id;
-    if (!collabId || !inviterId || !user) return;
+    if (!collabId || !inviterId || !user) {
+      toast({ title: 'Invalid invite data', description: 'Missing collaboration ID or inviter info.', variant: 'destructive' });
+      return;
+    }
 
     const { data: myProfile } = await supabase
       .from('profiles')
@@ -137,18 +173,20 @@ export default function Inbox() {
       .eq('invitee_id', user.id);
 
     if (error) {
+      console.error('Accept collab error:', error);
       toast({ title: 'Could not accept', description: error.message, variant: 'destructive' });
       return;
     }
 
     // Notify the inviter
-    await supabase.from('inbox_messages').insert({
+    const { error: notifyErr } = await supabase.from('inbox_messages').insert({
       user_id: inviterId,
       type: 'collab_response',
       subject: `${myProfile?.username ?? 'Someone'} has accepted your invitation`,
       body: `They are ready to write the post about "${m.data?.subject}"`,
       data: { collab_id: collabId },
     });
+    if (notifyErr) console.error('Notify inviter error:', notifyErr);
 
     await supabase.from('inbox_messages').update({ read: true }).eq('id', m.id);
     toast({ title: 'Collaboration accepted!' });
@@ -158,7 +196,10 @@ export default function Inbox() {
   const declineInvite = async (m: InboxMessage) => {
     const collabId = m.data?.collab_id;
     const inviterId = m.data?.inviter_id;
-    if (!collabId || !inviterId || !user) return;
+    if (!collabId || !inviterId || !user) {
+      toast({ title: 'Invalid invite data', description: 'Missing collaboration ID or inviter info.', variant: 'destructive' });
+      return;
+    }
 
     const { data: myProfile } = await supabase
       .from('profiles')
@@ -166,20 +207,27 @@ export default function Inbox() {
       .eq('user_id', user.id)
       .single();
 
-    await supabase
+    const { error } = await supabase
       .from('post_collaborations')
       .update({ status: 'denied' })
       .eq('id', collabId)
       .eq('invitee_id', user.id);
 
+    if (error) {
+      console.error('Decline collab error:', error);
+      toast({ title: 'Could not decline', description: error.message, variant: 'destructive' });
+      return;
+    }
+
     // Notify the inviter
-    await supabase.from('inbox_messages').insert({
+    const { error: notifyErr } = await supabase.from('inbox_messages').insert({
       user_id: inviterId,
       type: 'collab_response',
       subject: `${myProfile?.username ?? 'Someone'} has denied your invitation`,
       body: `They declined to collaborate on "${m.data?.subject}"`,
       data: { collab_id: collabId },
     });
+    if (notifyErr) console.error('Notify inviter error:', notifyErr);
 
     await remove(m);
     toast({ title: 'Invite declined' });
@@ -238,6 +286,34 @@ export default function Inbox() {
                         <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); declineInvite(m); }} className="h-7 gap-1">
                           <X className="h-3 w-3" /> Decline
                         </Button>
+                      </div>
+                    )}
+                    {/* Reply section */}
+                    {(m.data?.inviter_id || m.data?.sender_id) && m.type !== 'collab_invite' && (
+                      <div className="mt-2">
+                        {replyingTo === m.id ? (
+                          <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                            <Textarea
+                              value={replyText}
+                              onChange={(e) => setReplyText(e.target.value)}
+                              placeholder="Write your reply…"
+                              className="minecraft-input min-h-[70px] resize-none text-sm"
+                              maxLength={1000}
+                            />
+                            <div className="flex gap-2">
+                              <Button size="sm" onClick={() => sendReply(m)} disabled={!replyText.trim() || replySending} className="h-7 gap-1">
+                                <Send className="h-3 w-3" /> {replySending ? 'Sending…' : 'Send'}
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => { setReplyingTo(null); setReplyText(''); }} className="h-7">
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); markRead(m); setReplyingTo(m.id); setReplyText(''); }} className="h-7 gap-1 text-muted-foreground">
+                            <Reply className="h-3 w-3" /> Reply
+                          </Button>
+                        )}
                       </div>
                     )}
                   </div>
