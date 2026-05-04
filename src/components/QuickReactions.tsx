@@ -22,7 +22,7 @@ interface QuickReactionsProps {
 export function QuickReactions({ postId, compact = false, emojis }: QuickReactionsProps) {
   const { playPop } = useSoundEffects();
   const { user } = useAuth();
-  const [myEmoji, setMyEmoji] = useState<string | null>(null);
+  const [myEmojis, setMyEmojis] = useState<Set<string>>(new Set());
   const [counts, setCounts] = useState<Record<string, number>>({});
 
   const list = (emojis ? REACTIONS.filter(r => emojis.includes(r.emoji)) : REACTIONS);
@@ -36,7 +36,7 @@ export function QuickReactions({ postId, compact = false, emojis }: QuickReactio
     const c: Record<string, number> = {};
     for (const row of data) c[row.emoji] = (c[row.emoji] || 0) + 1;
     setCounts(c);
-    setMyEmoji(user ? (data.find(r => r.user_id === user.id)?.emoji ?? null) : null);
+    setMyEmojis(user ? new Set(data.filter(r => r.user_id === user.id).map(r => r.emoji)) : new Set());
   };
 
   useEffect(() => {
@@ -52,21 +52,22 @@ export function QuickReactions({ postId, compact = false, emojis }: QuickReactio
   const handle = async (emoji: string) => {
     if (!user) return;
     playPop();
-    if (myEmoji === emoji) {
-      setMyEmoji(null);
+    const has = myEmojis.has(emoji);
+    if (has) {
+      setMyEmojis(prev => { const n = new Set(prev); n.delete(emoji); return n; });
       setCounts(p => ({ ...p, [emoji]: Math.max(0, (p[emoji] || 1) - 1) }));
-      await supabase.from('post_reactions').delete().eq('post_id', postId).eq('user_id', user.id);
-    } else {
-      const prev = myEmoji;
-      setMyEmoji(emoji);
-      setCounts(p => {
-        const next = { ...p, [emoji]: (p[emoji] || 0) + 1 };
-        if (prev) next[prev] = Math.max(0, (next[prev] || 1) - 1);
-        return next;
-      });
       await supabase
         .from('post_reactions')
-        .upsert({ post_id: postId, user_id: user.id, emoji }, { onConflict: 'post_id,user_id' });
+        .delete()
+        .eq('post_id', postId)
+        .eq('user_id', user.id)
+        .eq('emoji', emoji);
+    } else {
+      setMyEmojis(prev => new Set(prev).add(emoji));
+      setCounts(p => ({ ...p, [emoji]: (p[emoji] || 0) + 1 }));
+      await supabase
+        .from('post_reactions')
+        .insert({ post_id: postId, user_id: user.id, emoji });
     }
   };
 
@@ -83,10 +84,10 @@ export function QuickReactions({ postId, compact = false, emojis }: QuickReactio
           className={cn(
             compact ? 'h-7 px-1.5' : 'h-7 px-2',
             'text-base transition-all',
-            myEmoji === emoji ? 'bg-primary/20 scale-110' : 'hover:bg-secondary/50 hover:scale-105'
+            myEmojis.has(emoji) ? 'bg-primary/20 scale-110' : 'hover:bg-secondary/50 hover:scale-105'
           )}
         >
-          <span className={cn('transition-transform', myEmoji === emoji && 'animate-bounce')}>
+          <span className={cn('transition-transform', myEmojis.has(emoji) && 'animate-bounce')}>
             {emoji}
           </span>
           {counts[emoji] > 0 && (
