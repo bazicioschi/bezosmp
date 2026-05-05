@@ -44,8 +44,10 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
   const [showInviteTab, setShowInviteTab] = useState(false);
   const [inviteUsername, setInviteUsername] = useState('');
   const [inviteSubject, setInviteSubject] = useState('');
+  const [invitees, setInvitees] = useState<{ user_id: string; username: string; avatar_url: string | null }[]>([]);
   const [inviteSuggestions, setInviteSuggestions] = useState<{ user_id: string; username: string; avatar_url: string | null }[]>([]);
   const [showInviteSuggestions, setShowInviteSuggestions] = useState(false);
+  const MAX_COLLAB_INVITEES = 9;
   const inviteInputRef = useRef<HTMLInputElement>(null);
   const inviteSuggestionsRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -61,17 +63,18 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
       return;
     }
     const timeout = setTimeout(async () => {
+      const excluded = [user?.id ?? '', ...invitees.map(i => i.user_id)].filter(Boolean);
       const { data } = await supabase
         .from('profiles')
         .select('user_id, username, avatar_url')
         .ilike('username', `${query}%`)
-        .neq('user_id', user?.id ?? '')
+        .not('user_id', 'in', `(${excluded.join(',')})`)
         .limit(6);
       setInviteSuggestions(data ?? []);
       setShowInviteSuggestions((data ?? []).length > 0);
     }, 200);
     return () => clearTimeout(timeout);
-  }, [inviteUsername, user?.id]);
+  }, [inviteUsername, user?.id, invitees]);
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -304,7 +307,6 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     if (!content.trim() && !hasMedia) return;
 
     setLoading(true);
-    const inviteHandle = inviteUsername.replace(/^@/, '').trim();
     // Store first image in image_url for backward compatibility, store all as JSON if multiple
     const { data: newPost, error } = await supabase.from('posts').insert({
       user_id: user.id,
@@ -330,25 +332,19 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
           return;
         }
       }
-      if (inviteHandle && newPost?.id) {
-        const { data: invitee } = await supabase
-          .from('profiles')
-          .select('user_id, username')
-          .eq('username', inviteHandle)
-          .maybeSingle();
-
-        if (!invitee) {
-          toast({ title: 'Post created, but user was not found', variant: 'destructive' });
-        } else if (invitee.user_id === user.id) {
-          toast({ title: 'Post created, but you cannot invite yourself', variant: 'destructive' });
-        } else {
+      const postInvitees = [...invitees];
+      const handle = inviteUsername.replace(/^@/, '').trim();
+      if (handle && !postInvitees.some(i => i.username.toLowerCase() === handle.toLowerCase())) {
+        const { data: found } = await supabase.from('profiles').select('user_id, username, avatar_url').ilike('username', handle).maybeSingle();
+        if (found && found.user_id !== user.id) postInvitees.push(found);
+      }
+      if (postInvitees.length > 0 && newPost?.id) {
+        const invitedNames: string[] = [];
+        for (const invitee of postInvitees) {
           const { error: inviteError } = await supabase
             .from('collab_invites')
             .insert({ post_id: newPost.id, inviter_id: user.id, invitee_id: invitee.user_id });
-
-          if (inviteError) {
-            toast({ title: 'Post created, but invite failed', description: inviteError.message, variant: 'destructive' });
-          } else {
+          if (!inviteError) {
             await supabase.from('inbox_messages').insert({
               user_id: invitee.user_id,
               type: 'collab_invite',
@@ -356,8 +352,11 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
               body: content.trim().slice(0, 140),
               data: { post_id: newPost.id, inviter_id: user.id, inviter_username: profile?.username || 'Someone' },
             });
-            toast({ title: 'Post created and invite sent!', description: `Invited @${invitee.username}` });
+            invitedNames.push(`@${invitee.username}`);
           }
+        }
+        if (invitedNames.length > 0) {
+          toast({ title: 'Post created and invites sent!', description: `Invited ${invitedNames.join(', ')}` });
         }
       }
       setContent('');
@@ -366,6 +365,8 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
       setVideoUrl('');
       setVideoPreview('');
       setInviteUsername('');
+      setInviteSubject('');
+      setInvitees([]);
       setShowInviteTab(false);
       onPostCreated();
     } else {
@@ -376,55 +377,64 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
 
   const sendStandaloneInvite = async () => {
     if (!user) return;
-    const handle = inviteUsername.replace(/^@/, '').trim();
-    if (!handle) return;
     setLoading(true);
-    const { data: invitee } = await supabase
-      .from('profiles')
-      .select('user_id, username')
-      .eq('username', handle)
-      .maybeSingle();
 
-    if (!invitee) {
-      toast({ title: 'User not found', description: `No user named @${handle}`, variant: 'destructive' });
-      setLoading(false);
-      return;
-    }
-    if (invitee.user_id === user.id) {
-      toast({ title: 'You cannot invite yourself', variant: 'destructive' });
-      setLoading(false);
-      return;
-    }
-
-    // Create a post_collaborations record so the invitee can accept/deny
-    const subject = inviteSubject.trim() || content.trim() || 'Let\'s collaborate on a post!';
-    const { data: collab, error: collabError } = await supabase
-      .from('post_collaborations')
-      .insert({ inviter_id: user.id, invitee_id: invitee.user_id, subject, status: 'pending' })
-      .select()
-      .single();
-
-    if (collabError || !collab) {
-      toast({ title: 'Could not send invite', description: collabError?.message, variant: 'destructive' });
-      setLoading(false);
-      return;
+    // Collect invitees: chips + any typed (unresolved) username
+    const finalInvitees = [...invitees];
+    const handle = inviteUsername.replace(/^@/, '').trim();
+    if (handle) {
+      const { data: found } = await supabase
+        .from('profiles')
+        .select('user_id, username, avatar_url')
+        .ilike('username', handle)
+        .maybeSingle();
+      if (!found) {
+        toast({ title: 'User not found', description: `No user named @${handle}`, variant: 'destructive' });
+        setLoading(false);
+        return;
+      }
+      if (found.user_id === user.id) {
+        toast({ title: 'You cannot invite yourself', variant: 'destructive' });
+        setLoading(false);
+        return;
+      }
+      if (!finalInvitees.some(i => i.user_id === found.user_id)) finalInvitees.push(found);
     }
 
-    const { error: inboxError } = await supabase.from('inbox_messages').insert({
-      user_id: invitee.user_id,
-      type: 'collab_invite',
-      subject: `${profile?.username || 'Someone'} wants to collaborate with you`,
-      body: `Proposed subject: "${subject}"`,
-      data: { collab_id: collab.id, inviter_id: user.id, inviter_username: profile?.username || 'Someone', subject },
-    });
+    if (finalInvitees.length === 0) { setLoading(false); return; }
 
-    if (inboxError) {
-      toast({ title: 'Could not send invite', description: inboxError.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Invite sent!', description: `@${invitee.username} was notified in their inbox.` });
+    const subject = inviteSubject.trim() || content.trim() || "Let's collaborate on a post!";
+    const invitedNames: string[] = [];
+
+    for (const invitee of finalInvitees) {
+      const { data: collab, error: collabError } = await supabase
+        .from('post_collaborations')
+        .insert({ inviter_id: user.id, invitee_id: invitee.user_id, subject, status: 'pending' })
+        .select()
+        .single();
+      if (collabError || !collab) continue;
+
+      await supabase.from('inbox_messages').insert({
+        user_id: invitee.user_id,
+        type: 'collab_invite',
+        subject: `${profile?.username || 'Someone'} wants to collaborate with you`,
+        body: `Proposed subject: "${subject}"`,
+        data: { collab_id: collab.id, inviter_id: user.id, inviter_username: profile?.username || 'Someone', subject },
+      });
+      invitedNames.push(`@${invitee.username}`);
+    }
+
+    if (invitedNames.length > 0) {
+      toast({
+        title: invitedNames.length === 1 ? 'Invite sent!' : `${invitedNames.length} invites sent!`,
+        description: `${invitedNames.join(', ')} notified in their inbox.`,
+      });
       setInviteUsername('');
       setInviteSubject('');
+      setInvitees([]);
       setShowInviteTab(false);
+    } else {
+      toast({ title: 'Could not send invites', variant: 'destructive' });
     }
     setLoading(false);
   };
@@ -514,6 +524,19 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             </Button>
             {showInviteTab && (
               <div className="mt-2 flex flex-col gap-2">
+                {invitees.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {invitees.map((inv) => (
+                      <span key={inv.user_id} className="flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs mc-text">
+                        <img src={inv.avatar_url ?? `https://api.dicebear.com/7.x/pixel-art/svg?seed=${inv.username}`} alt={inv.username} className="h-4 w-4 rounded-full" />
+                        @{inv.username}
+                        <button type="button" onClick={() => setInvitees(prev => prev.filter(i => i.user_id !== inv.user_id))} className="ml-0.5 hover:text-destructive">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <div className="flex flex-col gap-2 sm:flex-row">
                 <div className="relative flex-1">
                   <input
@@ -521,8 +544,9 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                     value={inviteUsername}
                     onChange={(e) => setInviteUsername(e.target.value)}
                     onFocus={() => inviteSuggestions.length > 0 && setShowInviteSuggestions(true)}
-                    placeholder="Username to invite"
-                    className="minecraft-input h-10 w-full px-3 mc-text bg-background text-foreground placeholder:text-muted-foreground"
+                    placeholder={invitees.length < MAX_COLLAB_INVITEES ? 'Add username…' : 'Max invitees reached'}
+                    disabled={invitees.length >= MAX_COLLAB_INVITEES}
+                    className="minecraft-input h-10 w-full px-3 mc-text bg-background text-foreground placeholder:text-muted-foreground disabled:opacity-50"
                   />
                   {showInviteSuggestions && (
                     <div
@@ -536,7 +560,10 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                           className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
                           onMouseDown={(e) => {
                             e.preventDefault();
-                            setInviteUsername(s.username);
+                            if (invitees.length < MAX_COLLAB_INVITEES && !invitees.some(i => i.user_id === s.user_id)) {
+                              setInvitees(prev => [...prev, s]);
+                            }
+                            setInviteUsername('');
                             setShowInviteSuggestions(false);
                           }}
                         >
@@ -554,17 +581,17 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                 <Button
                   type="button"
                   onClick={sendStandaloneInvite}
-                  disabled={!inviteUsername.trim() || loading}
+                  disabled={(invitees.length === 0 && !inviteUsername.trim()) || loading}
                   className="mc-btn-primary h-10"
                 >
                   <Send className="h-4 w-4 mr-2" />
                   Send invite
                 </Button>
-                {inviteUsername && (
+                {(inviteUsername || invitees.length > 0) && (
                   <Button
                     type="button"
                     variant="ghost"
-                    onClick={() => { setInviteUsername(''); setInviteSubject(''); }}
+                    onClick={() => { setInviteUsername(''); setInviteSubject(''); setInvitees([]); }}
                     className="mc-btn h-10"
                   >
                     <X className="h-4 w-4 mr-2" />
@@ -575,7 +602,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                 <input
                   value={inviteSubject}
                   onChange={(e) => setInviteSubject(e.target.value)}
-                  placeholder="Post subject (e.g. Our adventure in the Nether…)"
+                  placeholder="Add subject"
                   maxLength={200}
                   className="minecraft-input h-10 w-full px-3 mc-text bg-background text-foreground placeholder:text-muted-foreground"
                 />

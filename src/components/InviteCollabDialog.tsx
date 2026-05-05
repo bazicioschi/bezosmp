@@ -254,7 +254,7 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
             </Label>
             <Input
               id="collab-subject"
-              placeholder="e.g. Our adventure in the Nether..."
+              placeholder="Add subject"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               maxLength={200}
