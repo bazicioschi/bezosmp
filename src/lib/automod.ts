@@ -95,7 +95,7 @@ export async function runAutomod(userId: string, content: string): Promise<boole
     .eq('user_id', userId)
     .eq('restriction_type', 'banned');
 
-  await supabase.from('user_restrictions').insert({
+  await (supabase.from('user_restrictions') as any).insert({
     user_id: userId,
     restriction_type: 'banned',
     reason,
