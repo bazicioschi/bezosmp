@@ -124,7 +124,7 @@ export default function Inbox() {
 
   const sendReply = async (m: InboxMessage) => {
     if (!user || !replyText.trim()) return;
-    const recipientId = m.data?.inviter_id || m.data?.sender_id;
+    const recipientId = m.data?.inviter_id || m.data?.sender_id || m.data?.from_user_id;
     if (!recipientId) {
       toast({ title: 'Cannot reply', description: 'No sender info found.', variant: 'destructive' });
       return;
@@ -289,7 +289,7 @@ export default function Inbox() {
                       </div>
                     )}
                     {/* Reply section */}
-                    {(m.data?.inviter_id || m.data?.sender_id) && m.type !== 'collab_invite' && (
+                    {(m.data?.inviter_id || m.data?.sender_id || m.data?.from_user_id) && m.type !== 'collab_invite' && (
                       <div className="mt-2">
                         {replyingTo === m.id ? (
                           <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
