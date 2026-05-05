@@ -31,6 +31,7 @@ export default function Inbox() {
   const inboxBg = (theme === 'dark' || theme === 'pizza') ? 'bg-black' : 'bg-white';
   const [messages, setMessages] = useState<InboxMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [senderProfiles, setSenderProfiles] = useState<Record<string, { username: string; avatar_url: string | null }>>({});
   const [composeOpen, setComposeOpen] = useState(false);
   const [toUsername, setToUsername] = useState('');
   const [subject, setSubject] = useState('');
@@ -112,8 +113,25 @@ export default function Inbox() {
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
-    setMessages((data ?? []) as InboxMessage[]);
+    const msgs = (data ?? []) as InboxMessage[];
+    setMessages(msgs);
     setLoading(false);
+
+    // Fetch sender profiles for avatars
+    const senderIds = [...new Set(
+      msgs.map(m => m.data?.from_user_id || m.data?.sender_id || m.data?.inviter_id).filter(Boolean) as string[]
+    )];
+    if (senderIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, username, avatar_url')
+        .in('user_id', senderIds);
+      if (profiles) {
+        const map: Record<string, { username: string; avatar_url: string | null }> = {};
+        profiles.forEach(p => { map[p.user_id] = { username: p.username, avatar_url: p.avatar_url }; });
+        setSenderProfiles(map);
+      }
+    }
   };
 
   const markRead = async (m: InboxMessage) => {
@@ -287,19 +305,28 @@ export default function Inbox() {
           </div>
         ) : (
           <ul className="space-y-2">
-            {messages.map(m => (
+              {messages.map(m => {
+                const senderId = m.data?.from_user_id || m.data?.sender_id || m.data?.inviter_id;
+                const senderProfile = senderId ? senderProfiles[senderId] : null;
+                return (
               <li
                 key={m.id}
                 onClick={() => markRead(m)}
                 className={`minecraft-card p-4 cursor-pointer transition-colors ${m.read ? 'opacity-70' : 'border-primary/40'}`}
               >
                 <div className="flex items-start gap-3">
-                  <div className="mt-1">
-                    {m.read ? <MailOpen className="h-5 w-5 text-muted-foreground" /> : <Mail className="h-5 w-5 text-primary" />}
-                  </div>
+                  <Avatar className="h-9 w-9 shrink-0 mt-0.5">
+                    <AvatarImage src={senderProfile?.avatar_url || undefined} />
+                    <AvatarFallback className="bg-primary/20 text-primary text-xs font-display">
+                      {senderProfile?.username?.slice(0,2).toUpperCase() ?? '??'}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="mc-text text-sm text-foreground">{m.subject}</p>
+                      <p className="mc-text text-sm text-foreground flex items-center gap-1.5">
+                        {m.read ? <MailOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" /> : <Mail className="h-3.5 w-3.5 text-primary shrink-0" />}
+                        {m.subject}
+                      </p>
                       <span className="text-xs text-muted-foreground shrink-0">
                         {formatDistanceToNow(new Date(m.created_at), { addSuffix: true })}
                       </span>
@@ -354,7 +381,8 @@ export default function Inbox() {
                   </Button>
                 </div>
               </li>
-            ))}
+                );
+              })}
           </ul>
         )}
       </main>

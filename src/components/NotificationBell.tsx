@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, MessageCircle, X, Ticket, AlertCircle, Inbox } from 'lucide-react';
+import { Bell, MessageCircle, X, Ticket, AlertCircle, Newspaper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -32,12 +32,10 @@ export function NotificationBell() {
     playClick();
     if (notification.type === 'message') {
       navigate(`/messages/${notification.senderId}`);
-    } else if (notification.type === 'inbox_message') {
-      navigate('/inbox');
     } else if (notification.type === 'ticket_reply' || notification.type === 'new_ticket') {
       navigate('/support');
-    } else if (notification.type === 'inbox') {
-      navigate('/inbox');
+    } else if (notification.type === 'news') {
+      navigate('/');
     }
     clearNotification(notification.id);
     setOpen(false);
@@ -95,8 +93,8 @@ export function NotificationBell() {
                     {notification.type === 'message' && (
                       <MessageCircle className="h-4 w-4 text-primary" />
                     )}
-                    {notification.type === 'inbox_message' && (
-                      <Inbox className="h-4 w-4 text-primary" />
+                    {notification.type === 'news' && (
+                      <Newspaper className="h-4 w-4 text-green-400" />
                     )}
                     {notification.type === 'ticket_reply' && (
                       <Ticket className="h-4 w-4 text-primary" />
@@ -110,7 +108,7 @@ export function NotificationBell() {
                       <span className="font-semibold text-primary mc-text">{notification.senderName}</span>
                       <span className="text-muted-foreground">
                         {notification.type === 'message' ? ' sent you a message' :
-                         notification.type === 'inbox_message' ? (notification.inboxType === 'collab_invite' ? ' sent you a collaboration invite' : ' sent you an inbox message') :
+                         notification.type === 'news' ? ' posted new news' :
                          notification.type === 'new_ticket' ? ' submitted a new ticket' :
                          ' replied to your ticket'}
                       </span>

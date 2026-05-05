@@ -9,12 +9,14 @@ import { ConnectButton } from './ConnectButton';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useTheme } from '@/hooks/useTheme';
+import { useNotifications } from '@/hooks/useNotifications';
 
 export function Header() {
   const { playClick } = useSoundEffects();
   const { user, signOut } = useAuth();
   const { isAdmin, isOwner } = useAdmin();
   const { theme } = useTheme();
+  const { unreadInbox } = useNotifications();
 
   return (
     <header className="sticky top-0 z-50 border-b-2 border-border bg-card/95 backdrop-blur-sm">
@@ -43,10 +45,15 @@ export function Header() {
           {user ? (
             <>
               <NotificationBell />
-              <Button variant="ghost" size="sm" asChild className="mc-slot hover:mc-slot-active px-3 h-8" onClick={() => playClick()}>
+              <Button variant="ghost" size="sm" asChild className="mc-slot hover:mc-slot-active px-3 h-8 relative" onClick={() => playClick()}>
                 <Link to="/inbox" className="flex items-center gap-2">
                   <Inbox className="h-4 w-4" />
                   <span className="hidden md:inline mc-text text-sm">INBOX</span>
+                  {unreadInbox > 0 && (
+                    <span className="absolute -top-1 -right-1 h-5 w-5 bg-primary flex items-center justify-center mc-text text-xs text-primary-foreground minecraft-notification redstone-glow">
+                      {unreadInbox > 9 ? '9+' : unreadInbox}
+                    </span>
+                  )}
                 </Link>
               </Button>
               <Button variant="ghost" size="sm" asChild className="mc-slot hover:mc-slot-active px-3 h-8" onClick={() => playClick()}>
