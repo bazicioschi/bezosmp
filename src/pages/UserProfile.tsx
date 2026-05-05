@@ -225,17 +225,19 @@ export default function UserProfile() {
                 onClick={handleStartChat}
                 variant="outline"
                 size="sm"
-                className="rounded-full border-border"
+                className="rounded-full border-border gap-1.5 mc-btn"
               >
                 <MessageCircle className="h-4 w-4" />
+                Chat
               </Button>
               <InviteCollabDialog inviteeId={userId!} inviteeUsername={profile.username} />
               <Button
                 onClick={() => { playPop(); toggleFollow(userId!); fetchCounts(); }}
                 variant={isFollowing(userId!) ? "outline" : "default"}
                 size="sm"
-                className="rounded-full font-display"
+                className={`rounded-full font-display gap-1.5 ${isFollowing(userId!) ? 'mc-btn' : 'mc-btn-primary'}`}
               >
+                <UserPlus className="h-4 w-4" />
                 {isFollowing(userId!) ? 'Following' : 'Follow'}
               </Button>
             </>
