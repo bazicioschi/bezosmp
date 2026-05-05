@@ -143,7 +143,7 @@ export function ServerStats() {
       </div>
 
       <Dialog open={panel !== null} onOpenChange={(open) => { if (!open) setPanel(null); }}>
-        <DialogContent className="minecraft-card minecraft-border max-w-lg">
+        <DialogContent className="minecraft-card minecraft-border max-w-lg bg-background">
           <DialogHeader>
             <DialogTitle className="mc-text text-xl glow-text">{panelTitle}</DialogTitle>
           </DialogHeader>
