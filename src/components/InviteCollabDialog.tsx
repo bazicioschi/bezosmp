@@ -219,9 +219,10 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
                   )}
                   <input
                     className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-                    placeholder="Add another collaborator…"
+                    placeholder="@username — press space to add another"
                     value={searchQuery}
                     onChange={e => handleSearch(e.target.value)}
+                    onKeyDown={handleInputKeyDown}
                   />
                 </div>
                 {searchResults.length > 0 && (
