@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Send, ArrowLeft, Loader2, User, Users, Check, X } from 'lucide-react';
+import { Send, ArrowLeft, Loader2, User, Users, Check, X, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -223,6 +223,15 @@ export default function Messages() {
     }
   };
 
+  const handleDeleteMessage = async (message: Message) => {
+    setMessages(prev => prev.filter(m => m.id !== message.id));
+    const { error } = await supabase.from('messages').delete().eq('id', message.id);
+    if (error) {
+      toast({ title: 'Failed to delete', description: error.message, variant: 'destructive' });
+      setMessages(prev => [...prev, message].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()));
+    }
+  };
+
   const handleDenyCollab = async (message: Message) => {
     if (!user || !message.collab_invite_id || !message.post_collaborations) return;
     setRespondingInvite(message.id);
@@ -337,8 +346,18 @@ export default function Messages() {
                 return (
                   <div
                     key={message.id}
-                    className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                    className={`flex items-end gap-1 group ${isOwn ? 'justify-end' : 'justify-start'}`}
                   >
+                    {isOwn && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive shrink-0 mb-1"
+                        onClick={() => handleDeleteMessage(message)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
                     <div
                       className={`max-w-[80%] px-4 py-3 rounded-lg minecraft-border ${
                         isCollabInvite
