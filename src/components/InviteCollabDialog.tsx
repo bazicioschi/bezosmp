@@ -79,6 +79,12 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
       addInvitee(found);
     } else if (searchResults[0]) {
       addInvitee(searchResults[0]);
+    } else if (found && invitees.some(i => i.user_id === found.user_id)) {
+      toast({ title: 'Already added', description: `@${found.username} is already a collaborator.`, variant: 'destructive' });
+    } else if (found && found.user_id === user?.id) {
+      toast({ title: "That's you", description: "You can't invite yourself.", variant: 'destructive' });
+    } else {
+      toast({ title: 'User not found', description: `No account matches @${term}.`, variant: 'destructive' });
     }
   };
 
