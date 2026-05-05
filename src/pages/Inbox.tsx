@@ -122,7 +122,12 @@ export default function Inbox() {
   };
 
   const remove = async (m: InboxMessage) => {
-    await supabase.from('inbox_messages').delete().eq('id', m.id);
+    setMessages(prev => prev.filter(msg => msg.id !== m.id));
+    const { error } = await supabase.from('inbox_messages').delete().eq('id', m.id);
+    if (error) {
+      toast({ title: 'Failed to delete', description: error.message, variant: 'destructive' });
+      setMessages(prev => [m, ...prev].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+    }
   };
 
   const sendReply = async (m: InboxMessage) => {
