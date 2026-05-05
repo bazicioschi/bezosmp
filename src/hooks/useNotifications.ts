@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/auth';
 
 interface Notification {
   id: string;
-  type: 'message' | 'like' | 'comment' | 'ticket_reply' | 'new_ticket' | 'inbox';
+  type: 'message' | 'like' | 'comment' | 'ticket_reply' | 'new_ticket' | 'inbox' | 'inbox_message';
   senderId: string;
   senderName: string;
   content: string;
