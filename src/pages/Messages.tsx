@@ -122,12 +122,12 @@ export default function Messages() {
     // Fetch messages between users
     const { data: messagesData } = await supabase
       .from('messages')
-      .select('*, post_collaborations(id, status, subject, inviter_id, invitee_id)')
+      .select('*')
       .or(`and(sender_id.eq.${user.id},receiver_id.eq.${recipientId}),and(sender_id.eq.${recipientId},receiver_id.eq.${user.id})`)
       .order('created_at', { ascending: true });
 
     if (messagesData) {
-      setMessages(messagesData as Message[]);
+      setMessages(messagesData as unknown as Message[]);
     }
 
     setLoading(false);
