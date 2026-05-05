@@ -3,33 +3,36 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, Users, ImagePlus, X, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { useToast } from '@/hooks/use-toast';
 import { MentionInput } from '@/components/MentionInput';
 
-interface CollabDetails {
-  id: string;
-  inviter_id: string;
-  invitee_id: string;
-  subject: string;
+interface CollabMember {
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+  role: 'inviter' | 'invitee';
   status: string;
-  inviterUsername: string;
-  inviterAvatar: string | null;
-  inviteeUsername: string;
-  inviteeAvatar: string | null;
+}
+
+interface CollabSession {
+  session_id: string;
+  subject: string;
+  inviter_id: string;
+  members: CollabMember[];
 }
 
 const MAX_IMAGES = 10;
 
 export default function CollabPost() {
+  // The URL param may be a session_id (new) or a single invite id (old, backward compat)
   const { inviteId } = useParams<{ inviteId: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
-  const [collab, setCollab] = useState<CollabDetails | null>(null);
+  const [session, setSession] = useState<CollabSession | null>(null);
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState('');
   const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -44,54 +47,75 @@ export default function CollabPost() {
       return;
     }
     if (user && inviteId) {
-      fetchCollabDetails();
+      fetchCollabSession();
     }
   }, [user, inviteId, authLoading]);
 
-  const fetchCollabDetails = async () => {
+  const fetchCollabSession = async () => {
     if (!user || !inviteId) return;
 
-    const { data: collabData, error } = await supabase
+    // The URL param is a session_id. Load all invites belonging to this session.
+    const { data: rows, error } = await supabase
       .from('post_collaborations')
       .select('*')
-      .eq('id', inviteId)
-      .single();
+      .eq('session_id', inviteId);
 
-    if (error || !collabData) {
-      toast({ title: 'Not found', description: 'Collaboration invite not found.', variant: 'destructive' });
+    if (error || !rows || rows.length === 0) {
+      toast({ title: 'Not found', description: 'Collaboration session not found.', variant: 'destructive' });
       navigate('/');
       return;
     }
 
-    // Only the invitee can write the collab post
-    if (collabData.invitee_id !== user.id) {
+    // Verify the current user is one of the invitees in this session
+    const myInvite = rows.find(r => r.invitee_id === user.id);
+    if (!myInvite) {
       toast({ title: 'Unauthorized', description: 'This invite is not for you.', variant: 'destructive' });
       navigate('/');
       return;
     }
 
-    if (collabData.status !== 'accepted') {
-      toast({ title: 'Invalid invite', description: 'This invite has not been accepted.', variant: 'destructive' });
+    if (myInvite.status !== 'accepted') {
+      toast({ title: 'Invalid invite', description: 'You have not accepted this invite yet.', variant: 'destructive' });
       navigate('/');
       return;
     }
 
-    // Fetch both user profiles
-    const [inviterRes, inviteeRes] = await Promise.all([
-      supabase.from('profiles').select('username, avatar_url').eq('user_id', collabData.inviter_id).single(),
-      supabase.from('profiles').select('username, avatar_url').eq('user_id', collabData.invitee_id).single(),
-    ]);
+    const inviterId = rows[0].inviter_id;
+    const subject = rows[0].subject;
 
-    setCollab({
-      ...collabData,
-      inviterUsername: inviterRes.data?.username || 'Unknown',
-      inviterAvatar: inviterRes.data?.avatar_url || null,
-      inviteeUsername: inviteeRes.data?.username || 'Unknown',
-      inviteeAvatar: inviteeRes.data?.avatar_url || null,
-    });
+    // Gather all user IDs to fetch profiles for
+    const allUserIds = [inviterId, ...rows.map(r => r.invitee_id)];
+    const uniqueIds = [...new Set(allUserIds)];
 
-    // Pre-fill subject as starter text hint
-    setContent('');
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, username, avatar_url')
+      .in('user_id', uniqueIds);
+
+    const profileMap = new Map(profiles?.map(p => [p.user_id, p]) ?? []);
+
+    const inviterProfile = profileMap.get(inviterId);
+    const members: CollabMember[] = [
+      {
+        user_id: inviterId,
+        username: inviterProfile?.username || 'Unknown',
+        avatar_url: inviterProfile?.avatar_url || null,
+        role: 'inviter',
+        status: 'inviter',
+      },
+      ...rows.map(r => {
+        const p = profileMap.get(r.invitee_id);
+        return {
+          user_id: r.invitee_id,
+          username: p?.username || 'Unknown',
+          avatar_url: p?.avatar_url || null,
+          role: 'invitee' as const,
+          status: r.status,
+        };
+      }),
+    ];
+
+    setSession({ session_id: inviteId, subject, inviter_id: inviterId, members });
     setLoading(false);
   };
 
@@ -134,11 +158,11 @@ export default function CollabPost() {
   };
 
   const handlePublish = async () => {
-    if (!user || !collab || !content.trim() || publishing) return;
+    if (!user || !session || !content.trim() || publishing) return;
     setPublishing(true);
 
     try {
-      // Create the post with co_author_id
+      // Create the post (current user is the author)
       const { data: post, error: postError } = await supabase
         .from('posts')
         .insert({
@@ -147,18 +171,29 @@ export default function CollabPost() {
           image_url: imageUrls.length > 0
             ? (imageUrls.length === 1 ? imageUrls[0] : JSON.stringify(imageUrls))
             : null,
-          co_author_id: collab.inviter_id,
+          // Keep co_author_id for backward compat: store the inviter
+          co_author_id: session.inviter_id !== user.id ? session.inviter_id : null,
         })
         .select()
         .single();
 
       if (postError || !post) throw postError ?? new Error('Failed to create post');
 
-      // Link the post to the collaboration
+      // Insert all other session members as post_collaborators
+      const otherMembers = session.members.filter(
+        m => m.user_id !== user.id && (m.status === 'accepted' || m.role === 'inviter')
+      );
+      if (otherMembers.length > 0) {
+        await supabase.from('post_collaborators').insert(
+          otherMembers.map(m => ({ post_id: post.id, user_id: m.user_id }))
+        );
+      }
+
+      // Mark all session invites as having a post
       await supabase
         .from('post_collaborations')
         .update({ post_id: post.id })
-        .eq('id', collab.id);
+        .eq('session_id', session.session_id);
 
       toast({ title: 'Post published!', description: 'Your collaborative post is now live.' });
       navigate('/');
@@ -193,30 +228,31 @@ export default function CollabPost() {
 
           <div className="bg-primary/10 rounded-lg p-3 mb-4 border border-primary/30">
             <p className="text-sm text-muted-foreground font-display mb-1">Proposed subject</p>
-            <p className="font-semibold text-foreground">{collab?.subject}</p>
+            <p className="font-semibold text-foreground">{session?.subject}</p>
           </div>
 
-          {/* Co-authors display */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={collab?.inviterAvatar || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary font-display text-xs">
-                  {collab?.inviterUsername?.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm font-display font-medium text-foreground">@{collab?.inviterUsername}</span>
-            </div>
-            <span className="text-muted-foreground text-sm">+</span>
-            <div className="flex items-center gap-2">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={collab?.inviteeAvatar || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary font-display text-xs">
-                  {collab?.inviteeUsername?.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm font-display font-medium text-foreground">@{collab?.inviteeUsername}</span>
-            </div>
+          {/* All co-authors */}
+          <div className="flex flex-wrap items-center gap-3">
+            {session?.members.map((member, idx) => (
+              <div key={member.user_id} className="flex items-center gap-2">
+                {idx > 0 && <span className="text-muted-foreground text-sm">+</span>}
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={member.avatar_url || undefined} />
+                  <AvatarFallback className="bg-primary/20 text-primary font-display text-xs">
+                    {member.username.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                  <span className="text-sm font-display font-medium text-foreground">@{member.username}</span>
+                  {member.role === 'inviter' && (
+                    <span className="text-xs text-muted-foreground">inviter</span>
+                  )}
+                  {member.role === 'invitee' && member.status !== 'accepted' && (
+                    <span className="text-xs text-muted-foreground capitalize">{member.status}</span>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -225,7 +261,7 @@ export default function CollabPost() {
           <MentionInput
             value={content}
             onChange={setContent}
-            placeholder={`Write about "${collab?.subject}"… Use @username to mention`}
+            placeholder={`Write about "${session?.subject}"… Use @username to mention`}
             className="min-h-[160px] bg-transparent border-0 resize-none text-base placeholder:text-muted-foreground focus-visible:ring-0 p-0 w-full"
           />
 
