@@ -43,19 +43,43 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     if (debounceRef.current) window.clearTimeout(debounceRef.current);
-    if (!query.trim()) { setSearchResults([]); return; }
+    // Strip leading @ for searching
+    const term = query.trim().replace(/^@+/, '');
+    if (!term) { setSearchResults([]); return; }
     debounceRef.current = window.setTimeout(async () => {
       setSearching(true);
       const excluded = [user?.id ?? '', ...invitees.map(i => i.user_id)];
       const { data } = await supabase
         .from('profiles')
         .select('user_id, username')
-        .ilike('username', `${query.trim()}%`)
+        .ilike('username', `${term}%`)
         .not('user_id', 'in', `(${excluded.join(',')})`)
         .limit(5);
       setSearchResults(data ?? []);
       setSearching(false);
     }, 250);
+  };
+
+  // When user types a space or comma after @username, try to resolve and add it
+  const handleInputKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (invitees.length >= MAX_INVITEES) return;
+    const trigger = e.key === ' ' || e.key === ',' || e.key === 'Enter';
+    if (!trigger) return;
+    const term = searchQuery.trim().replace(/^@+/, '');
+    if (!term) return;
+    e.preventDefault();
+    // Exact-match lookup
+    const { data } = await supabase
+      .from('profiles')
+      .select('user_id, username')
+      .ilike('username', term)
+      .limit(1);
+    const found = data?.[0];
+    if (found && !invitees.some(i => i.user_id === found.user_id) && found.user_id !== user?.id) {
+      addInvitee(found);
+    } else if (searchResults[0]) {
+      addInvitee(searchResults[0]);
+    }
   };
 
   const addInvitee = (invitee: Invitee) => {
