@@ -190,8 +190,8 @@ export default function CollabPost() {
       }
 
       // Mark all session invites as having a post
-      await supabase
-        .from('post_collaborations')
+      await (supabase
+        .from('post_collaborations') as any)
         .update({ post_id: post.id })
         .eq('session_id', session.session_id);
 
