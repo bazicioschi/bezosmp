@@ -236,8 +236,7 @@ export default function Inbox() {
 
     await supabase.from('inbox_messages').update({ read: true }).eq('id', m.id);
     toast({ title: 'Collaboration accepted!' });
-    // Use session_id if present (new multi-collab invites), fall back to collab_id (legacy)
-    navigate(`/collab/${m.data?.session_id ?? collabId}`);
+    navigate(`/collab/${collabId}`);
   };
 
   const declineInvite = async (m: InboxMessage) => {

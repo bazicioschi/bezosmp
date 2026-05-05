@@ -91,16 +91,12 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
 
       if (!myProfile) throw new Error('Profile not found');
 
-      // Generate a shared session_id to link all invites together
-      const sessionId = crypto.randomUUID();
-
-      // Create one collaboration invite row per invitee
+      // Insert one invite row per invitee (no session_id column needed)
       const inviteRows = invitees.map(inv => ({
         inviter_id: user.id,
         invitee_id: inv.user_id,
         subject: subject.trim(),
         status: 'pending',
-        session_id: sessionId,
       }));
 
       const { data: collabs, error: collabError } = await supabase
@@ -111,6 +107,8 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
       if (collabError || !collabs) throw collabError ?? new Error('Failed to create invites');
 
       // Send inbox message to every invitee
+      // Include all collab IDs so CollabPost can group them
+      const allCollabIds = collabs.map(c => c.id);
       const collaboratorNote = invitees.length > 1
         ? ` · ${invitees.length} collaborators invited`
         : '';
@@ -121,7 +119,7 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
         body: `Proposed subject: "${subject.trim()}"${collaboratorNote}`,
         data: {
           collab_id: collabs[idx].id,
-          session_id: sessionId,
+          all_collab_ids: allCollabIds,
           inviter_id: user.id,
           inviter_username: myProfile.username,
           subject: subject.trim(),

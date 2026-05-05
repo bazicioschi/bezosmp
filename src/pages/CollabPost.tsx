@@ -54,21 +54,20 @@ export default function CollabPost() {
   const fetchCollabSession = async () => {
     if (!user || !inviteId) return;
 
-    // The URL param is a session_id. Load all invites belonging to this session.
-    const { data: rows, error } = await (supabase
-      .from('post_collaborations') as any)
+    // Load the user's own invite by ID
+    const { data: myInvite, error } = await supabase
+      .from('post_collaborations')
       .select('*')
-      .eq('session_id', inviteId);
+      .eq('id', inviteId)
+      .single();
 
-    if (error || !rows || rows.length === 0) {
-      toast({ title: 'Not found', description: 'Collaboration session not found.', variant: 'destructive' });
+    if (error || !myInvite) {
+      toast({ title: 'Not found', description: 'Collaboration invite not found.', variant: 'destructive' });
       navigate('/');
       return;
     }
 
-    // Verify the current user is one of the invitees in this session
-    const myInvite = rows.find(r => r.invitee_id === user.id);
-    if (!myInvite) {
+    if (myInvite.invitee_id !== user.id) {
       toast({ title: 'Unauthorized', description: 'This invite is not for you.', variant: 'destructive' });
       navigate('/');
       return;
@@ -80,8 +79,17 @@ export default function CollabPost() {
       return;
     }
 
-    const inviterId = rows[0].inviter_id;
-    const subject = rows[0].subject;
+    const inviterId = myInvite.inviter_id;
+    const subject = myInvite.subject;
+
+    // Load sibling invites: same inviter + same subject (the group)
+    const { data: siblings } = await supabase
+      .from('post_collaborations')
+      .select('*')
+      .eq('inviter_id', inviterId)
+      .eq('subject', subject);
+
+    const rows = siblings ?? [myInvite];
 
     // Gather all user IDs to fetch profiles for
     const allUserIds = [inviterId, ...rows.map(r => r.invitee_id)];
@@ -189,11 +197,12 @@ export default function CollabPost() {
         );
       }
 
-      // Mark all session invites as having a post
-      await (supabase
-        .from('post_collaborations') as any)
+      // Mark all sibling invites as having a post (group by inviter + subject)
+      await supabase
+        .from('post_collaborations')
         .update({ post_id: post.id })
-        .eq('session_id', session.session_id);
+        .eq('inviter_id', session.inviter_id)
+        .eq('subject', session.subject);
 
       toast({ title: 'Post published!', description: 'Your collaborative post is now live.' });
       navigate('/');
