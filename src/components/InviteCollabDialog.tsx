@@ -16,7 +16,7 @@ import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-const MAX_INVITEES = 4; // 4 invitees + 1 inviter = 5 total
+const MAX_INVITEES = 9; // 9 invitees + 1 inviter = 10 total
 
 interface Invitee {
   user_id: string;
