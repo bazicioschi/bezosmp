@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Progress } from '@/components/ui/progress';
 import { MentionInput } from './MentionInput';
 import { useRestrictions } from '@/hooks/useRestrictions';
+import { runAutomod } from '@/lib/automod';
 
 interface CreatePostProps {
   onPostCreated: () => void;
@@ -313,6 +314,22 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     }).select('id').single();
 
     if (!error) {
+      // Run automod on post content — ban if flagged
+      if (content.trim()) {
+        const banned = await runAutomod(user.id, content.trim());
+        if (banned) {
+          toast({ title: '⚠️ Post blocked', description: 'Your post contained inappropriate language. You have been temporarily banned.', variant: 'destructive' });
+          // Delete the post that was just created
+          if (newPost?.id) await supabase.from('posts').delete().eq('id', newPost.id);
+          setContent('');
+          setImageUrls([]);
+          setImagePreviews([]);
+          setVideoUrl('');
+          setVideoPreview('');
+          setLoading(false);
+          return;
+        }
+      }
       if (inviteHandle && newPost?.id) {
         const { data: invitee } = await supabase
           .from('profiles')

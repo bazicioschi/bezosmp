@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from '@/hooks/useTheme';
+import { BOT_AVATAR, BOT_NAME } from '@/lib/automod';
 
 interface InboxMessage {
   id: string;
@@ -307,22 +308,28 @@ export default function Inbox() {
         ) : (
           <ul className="space-y-2">
               {messages.map(m => {
+                const isBot = m.data?.bot === 'bezosmp';
                 const senderId = m.data?.from_user_id || m.data?.sender_id || m.data?.inviter_id;
-                const senderProfile = senderId ? senderProfiles[senderId] : null;
+                const senderProfile = (!isBot && senderId) ? senderProfiles[senderId] : null;
+                const avatarSrc = isBot ? BOT_AVATAR : (senderProfile?.avatar_url || undefined);
+                const avatarFallback = isBot ? 'BZ' : (senderProfile?.username?.slice(0,2).toUpperCase() ?? '??');
                 return (
               <li
                 key={m.id}
                 onClick={() => markRead(m)}
-                className={`minecraft-card p-4 cursor-pointer transition-colors ${m.read ? 'opacity-70' : 'border-primary/40'}`}
+                className={`minecraft-card p-4 cursor-pointer transition-colors ${m.read ? 'opacity-70' : 'border-primary/40'} ${isBot ? 'border-yellow-500/40 bg-yellow-500/5' : ''}`}
               >
                 <div className="flex items-start gap-3">
                   <Avatar className="h-9 w-9 shrink-0 mt-0.5">
-                    <AvatarImage src={senderProfile?.avatar_url || undefined} />
-                    <AvatarFallback className="bg-primary/20 text-primary text-xs font-display">
-                      {senderProfile?.username?.slice(0,2).toUpperCase() ?? '??'}
+                    <AvatarImage src={avatarSrc} />
+                    <AvatarFallback className={`text-xs font-display ${isBot ? 'bg-green-700 text-white' : 'bg-primary/20 text-primary'}`}>
+                      {avatarFallback}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
+                    {isBot && (
+                      <p className="text-xs font-display text-yellow-500 mb-0.5">{BOT_NAME}</p>
+                    )}
                     <div className="flex items-center justify-between gap-2">
                       <p className="mc-text text-sm text-foreground flex items-center gap-1.5">
                         {m.read ? <MailOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" /> : <Mail className="h-3.5 w-3.5 text-primary shrink-0" />}

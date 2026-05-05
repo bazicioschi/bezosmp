@@ -18,10 +18,12 @@ export function useRestrictions(targetUserId?: string) {
     const fetch = async () => {
       const { data } = await supabase
         .from('user_restrictions')
-        .select('restriction_type')
+        .select('restriction_type, expires_at')
         .eq('user_id', userId);
 
-      setRestrictions(data?.map(r => r.restriction_type) || []);
+      const now = new Date();
+      const active = (data ?? []).filter(r => !r.expires_at || new Date(r.expires_at) > now);
+      setRestrictions(active.map(r => r.restriction_type));
       setLoading(false);
     };
 

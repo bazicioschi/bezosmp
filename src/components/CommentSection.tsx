@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useRestrictions } from '@/hooks/useRestrictions';
+import { runAutomod } from '@/lib/automod';
 import { useAdmin } from '@/hooks/useAdmin';
 
 interface Comment {
@@ -133,6 +134,14 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
       .insert({ post_id: postId, user_id: user.id, content: commentContent });
 
     if (!error) {
+      // Run automod on comment content
+      const banned = await runAutomod(user.id, commentContent);
+      if (banned) {
+        // Delete the comment that was just inserted
+        await supabase.from('comments').delete().eq('post_id', postId).eq('user_id', user.id).eq('content', commentContent);
+        setLoading(false);
+        return;
+      }
       setNewComment('');
       setReplyingTo(null);
       fetchComments();
