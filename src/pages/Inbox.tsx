@@ -78,7 +78,7 @@ export default function Inbox() {
       type: 'mail',
       subject: subject.trim(),
       body: body.trim() || null,
-      data: { from_user_id: user.id, from_username: me?.username },
+      data: { from_user_id: user.id, sender_id: user.id, from_username: me?.username },
     });
     if (error) {
       toast({ title: 'Failed to send', description: error.message, variant: 'destructive' });
@@ -129,23 +129,42 @@ export default function Inbox() {
     if (!user || !replyText.trim()) return;
     const recipientId = m.data?.inviter_id || m.data?.sender_id || m.data?.from_user_id;
     if (!recipientId) {
+      // Try lookup by username as fallback
+      const senderUsername = m.data?.from_username || m.data?.sender_username;
+      if (senderUsername) {
+        const { data: found } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .ilike('username', senderUsername)
+          .maybeSingle();
+        if (!found) {
+          toast({ title: 'Cannot reply', description: 'Sender not found.', variant: 'destructive' });
+          return;
+        }
+        return sendReplyTo(m, found.user_id);
+      }
       toast({ title: 'Cannot reply', description: 'No sender info found.', variant: 'destructive' });
       return;
     }
+    return sendReplyTo(m, recipientId);
+  };
+
+  const sendReplyTo = async (m: InboxMessage, recipientId: string) => {
     setReplySending(true);
     const { data: myProfile } = await supabase
       .from('profiles')
       .select('username')
-      .eq('user_id', user.id)
-      .single();
+      .eq('user_id', user!.id)
+      .maybeSingle();
     const { error } = await supabase.from('inbox_messages').insert({
       user_id: recipientId,
       type: 'inbox_reply',
       subject: `Re: ${m.subject}`,
       body: replyText.trim(),
-      data: { sender_id: user.id, sender_username: myProfile?.username ?? 'Someone' },
+      data: { sender_id: user!.id, from_user_id: user!.id, sender_username: myProfile?.username ?? 'Someone' },
     });
     if (error) {
+      console.error('Reply insert error:', error);
       toast({ title: 'Failed to send reply', description: error.message, variant: 'destructive' });
     } else {
       toast({ title: 'Reply sent!' });
