@@ -5,6 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -80,6 +81,7 @@ export function PostCard({
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
   const [collaborators, setCollaborators] = useState<{ user_id: string; username: string; avatar_url: string | null }[]>([]);
+  const [likers, setLikers] = useState<{ user_id: string; username: string; avatar_url: string | null }[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -92,6 +94,24 @@ export function PostCard({
         .then(({ data }) => setIsSaved(!!data));
     }
   }, [user, id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: likeRows } = await supabase
+        .from('likes')
+        .select('user_id')
+        .eq('post_id', id)
+        .limit(10);
+      if (!likeRows || likeRows.length === 0) { if (!cancelled) setLikers([]); return; }
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, username, avatar_url')
+        .in('user_id', likeRows.map(r => r.user_id));
+      if (!cancelled) setLikers(profiles ?? []);
+    })();
+    return () => { cancelled = true; };
+  }, [id, likesCount]);
 
   useEffect(() => {
     let cancelled = false;
@@ -515,6 +535,38 @@ export function PostCard({
               />
               <span className={`mc-text text-sm ${isAnimating ? 'animate-like-pop' : ''}`}>{likesCount ? formatCount(likesCount) : ''}</span>
             </Button>
+
+            {/* Liker avatar stack */}
+            {likers.length > 0 && (
+              <TooltipProvider delayDuration={200}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center -space-x-1.5 cursor-default px-1">
+                      {likers.slice(0, 5).map(l => (
+                        <Avatar key={l.user_id} className="h-5 w-5 border border-background">
+                          <AvatarImage src={l.avatar_url || undefined} style={{ imageRendering: 'pixelated' }} />
+                          <AvatarFallback className="text-[8px] bg-primary/20 text-primary">{l.username.slice(0,1).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                      ))}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="minecraft-card p-2">
+                    <div className="space-y-1.5">
+                      {likers.map(l => (
+                        <div key={l.user_id} className="flex items-center gap-2">
+                          <Avatar className="h-5 w-5">
+                            <AvatarImage src={l.avatar_url || undefined} style={{ imageRendering: 'pixelated' }} />
+                            <AvatarFallback className="text-[8px] bg-primary/20 text-primary">{l.username.slice(0,1).toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                          <span className="text-xs mc-text">{l.username}</span>
+                        </div>
+                      ))}
+                      {likesCount > 10 && <p className="text-xs text-muted-foreground mc-text">+{likesCount - 10} more</p>}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
 
             {/* Quick Reactions (persistent) */}
             <div className="hidden sm:flex items-center gap-0.5 ml-1">
