@@ -55,8 +55,8 @@ export default function CollabPost() {
     if (!user || !inviteId) return;
 
     // The URL param is a session_id. Load all invites belonging to this session.
-    const { data: rows, error } = await supabase
-      .from('post_collaborations')
+    const { data: rows, error } = await (supabase
+      .from('post_collaborations') as any)
       .select('*')
       .eq('session_id', inviteId);
 
@@ -190,8 +190,8 @@ export default function CollabPost() {
       }
 
       // Mark all session invites as having a post
-      await supabase
-        .from('post_collaborations')
+      await (supabase
+        .from('post_collaborations') as any)
         .update({ post_id: post.id })
         .eq('session_id', session.session_id);
 
