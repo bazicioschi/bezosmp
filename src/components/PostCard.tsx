@@ -25,6 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ImageLightbox } from './ImageLightbox';
 import { useAdmin } from '@/hooks/useAdmin';
 import { QuickReactions } from './QuickReactions';
+import { SharePostDialog } from './SharePostDialog';
 
 interface PostCardProps {
   id: string;
@@ -78,6 +79,7 @@ export function PostCard({
   const [editContent, setEditContent] = useState(content);
   const [isSaving, setIsSaving] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
   const [collaborators, setCollaborators] = useState<{ user_id: string; username: string; avatar_url: string | null }[]>([]);
@@ -587,11 +589,18 @@ export function PostCard({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => playClick()}
+              onClick={() => { playClick(); setShareOpen(true); }}
               className="text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 px-3"
             >
               <Share className="h-4 w-4" />
             </Button>
+            <SharePostDialog
+              open={shareOpen}
+              onOpenChange={setShareOpen}
+              postId={id}
+              postUsername={username}
+              postSnippet={content}
+            />
           </div>
 
           {showComments && (
