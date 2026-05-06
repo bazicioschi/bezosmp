@@ -25,6 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ImageLightbox } from './ImageLightbox';
 import { useAdmin } from '@/hooks/useAdmin';
 import { QuickReactions } from './QuickReactions';
+import { SharePostDialog } from './SharePostDialog';
 
 interface PostCardProps {
   id: string;
