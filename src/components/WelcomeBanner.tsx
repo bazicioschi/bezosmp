@@ -66,9 +66,6 @@ export function WelcomeBanner() {
             <h3 className="mc-text text-lg text-foreground glow-text">
               {user ? `WELCOME BACK, ${(username || 'PLAYER').toUpperCase()}!` : 'WELCOME TO BEZOSMP!'}
             </h3>
-            <p className="text-sm text-muted-foreground mt-0.5 transition-opacity duration-300">
-              {TIPS[currentTip]}
-            </p>
           </div>
         </div>
 
@@ -80,18 +77,6 @@ export function WelcomeBanner() {
         >
           <X className="h-4 w-4" />
         </Button>
-      </div>
-
-      {/* Tip indicators */}
-      <div className="flex justify-center gap-1 mt-3">
-        {TIPS.map((_, index) => (
-          <div
-            key={index}
-            className={`h-1 w-6 rounded-full transition-colors ${
-              index === currentTip ? 'bg-primary' : 'bg-secondary'
-            }`}
-          />
-        ))}
       </div>
     </div>
   );
