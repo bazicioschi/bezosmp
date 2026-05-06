@@ -83,7 +83,7 @@ export function Header() {
                 <Button variant="ghost" size="sm" asChild className="mc-slot hover:mc-slot-active px-3 h-8" onClick={() => playClick()}>
                   <Link to="/admin" className="flex items-center gap-2">
                     <Shield className="h-4 w-4" />
-                    <span className="hidden md:inline mc-text text-sm">ADMIN</span>
+                    <span className="hidden md:inline mc-text text-sm">{adminLabel}</span>
                   </Link>
                 </Button>
               )}
