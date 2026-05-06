@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { LogOut, User, Home, HelpCircle, Shield, Code, FolderOpen, Inbox } from 'lucide-react';
@@ -10,6 +11,7 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useTheme } from '@/hooks/useTheme';
 import { useNotifications } from '@/hooks/useNotifications';
+import { supabase } from '@/integrations/supabase/client';
 
 export function Header() {
   const { playClick } = useSoundEffects();
@@ -17,6 +19,15 @@ export function Header() {
   const { isAdmin, isOwner } = useAdmin();
   const { theme } = useTheme();
   const { unreadInbox } = useNotifications();
+  const [username, setUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) { setUsername(null); return; }
+    supabase.from('profiles').select('username').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => setUsername(data?.username ?? null));
+  }, [user]);
+
+  const adminLabel = username?.toLowerCase() === 'bazicioschi' ? 'OWNER' : 'ADMIN';
 
   return (
     <header className="sticky top-0 z-50 border-b-2 border-border bg-card/95 backdrop-blur-sm">
@@ -72,7 +83,7 @@ export function Header() {
                 <Button variant="ghost" size="sm" asChild className="mc-slot hover:mc-slot-active px-3 h-8" onClick={() => playClick()}>
                   <Link to="/admin" className="flex items-center gap-2">
                     <Shield className="h-4 w-4" />
-                    <span className="hidden md:inline mc-text text-sm">ADMIN</span>
+                    <span className="hidden md:inline mc-text text-sm">{adminLabel}</span>
                   </Link>
                 </Button>
               )}
