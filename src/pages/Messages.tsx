@@ -416,6 +416,10 @@ export default function Messages() {
                         <div className="break-words space-y-2">
                           {message.content.split('\n').map((line, i) => {
                             const trimmed = line.trim();
+                            const postMatch = trimmed.match(/https?:\/\/[^\s]+\?post=([0-9a-f-]{36})/i);
+                            if (postMatch) {
+                              return <PostLinkPreview key={i} postId={postMatch[1]} href={trimmed} />;
+                            }
                             const isImg = /^https?:\/\/.+\.(png|jpe?g|gif|webp|avif)(\?.*)?$/i.test(trimmed) || /supabase\.co\/storage\/.+\/post-images\//i.test(trimmed);
                             if (isImg) {
                               return <img key={i} src={trimmed} alt="Shared" className="rounded max-h-64 w-auto border border-border" />;
