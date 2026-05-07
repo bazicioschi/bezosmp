@@ -20,6 +20,7 @@ import AICoder from "./pages/AICoder";
 import BezoFiles from "./pages/BezoFiles";
 import Inbox from "./pages/Inbox";
 import CollabPost from "./pages/CollabPost";
+import SavedPosts from "./pages/SavedPosts";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/files" element={<BezoFiles />} />
             <Route path="/inbox" element={<Inbox />} />
             <Route path="/collab/:inviteId" element={<CollabPost />} />
+            <Route path="/saved" element={<SavedPosts />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
