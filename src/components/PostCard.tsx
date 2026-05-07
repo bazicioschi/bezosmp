@@ -581,9 +581,10 @@ export function PostCard({
               variant="ghost"
               size="sm"
               onClick={handleSavePost}
-              className={`hover:bg-primary/10 h-8 px-3 ${isSaved ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
+              className={`hover:bg-primary/10 h-8 px-3 gap-1 mc-text ${isSaved ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
             >
               {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+              <span className="text-xs">{isSaved ? 'Saved' : 'Save'}</span>
             </Button>
 
             <Button
