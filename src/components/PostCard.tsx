@@ -600,6 +600,7 @@ export function PostCard({
               postId={id}
               postUsername={username}
               postSnippet={content}
+              postImageUrl={imageUrl || null}
             />
           </div>
 

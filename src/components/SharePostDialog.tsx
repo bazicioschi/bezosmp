@@ -14,6 +14,7 @@ interface SharePostDialogProps {
   postId: string;
   postUsername: string;
   postSnippet: string;
+  postImageUrl?: string | null;
 }
 
 interface UserRow {
@@ -22,7 +23,7 @@ interface UserRow {
   avatar_url: string | null;
 }
 
-export function SharePostDialog({ open, onOpenChange, postId, postUsername, postSnippet }: SharePostDialogProps) {
+export function SharePostDialog({ open, onOpenChange, postId, postUsername, postSnippet, postImageUrl }: SharePostDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [search, setSearch] = useState('');
@@ -85,7 +86,20 @@ export function SharePostDialog({ open, onOpenChange, postId, postUsername, post
     if (!user) return;
     setSending(recipient.user_id);
     const url = `${window.location.origin}/?post=${postId}`;
-    const content = `📤 Shared a post by @${postUsername}:\n"${postSnippet.slice(0, 120)}${postSnippet.length > 120 ? '…' : ''}"\n${url}`;
+    let firstImage: string | null = null;
+    if (postImageUrl) {
+      try {
+        if (postImageUrl.startsWith('[')) {
+          const arr = JSON.parse(postImageUrl);
+          firstImage = Array.isArray(arr) && arr.length ? arr[0] : null;
+        } else {
+          firstImage = postImageUrl;
+        }
+      } catch {
+        firstImage = postImageUrl;
+      }
+    }
+    const content = `📤 Shared a post by @${postUsername}:\n"${postSnippet.slice(0, 120)}${postSnippet.length > 120 ? '…' : ''}"\n${firstImage ? firstImage + '\n' : ''}${url}`;
     const { error } = await supabase.from('messages').insert({
       sender_id: user.id,
       receiver_id: recipient.user_id,
