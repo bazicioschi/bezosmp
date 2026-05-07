@@ -23,7 +23,7 @@ interface UserRow {
   avatar_url: string | null;
 }
 
-export function SharePostDialog({ open, onOpenChange, postId, postUsername, postSnippet }: SharePostDialogProps) {
+export function SharePostDialog({ open, onOpenChange, postId, postUsername, postSnippet, postImageUrl }: SharePostDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [search, setSearch] = useState('');
