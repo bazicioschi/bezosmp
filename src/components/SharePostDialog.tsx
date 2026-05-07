@@ -14,6 +14,7 @@ interface SharePostDialogProps {
   postId: string;
   postUsername: string;
   postSnippet: string;
+  postImageUrl?: string | null;
 }
 
 interface UserRow {
