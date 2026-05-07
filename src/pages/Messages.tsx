@@ -413,7 +413,16 @@ export default function Messages() {
                           )}
                         </div>
                       ) : (
-                        <p className="break-words">{message.content}</p>
+                        <div className="break-words space-y-2">
+                          {message.content.split('\n').map((line, i) => {
+                            const trimmed = line.trim();
+                            const isImg = /^https?:\/\/.+\.(png|jpe?g|gif|webp|avif)(\?.*)?$/i.test(trimmed) || /supabase\.co\/storage\/.+\/post-images\//i.test(trimmed);
+                            if (isImg) {
+                              return <img key={i} src={trimmed} alt="Shared" className="rounded max-h-64 w-auto border border-border" />;
+                            }
+                            return <p key={i} className="whitespace-pre-wrap">{line}</p>;
+                          })}
+                        </div>
                       )}
                       <span className={`text-xs mt-1 block ${isOwn && !isCollabInvite ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                         {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
