@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
+import { PostLinkPreview } from '@/components/PostLinkPreview';
 
 interface CollabInvite {
   id: string;
