@@ -443,8 +443,8 @@ export default function Profile() {
               <div className="flex items-center gap-2">
                 <Link2 className="h-5 w-5 text-primary" />
                 <div>
-                  <p className="mc-text text-sm text-foreground">Linked Accounts</p>
-                  <p className="text-xs text-muted-foreground">Show your alt accounts on your profile</p>
+                  <p className="mc-text text-sm text-foreground">Connections</p>
+                  <p className="text-xs text-muted-foreground">Both users must link each other to appear on profiles</p>
                 </div>
               </div>
               <div className="relative">

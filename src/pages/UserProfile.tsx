@@ -118,13 +118,17 @@ export default function UserProfile() {
         (user?.id ? allowedViewerIds.includes(user.id) : false);
       setViewerAllowed(isAllowedToView);
 
-      // Load linked accounts
+      // Load linked accounts — only show if BOTH users link each other (mutual)
       if (linkedAccountIds.length > 0) {
         const { data: linked } = await supabase
           .from('profiles')
-          .select('user_id, username, avatar_url')
+          .select('user_id, username, avatar_url, bio')
           .in('user_id', linkedAccountIds);
-        setLinkedAccounts(linked ?? []);
+        const mutualLinks = (linked ?? []).filter(lp => {
+          const { linkedAccountIds: theirLinks } = parseBioPrivacy(lp.bio);
+          return theirLinks.includes(userId!);
+        }).map(lp => ({ user_id: lp.user_id, username: lp.username, avatar_url: lp.avatar_url }));
+        setLinkedAccounts(mutualLinks);
       } else {
         setLinkedAccounts([]);
       }
@@ -347,7 +351,7 @@ export default function UserProfile() {
             <div className="mt-3 flex flex-wrap gap-2 items-center">
               <div className="flex items-center gap-1 text-muted-foreground">
                 <Link2 className="h-3.5 w-3.5" />
-                <span className="text-xs">Alts:</span>
+                <span className="text-xs">Connections:</span>
               </div>
               {linkedAccounts.map(a => (
                 <button
