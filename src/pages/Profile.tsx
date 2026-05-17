@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Save, Loader2, Camera, ImagePlus, Trash2 } from 'lucide-react';
+import { User, Save, Loader2, Camera, ImagePlus, Trash2, Lock, Globe, UserPlus, X, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/Header';
 import { useTheme } from '@/hooks/useTheme';
+import { parseBioPrivacy, encodeBioPrivacy } from '@/lib/utils';
 import {
   Dialog,
   DialogContent,
@@ -21,11 +22,18 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 
+interface AllowedViewer {
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+}
+
 interface Profile {
   username: string;
   avatar_url: string | null;
   bio: string | null;
   banner_url: string | null;
+  is_private: boolean;
 }
 
 export default function Profile() {
@@ -43,6 +51,10 @@ export default function Profile() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
+  const [allowedViewers, setAllowedViewers] = useState<AllowedViewer[]>([]);
+  const [viewerSearch, setViewerSearch] = useState('');
+  const [viewerSearchResults, setViewerSearchResults] = useState<AllowedViewer[]>([]);
+  const [viewerSearchLoading, setViewerSearchLoading] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -59,8 +71,48 @@ export default function Profile() {
       .select('username, avatar_url, bio, banner_url')
       .eq('user_id', user.id)
       .maybeSingle();
-    if (!error && data) setProfile(data);
+    if (!error && data) {
+      const { displayBio, isPrivate, allowedViewerIds } = parseBioPrivacy(data.bio);
+      setProfile({ ...data, bio: displayBio, is_private: isPrivate });
+      // Load viewer profiles if any
+      if (allowedViewerIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, username, avatar_url')
+          .in('user_id', allowedViewerIds);
+        setAllowedViewers(profiles?.map(p => ({ user_id: p.user_id, username: p.username, avatar_url: p.avatar_url })) || []);
+      }
+    }
     setLoading(false);
+  };
+
+  const fetchAllowedViewers = async () => {
+    // Not needed — viewer IDs are decoded from bio on fetchProfile
+  };
+
+  const searchViewerUsers = async (q: string) => {
+    if (!q.trim() || !user) { setViewerSearchResults([]); return; }
+    setViewerSearchLoading(true);
+    const { data } = await supabase
+      .from('profiles')
+      .select('user_id, username, avatar_url')
+      .ilike('username', `%${q}%`)
+      .neq('user_id', user.id)
+      .limit(6);
+    setViewerSearchResults(data?.map(p => ({ user_id: p.user_id, username: p.username, avatar_url: p.avatar_url })) || []);
+    setViewerSearchLoading(false);
+  };
+
+  const addAllowedViewer = async (viewer: AllowedViewer) => {
+    const already = allowedViewers.some(v => v.user_id === viewer.user_id);
+    if (already) return;
+    setAllowedViewers(prev => [...prev, viewer]);
+    setViewerSearch('');
+    setViewerSearchResults([]);
+  };
+
+  const removeAllowedViewer = async (viewerUserId: string) => {
+    setAllowedViewers(prev => prev.filter(v => v.user_id !== viewerUserId));
   };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,12 +172,18 @@ export default function Profile() {
   const handleSave = async () => {
     if (!user || !profile) return;
     setSaving(true);
+    // Encode privacy settings into bio before saving
+    const bioToSave = encodeBioPrivacy(
+      profile.bio,
+      profile.is_private,
+      allowedViewers.map(v => v.user_id)
+    );
     const { error } = await supabase
       .from('profiles')
       .update({
         username: profile.username,
         avatar_url: profile.avatar_url,
-        bio: profile.bio,
+        bio: bioToSave,
         banner_url: profile.banner_url,
       })
       .eq('user_id', user.id);
@@ -240,6 +298,103 @@ export default function Profile() {
                 </>
               )}
             </Button>
+
+            {/* Public / Private toggle */}
+            <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/30">
+              <div className="flex items-center gap-3">
+                {profile?.is_private ? (
+                  <Lock className="h-5 w-5 text-primary" />
+                ) : (
+                  <Globe className="h-5 w-5 text-muted-foreground" />
+                )}
+                <div>
+                  <p className="mc-text text-sm text-foreground">{profile?.is_private ? 'Private Account' : 'Public Account'}</p>
+                  {!profile?.is_private && (
+                    <p className="text-xs text-muted-foreground">Anyone can view your profile and posts</p>
+                  )}
+                </div>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={profile?.is_private}
+                onClick={() => setProfile(p => p ? { ...p, is_private: !p.is_private } : null)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                  profile?.is_private ? 'bg-primary' : 'bg-muted'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                    profile?.is_private ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Trusted Viewers */}
+            <div className="space-y-3 p-4 rounded-lg border border-border bg-secondary/30">
+              <div className="flex items-center gap-2">
+                <UserPlus className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="mc-text text-sm text-foreground">Trusted Viewers</p>
+                  <p className="text-xs text-muted-foreground">Only these users can see your posts</p>
+                </div>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by username..."
+                  value={viewerSearch}
+                  onChange={(e) => { setViewerSearch(e.target.value); searchViewerUsers(e.target.value); }}
+                  className="pl-9 bg-background border-border"
+                />
+                {(viewerSearchResults.length > 0 || viewerSearchLoading) && (
+                  <div className="absolute z-10 mt-1 w-full bg-popover border border-border rounded-md shadow-md overflow-hidden">
+                    {viewerSearchLoading ? (
+                      <div className="p-3 flex justify-center"><Loader2 className="h-4 w-4 animate-spin" /></div>
+                    ) : viewerSearchResults.map(u => (
+                      <button
+                        key={u.user_id}
+                        type="button"
+                        onClick={() => addAllowedViewer(u)}
+                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-secondary/70 text-left"
+                      >
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage src={u.avatar_url || undefined} />
+                          <AvatarFallback className="text-xs">{u.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm">{u.username}</span>
+                        {allowedViewers.some(v => v.user_id === u.user_id) && (
+                          <span className="ml-auto text-xs text-muted-foreground">Added</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {allowedViewers.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-2">No trusted viewers yet — everyone can see your posts</p>
+              ) : (
+                <div className="space-y-1 max-h-48 overflow-y-auto">
+                  {allowedViewers.map(v => (
+                    <div key={v.user_id} className="flex items-center gap-2 px-2 py-1.5 rounded bg-background/50">
+                      <Avatar className="h-7 w-7">
+                        <AvatarImage src={v.avatar_url || undefined} />
+                        <AvatarFallback className="text-xs">{v.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm flex-1">{v.username}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeAllowedViewer(v.user_id)}
+                        className="text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Change email */}
             <ChangeEmailSection currentEmail={user?.email ?? ''} />

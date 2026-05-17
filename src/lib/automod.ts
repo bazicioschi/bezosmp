@@ -1,8 +1,8 @@
 import { supabase } from '@/integrations/supabase/client';
 
 // ─── Bot identity ────────────────────────────────────────────────────────────
-export const BOT_NAME = 'BezosMP Bot';
-export const BOT_AVATAR = 'https://api.dicebear.com/7.x/pixel-art/svg?seed=BezosMP-Bot&backgroundColor=00aa00&skinColor=00aa00';
+export const BOT_NAME = 'BezosMP';
+export const BOT_AVATAR = 'https://api.dicebear.com/7.x/bottts-neutral/svg?seed=BezosMP&backgroundColor=dc2626&eyes=bulging&mouth=smile01';
 
 // ─── Word list with severity tiers ──────────────────────────────────────────
 // Tier 1 → 1–3 days   (mild profanity / spam)

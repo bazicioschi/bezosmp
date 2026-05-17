@@ -68,7 +68,7 @@ export function Header() {
                 </Link>
               </Button>
               <Button variant="ghost" size="sm" asChild className="mc-slot hover:mc-slot-active px-3 h-8" onClick={() => playClick()}>
-                <Link to="/profile" className="flex items-center gap-2">
+                <Link to={user ? `/user/${user.id}` : '/profile'} className="flex items-center gap-2">
                   <User className="h-4 w-4" />
                   <span className="hidden md:inline mc-text text-sm">PROFILE</span>
                 </Link>

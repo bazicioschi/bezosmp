@@ -139,10 +139,6 @@ export function ServerStats() {
               <p className="text-xs text-muted-foreground mc-text">{label}</p>
             </button>
           ))}
-￼
-￼
-￼
- 
         </div>
       </div>
 

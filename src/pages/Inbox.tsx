@@ -310,24 +310,35 @@ export default function Inbox() {
                 const isBot = m.data?.bot === 'bezosmp';
                 const senderId = m.data?.from_user_id || m.data?.sender_id || m.data?.inviter_id;
                 const senderProfile = (!isBot && senderId) ? senderProfiles[senderId] : null;
-                const avatarSrc = isBot ? BOT_AVATAR : (senderProfile?.avatar_url || undefined);
-                const avatarFallback = isBot ? 'BZ' : (senderProfile?.username?.slice(0,2).toUpperCase() ?? '??');
+                // Fallback to username stored in message data when profile lookup fails
+                const senderUsername = senderProfile?.username
+                  || m.data?.inviter_username
+                  || m.data?.from_username
+                  || m.data?.sender_username;
+                const avatarSrc = isBot
+                  ? BOT_AVATAR
+                  : (senderProfile?.avatar_url
+                    || (senderUsername ? `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(senderUsername)}` : undefined));
+                const avatarFallback = isBot ? 'BZ' : (senderUsername?.slice(0,2).toUpperCase() ?? '??');
                 return (
               <li
                 key={m.id}
                 onClick={() => markRead(m)}
-                className={`minecraft-card p-4 cursor-pointer transition-colors ${m.read ? 'opacity-70' : 'border-primary/40'} ${isBot ? 'border-yellow-500/40 bg-yellow-500/5' : ''}`}
+                className={`minecraft-card p-4 cursor-pointer transition-colors ${m.read ? 'opacity-70' : 'border-primary/40'} ${isBot ? 'border-red-500/40 bg-red-500/5' : ''}`}
               >
                 <div className="flex items-start gap-3">
                   <Avatar className="h-9 w-9 shrink-0 mt-0.5">
                     <AvatarImage src={avatarSrc} />
-                    <AvatarFallback className={`text-xs font-display ${isBot ? 'bg-green-700 text-white' : 'bg-primary/20 text-primary'}`}>
+                    <AvatarFallback className={`text-xs font-display ${isBot ? 'bg-red-700 text-white' : 'bg-primary/20 text-primary'}`}>
                       {avatarFallback}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     {isBot && (
-                      <p className="text-xs font-display text-yellow-500 mb-0.5">{BOT_NAME}</p>
+                      <p className="text-xs font-display text-red-400 mb-0.5">{BOT_NAME}</p>
+                    )}
+                    {!isBot && senderUsername && (
+                      <p className="text-xs font-display text-muted-foreground mb-0.5">@{senderUsername}</p>
                     )}
                     <div className="flex items-center justify-between gap-2">
                       <p className="mc-text text-sm text-foreground flex items-center gap-1.5">

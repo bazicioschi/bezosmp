@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAdmin } from '@/hooks/useAdmin';
+import { BOT_NAME, BOT_AVATAR } from '@/lib/automod';
 
 interface CreateNewsProps {
   onNewsCreated: () => void;
@@ -162,6 +163,23 @@ export function CreateNews({ onNewsCreated }: CreateNewsProps) {
     });
 
     if (!error) {
+      // Notify all users in their inbox about the new news post
+      const { data: allProfiles } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .neq('user_id', user.id);
+
+      if (allProfiles && allProfiles.length > 0) {
+        const messages = allProfiles.map((p) => ({
+          user_id: p.user_id,
+          type: 'news_update',
+          subject: `📰 ${title.trim()}`,
+          body: content.trim().slice(0, 200),
+          data: { bot: 'bezosmp', bot_name: BOT_NAME, bot_avatar: BOT_AVATAR, tag: selectedTag || null },
+        }));
+        await supabase.from('inbox_messages').insert(messages);
+      }
+
       setTitle(''); setContent(''); setImageUrls([]); setImagePreviews([]);
       setVideoUrl(''); setVideoPreview(''); setShowForm(false); setSelectedTag(null); setCustomTag('');
       onNewsCreated();

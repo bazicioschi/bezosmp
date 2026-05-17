@@ -113,7 +113,7 @@ export function QuickReactions({ postId, compact = false, emojis }: QuickReactio
                   className={cn(
                     compact ? 'h-7 px-1.5' : 'h-7 px-2',
                     'text-base transition-all',
-                    myEmojis.has(emoji) ? 'bg-primary/10' : 'hover:bg-secondary/50 hover:scale-105'
+                    myEmojis.has(emoji) ? '' : 'hover:bg-secondary/50 hover:scale-105'
                   )}
                 >
                   <span className="transition-transform">{emoji}</span>

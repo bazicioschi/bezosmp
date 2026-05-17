@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { User, Loader2, MessageCircle, ArrowLeft, UserPlus, CalendarDays, Crown, Shield } from 'lucide-react';
+import { User, Loader2, MessageCircle, ArrowLeft, UserPlus, CalendarDays, Crown, Shield, Pencil, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
@@ -11,6 +13,7 @@ import { InviteCollabDialog } from '@/components/InviteCollabDialog';
 import { useFollows } from '@/hooks/useFollows';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useTheme } from '@/hooks/useTheme';
+import { parseBioPrivacy } from '@/lib/utils';
 
 interface Profile {
   id: string;
@@ -20,6 +23,7 @@ interface Profile {
   bio: string | null;
   banner_url: string | null;
   created_at: string;
+  is_private: boolean;
 }
 
 interface Post {
@@ -48,6 +52,10 @@ export default function UserProfile() {
   const [isProfileOwner, setIsProfileOwner] = useState(false);
   const [isProfileAdmin, setIsProfileAdmin] = useState(false);
   const [isProfileModerator, setIsProfileModerator] = useState(false);
+  const [followsPanel, setFollowsPanel] = useState<'following' | 'followers' | null>(null);
+  const [followsUsers, setFollowsUsers] = useState<{ user_id: string; username: string; avatar_url: string | null }[]>([]);
+  const [followsLoading, setFollowsLoading] = useState(false);
+  const [viewerAllowed, setViewerAllowed] = useState(true);
 
   useEffect(() => {
     if (userId) {
@@ -81,7 +89,18 @@ export default function UserProfile() {
       .select('*')
       .eq('user_id', userId)
       .maybeSingle();
-    if (profileData) setProfile(profileData as Profile);
+    let isAllowedToView = true;
+
+    if (profileData) {
+      // Parse privacy settings from bio
+      const { displayBio, isPrivate, allowedViewerIds } = parseBioPrivacy(profileData.bio);
+      setProfile({ ...profileData, bio: displayBio } as Profile);
+
+      const isOwnProfile = user?.id === userId;
+      isAllowedToView = isOwnProfile || !isPrivate ||
+        (user?.id ? allowedViewerIds.includes(user.id) : false);
+      setViewerAllowed(isAllowedToView);
+    }
 
     const { data: postsData } = await supabase
       .from('posts')
@@ -90,8 +109,9 @@ export default function UserProfile() {
       .order('created_at', { ascending: false });
 
     if (postsData) {
+      const visiblePosts = isAllowedToView ? postsData : [];
       const postsWithCounts = await Promise.all(
-        postsData.map(async (post) => {
+        visiblePosts.map(async (post) => {
           const [likesRes, commentsRes, likedRes] = await Promise.all([
             supabase.from('likes').select('id', { count: 'exact' }).eq('post_id', post.id),
             supabase.from('comments').select('id', { count: 'exact' }).eq('post_id', post.id),
@@ -114,6 +134,28 @@ export default function UserProfile() {
 
   const handleStartChat = () => {
     if (userId && user) navigate(`/messages/${userId}`);
+  };
+
+  const openFollowsPanel = async (type: 'following' | 'followers') => {
+    setFollowsPanel(type);
+    setFollowsLoading(true);
+    setFollowsUsers([]);
+    if (type === 'following') {
+      const { data } = await supabase.from('follows').select('following_id').eq('follower_id', userId);
+      if (data && data.length > 0) {
+        const ids = data.map(r => r.following_id);
+        const { data: profiles } = await supabase.from('profiles').select('user_id, username, avatar_url').in('user_id', ids);
+        setFollowsUsers(profiles ?? []);
+      }
+    } else {
+      const { data } = await supabase.from('follows').select('follower_id').eq('following_id', userId);
+      if (data && data.length > 0) {
+        const ids = data.map(r => r.follower_id);
+        const { data: profiles } = await supabase.from('profiles').select('user_id, username, avatar_url').in('user_id', ids);
+        setFollowsUsers(profiles ?? []);
+      }
+    }
+    setFollowsLoading(false);
   };
 
   const formatDate = (dateStr: string) => {
@@ -143,13 +185,14 @@ export default function UserProfile() {
   }
 
   const isOwnProfile = user?.id === userId;
+  const isPrivate = !viewerAllowed;
 
   const getProfileBgClass = () => {
     switch (theme) {
       case 'pizza': return 'bg-black text-white';
       case 'cato': return 'bg-white text-black';
       case 'buzzy': return 'bg-yellow-400 text-black';
-      case 'bazimazi': return 'bg-red-600 text-white';
+      case 'bazimazi': return 'bg-white text-black';
       case 'ghast': return 'bg-gray-300 text-black';
       case 'dark': return 'bg-black text-white';
       default: return 'bg-background text-foreground';
@@ -246,10 +289,11 @@ export default function UserProfile() {
             <Button
               onClick={() => navigate('/profile')}
               variant="outline"
-              size="sm"
-              className="rounded-full font-display"
+              size="icon"
+              className="rounded-full h-9 w-9"
+              title="Edit profile"
             >
-              Edit profile
+              <Pencil className="h-4 w-4" />
             </Button>
           )}
         </div>
@@ -260,7 +304,7 @@ export default function UserProfile() {
             {profile.username}
           </h1>
           
-          {profile.bio && (
+          {profile.bio && !isPrivate && (
             <p className="text-sm text-foreground mt-2">{profile.bio}</p>
           )}
 
@@ -270,17 +314,63 @@ export default function UserProfile() {
           </div>
 
           <div className="flex gap-4 mt-3">
-            <span className="text-sm">
+            <button
+              onClick={() => { if (!isPrivate || isOwnProfile) openFollowsPanel('following'); }}
+              className={`text-sm text-left ${!isPrivate || isOwnProfile ? 'hover:underline' : 'cursor-default opacity-50'}`}
+              disabled={isPrivate && !isOwnProfile}
+            >
               <span className="font-bold text-foreground">{followingCount}</span>{' '}
               <span className="text-muted-foreground">Following</span>
-            </span>
-            <span className="text-sm">
+            </button>
+            <button
+              onClick={() => { if (!isPrivate || isOwnProfile) openFollowsPanel('followers'); }}
+              className={`text-sm text-left ${!isPrivate || isOwnProfile ? 'hover:underline' : 'cursor-default opacity-50'}`}
+              disabled={isPrivate && !isOwnProfile}
+            >
               <span className="font-bold text-foreground">{followerCount}</span>{' '}
               <span className="text-muted-foreground">Followers</span>
-            </span>
+            </button>
           </div>
+
+          {/* Follows dialog */}
+          <Dialog open={followsPanel !== null} onOpenChange={(open) => { if (!open) setFollowsPanel(null); }}>
+            <DialogContent className="minecraft-card max-w-sm">
+              <DialogHeader>
+                <DialogTitle className="mc-text">{followsPanel === 'following' ? 'Following' : 'Followers'}</DialogTitle>
+              </DialogHeader>
+              <ScrollArea className="max-h-80 pr-2">
+                {followsLoading && <p className="text-center text-muted-foreground py-6">Loading...</p>}
+                {!followsLoading && followsUsers.length === 0 && (
+                  <p className="text-center text-muted-foreground py-6 text-sm">No users yet.</p>
+                )}
+                <div className="space-y-2">
+                  {followsUsers.map(u => (
+                    <button
+                      key={u.user_id}
+                      onClick={() => { setFollowsPanel(null); navigate(`/user/${u.user_id}`); }}
+                      className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-secondary/50 transition-colors text-left"
+                    >
+                      <Avatar className="h-9 w-9">
+                        <AvatarImage src={u.avatar_url || undefined} style={{ imageRendering: 'pixelated' }} />
+                        <AvatarFallback className="bg-primary/20 text-primary text-xs mc-text">{u.username.slice(0,2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <span className="font-display text-sm font-medium text-foreground">@{u.username}</span>
+                    </button>
+                  ))}
+                </div>
+              </ScrollArea>
+            </DialogContent>
+          </Dialog>
         </div>
 
+        {/* Tabs + Posts */}
+        {isPrivate ? (
+          <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
+            <Lock className="h-10 w-10" />
+            <p className="font-bold text-foreground text-lg">This account is private</p>
+          </div>
+        ) : (
+          <>
         {/* Tabs */}
         <div className="border-b border-border">
           <div className="flex">
@@ -324,6 +414,8 @@ export default function UserProfile() {
           </div>
         )}
         </div>
+          </>
+        )}
       </main>
     </div>
   );

@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { PostCard } from './PostCard';
 import { CreatePost } from './CreatePost';
+import { parseBioPrivacy } from '@/lib/utils';
 
 const PAGE_SIZE = 10;
 
@@ -47,7 +48,7 @@ export function Feed({ refreshTrigger }: FeedProps) {
 
     const { data: profilesData } = await supabase
       .from('profiles')
-      .select('user_id, username, avatar_url')
+      .select('user_id, username, avatar_url, bio')
       .in('user_id', allUserIds);
 
     const postIds = postsData.map(p => p.id);
@@ -61,9 +62,29 @@ export function Feed({ refreshTrigger }: FeedProps) {
       .select('post_id')
       .in('post_id', postIds);
 
+    // Build privacy map from bio encoding (no DB table needed)
+    const privacyMap = new Map<string, { isPrivate: boolean; allowedViewerIds: string[] }>();
+    for (const p of (profilesData || [])) {
+      const { isPrivate, allowedViewerIds } = parseBioPrivacy(p.bio);
+      if (isPrivate) privacyMap.set(p.user_id, { isPrivate, allowedViewerIds });
+    }
+
+    // Build map: owner_user_id is_private
+    const profilesMap2 = new Map((profilesData || []).map(p => [p.user_id, p]));
+
+    // Filter out posts the current user isn't allowed to see
+    const currentUserId = user?.id;
+    const visiblePosts = postsData.filter(post => {
+      if (post.user_id === currentUserId) return true;
+      const priv = privacyMap.get(post.user_id);
+      if (!priv) return true; // public account
+      // Private: check if current user is in allowed list
+      return currentUserId ? priv.allowedViewerIds.includes(currentUserId) : false;
+    });
+
     const profilesMap = new Map(profilesData?.map(p => [p.user_id, p]) || []);
 
-    return postsData.map(post => {
+    return visiblePosts.map(post => {
       const profile = profilesMap.get(post.user_id);
       const coAuthorProfile = post.co_author_id ? profilesMap.get(post.co_author_id) : null;
       const postLikes = likesData?.filter(l => l.post_id === post.id) || [];

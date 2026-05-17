@@ -170,26 +170,25 @@ export default function CollabPost() {
     setPublishing(true);
 
     try {
-      // Create the post (current user is the author)
+      // Create the post — author is always the inviter (sender of the collab invite)
       const { data: post, error: postError } = await supabase
         .from('posts')
         .insert({
-          user_id: user.id,
+          user_id: session.inviter_id,
           content: content.trim(),
           image_url: imageUrls.length > 0
             ? (imageUrls.length === 1 ? imageUrls[0] : JSON.stringify(imageUrls))
             : null,
-          // Keep co_author_id for backward compat: store the inviter
-          co_author_id: session.inviter_id !== user.id ? session.inviter_id : null,
+          co_author_id: null,
         })
         .select()
         .single();
 
       if (postError || !post) throw postError ?? new Error('Failed to create post');
 
-      // Insert all other session members as post_collaborators
+      // Insert all session members except the inviter (post author) as post_collaborators
       const otherMembers = session.members.filter(
-        m => m.user_id !== user.id && (m.status === 'accepted' || m.role === 'inviter')
+        m => m.user_id !== session.inviter_id && (m.status === 'accepted' || m.role === 'invitee')
       );
       if (otherMembers.length > 0) {
         await supabase.from('post_collaborators').insert(
