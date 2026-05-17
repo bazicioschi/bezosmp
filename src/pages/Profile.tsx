@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Save, Loader2, Camera, ImagePlus, Trash2, Lock, Globe, UserPlus, X, Search } from 'lucide-react';
+import { User, Save, Loader2, Camera, ImagePlus, Trash2, Lock, Globe, UserPlus, X, Search, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/Header';
 import { useTheme } from '@/hooks/useTheme';
-import { parseBioPrivacy, encodeBioPrivacy } from '@/lib/utils';
+import { parseBioPrivacy, encodeBioPrivacy, type SocialLink } from '@/lib/utils';
 import {
   Dialog,
   DialogContent,
@@ -55,6 +55,13 @@ export default function Profile() {
   const [viewerSearch, setViewerSearch] = useState('');
   const [viewerSearchResults, setViewerSearchResults] = useState<AllowedViewer[]>([]);
   const [viewerSearchLoading, setViewerSearchLoading] = useState(false);
+  const [linkedAccounts, setLinkedAccounts] = useState<AllowedViewer[]>([]);
+  const [linkedSearch, setLinkedSearch] = useState('');
+  const [linkedSearchResults, setLinkedSearchResults] = useState<AllowedViewer[]>([]);
+  const [linkedSearchLoading, setLinkedSearchLoading] = useState(false);
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
+  const [newSocialPlatform, setNewSocialPlatform] = useState<SocialLink['platform']>('youtube');
+  const [newSocialUrl, setNewSocialUrl] = useState('');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -72,7 +79,7 @@ export default function Profile() {
       .eq('user_id', user.id)
       .maybeSingle();
     if (!error && data) {
-      const { displayBio, isPrivate, allowedViewerIds } = parseBioPrivacy(data.bio);
+      const { displayBio, isPrivate, allowedViewerIds, linkedAccountIds } = parseBioPrivacy(data.bio);
       setProfile({ ...data, bio: displayBio, is_private: isPrivate });
       // Load viewer profiles if any
       if (allowedViewerIds.length > 0) {
@@ -82,6 +89,15 @@ export default function Profile() {
           .in('user_id', allowedViewerIds);
         setAllowedViewers(profiles?.map(p => ({ user_id: p.user_id, username: p.username, avatar_url: p.avatar_url })) || []);
       }
+      // Load linked account profiles if any
+      if (linkedAccountIds.length > 0) {
+        const { data: linked } = await supabase
+          .from('profiles')
+          .select('user_id, username, avatar_url')
+          .in('user_id', linkedAccountIds);
+        setLinkedAccounts(linked?.map(p => ({ user_id: p.user_id, username: p.username, avatar_url: p.avatar_url })) || []);
+      }
+      setSocialLinks(parseBioPrivacy(data.bio).socialLinks);
     }
     setLoading(false);
   };
@@ -113,6 +129,30 @@ export default function Profile() {
 
   const removeAllowedViewer = async (viewerUserId: string) => {
     setAllowedViewers(prev => prev.filter(v => v.user_id !== viewerUserId));
+  };
+
+  const searchLinkedUsers = async (q: string) => {
+    if (!q.trim() || !user) { setLinkedSearchResults([]); return; }
+    setLinkedSearchLoading(true);
+    const { data } = await supabase
+      .from('profiles')
+      .select('user_id, username, avatar_url')
+      .ilike('username', `%${q}%`)
+      .neq('user_id', user.id)
+      .limit(6);
+    setLinkedSearchResults(data?.map(p => ({ user_id: p.user_id, username: p.username, avatar_url: p.avatar_url })) || []);
+    setLinkedSearchLoading(false);
+  };
+
+  const addLinkedAccount = (account: AllowedViewer) => {
+    if (linkedAccounts.some(a => a.user_id === account.user_id)) return;
+    setLinkedAccounts(prev => [...prev, account]);
+    setLinkedSearch('');
+    setLinkedSearchResults([]);
+  };
+
+  const removeLinkedAccount = (userId: string) => {
+    setLinkedAccounts(prev => prev.filter(a => a.user_id !== userId));
   };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -176,7 +216,9 @@ export default function Profile() {
     const bioToSave = encodeBioPrivacy(
       profile.bio,
       profile.is_private,
-      allowedViewers.map(v => v.user_id)
+      allowedViewers.map(v => v.user_id),
+      linkedAccounts.map(a => a.user_id),
+      socialLinks
     );
     const { error } = await supabase
       .from('profiles')
@@ -387,6 +429,138 @@ export default function Profile() {
                         type="button"
                         onClick={() => removeAllowedViewer(v.user_id)}
                         className="text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Linked Accounts (alts) */}
+            <div className="space-y-3 p-4 rounded-lg border border-border bg-secondary/30">
+              <div className="flex items-center gap-2">
+                <Link2 className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="mc-text text-sm text-foreground">Linked Accounts</p>
+                  <p className="text-xs text-muted-foreground">Show your alt accounts on your profile</p>
+                </div>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by username..."
+                  value={linkedSearch}
+                  onChange={(e) => { setLinkedSearch(e.target.value); searchLinkedUsers(e.target.value); }}
+                  className="pl-9 bg-background border-border"
+                />
+                {(linkedSearchResults.length > 0 || linkedSearchLoading) && (
+                  <div className="absolute z-10 mt-1 w-full bg-popover border border-border rounded-md shadow-md overflow-hidden">
+                    {linkedSearchLoading ? (
+                      <div className="p-3 flex justify-center"><Loader2 className="h-4 w-4 animate-spin" /></div>
+                    ) : linkedSearchResults.map(u => (
+                      <button
+                        key={u.user_id}
+                        type="button"
+                        onClick={() => addLinkedAccount(u)}
+                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-secondary/70 text-left"
+                      >
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage src={u.avatar_url || undefined} />
+                          <AvatarFallback className="text-xs">{u.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm">{u.username}</span>
+                        {linkedAccounts.some(a => a.user_id === u.user_id) && (
+                          <span className="ml-auto text-xs text-muted-foreground">Added</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {linkedAccounts.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-2">No linked accounts yet</p>
+              ) : (
+                <div className="space-y-1 max-h-48 overflow-y-auto">
+                  {linkedAccounts.map(a => (
+                    <div key={a.user_id} className="flex items-center gap-2 px-2 py-1.5 rounded bg-background/50">
+                      <Avatar className="h-7 w-7">
+                        <AvatarImage src={a.avatar_url || undefined} />
+                        <AvatarFallback className="text-xs">{a.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm flex-1">{a.username}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeLinkedAccount(a.user_id)}
+                        className="text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Social Media Links */}
+            <div className="space-y-3 p-4 rounded-lg border border-border bg-secondary/30">
+              <div className="flex items-center gap-2">
+                <Link2 className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="mc-text text-sm text-foreground">Social Media Links</p>
+                  <p className="text-xs text-muted-foreground">Show your social accounts on your profile</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <select
+                  value={newSocialPlatform}
+                  onChange={e => setNewSocialPlatform(e.target.value as SocialLink['platform'])}
+                  className="text-sm rounded-md border border-border bg-background px-2 py-1.5 text-foreground"
+                >
+                  <option value="youtube">YouTube</option>
+                  <option value="tiktok">TikTok</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="twitter">Twitter / X</option>
+                  <option value="twitch">Twitch</option>
+                  <option value="github">GitHub</option>
+                  <option value="discord">Discord</option>
+                  <option value="reddit">Reddit</option>
+                  <option value="other">Other</option>
+                </select>
+                <Input
+                  placeholder="Paste your URL..."
+                  value={newSocialUrl}
+                  onChange={e => setNewSocialUrl(e.target.value)}
+                  className="flex-1 bg-background border-border text-sm"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={!newSocialUrl.trim()}
+                  onClick={() => {
+                    const url = newSocialUrl.trim();
+                    if (!url) return;
+                    if (socialLinks.some(s => s.url === url)) return;
+                    setSocialLinks(prev => [...prev, { platform: newSocialPlatform, url }]);
+                    setNewSocialUrl('');
+                  }}
+                >
+                  Add
+                </Button>
+              </div>
+              {socialLinks.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-2">No social links added yet</p>
+              ) : (
+                <div className="space-y-1">
+                  {socialLinks.map((s, i) => (
+                    <div key={i} className="flex items-center gap-2 px-2 py-1.5 rounded bg-background/50">
+                      <span className="text-xs font-bold uppercase text-primary w-16 shrink-0">{s.platform}</span>
+                      <span className="text-xs text-muted-foreground flex-1 truncate">{s.url}</span>
+                      <button
+                        type="button"
+                        onClick={() => setSocialLinks(prev => prev.filter((_, idx) => idx !== i))}
+                        className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
                       >
                         <X className="h-4 w-4" />
                       </button>
