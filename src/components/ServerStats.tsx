@@ -75,7 +75,7 @@ export function ServerStats() {
 
     if (p === 'posts' || p === 'likes') {
       // Fetch posts with author profiles
-      const { data: postsData } = await supabase.from('posts').select('id, content, created_at, user_id').order('created_at', { ascending: false }).limit(100);
+      const { data: postsData } = await supabase.from('posts').select('id, content, created_at, user_id').order('created_at', { ascending: false });
       if (postsData && postsData.length > 0) {
         const authorIds = [...new Set(postsData.map(p => p.user_id))];
         const { data: profiles } = await supabase.from('profiles').select('user_id, username, avatar_url').in('user_id', authorIds);
