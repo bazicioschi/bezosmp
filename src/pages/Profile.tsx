@@ -647,43 +647,91 @@ export default function Profile() {
 
 function ChangeEmailSection({ currentEmail }: { currentEmail: string }) {
   const [newEmail, setNewEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [step, setStep] = useState<'email' | 'otp'>('email');
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
-  const handle = async () => {
+
+  const handleSendCode = async () => {
     if (!newEmail || newEmail === currentEmail) return;
     setSubmitting(true);
-    const { error } = await supabase.auth.updateUser({ email: newEmail }, { emailRedirectTo: window.location.origin });
+    const { error } = await supabase.auth.updateUser({ email: newEmail });
     if (error) {
       toast({ title: 'Could not update email', description: error.message, variant: 'destructive' });
     } else {
       toast({
-        title: 'Confirmation sent',
-        description: `Check ${newEmail} to confirm the change.`,
+        title: 'Code sent',
+        description: `Enter the 6-digit code sent to ${newEmail}.`,
       });
-      setNewEmail('');
+      setStep('otp');
     }
     setSubmitting(false);
   };
+
+  const handleVerifyCode = async () => {
+    if (!otp) return;
+    setSubmitting(true);
+    const { error } = await supabase.auth.verifyOtp({ email: newEmail, token: otp, type: 'email_change' });
+    if (error) {
+      toast({ title: 'Invalid code', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Email updated', description: 'Your email has been changed successfully.' });
+      setNewEmail('');
+      setOtp('');
+      setStep('email');
+    }
+    setSubmitting(false);
+  };
+
   return (
     <div className="space-y-2 pt-2 border-t border-border">
-      <Label htmlFor="new-email" className="mc-text text-sm">CHANGE EMAIL</Label>
+      <Label className="mc-text text-sm">CHANGE EMAIL</Label>
       <p className="text-xs text-muted-foreground">Current: {currentEmail || '—'}</p>
-      <div className="flex gap-2">
-        <Input
-          id="new-email"
-          type="email"
-          value={newEmail}
-          onChange={(e) => setNewEmail(e.target.value)}
-          placeholder="new@email.com"
-          className="bg-secondary/50 border-border flex-1"
-        />
-        <Button onClick={handle} disabled={submitting || !newEmail || newEmail === currentEmail}>
-          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Update'}
-        </Button>
-      </div>
-      <p className="text-xs text-muted-foreground">
-        We'll send a confirmation link to your new address. Sign-in works with the new email after you confirm.
-      </p>
+      {step === 'email' ? (
+        <>
+          <div className="flex gap-2">
+            <Input
+              id="new-email"
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder="new@email.com"
+              className="bg-secondary/50 border-border flex-1"
+            />
+            <Button onClick={handleSendCode} disabled={submitting || !newEmail || newEmail === currentEmail}>
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send Code'}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            We'll send a 6-digit verification code to your new email address.
+          </p>
+        </>
+      ) : (
+        <>
+          <p className="text-xs text-muted-foreground">Code sent to <strong>{newEmail}</strong>.</p>
+          <div className="flex gap-2">
+            <Input
+              id="otp-code"
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+              placeholder="123456"
+              className="bg-secondary/50 border-border flex-1 tracking-widest"
+            />
+            <Button onClick={handleVerifyCode} disabled={submitting || otp.length < 6}>
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Verify'}
+            </Button>
+          </div>
+          <button
+            onClick={() => { setStep('email'); setOtp(''); }}
+            className="text-xs text-muted-foreground underline underline-offset-2"
+          >
+            Use a different email
+          </button>
+        </>
+      )}
     </div>
   );
 }
