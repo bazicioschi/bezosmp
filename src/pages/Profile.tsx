@@ -652,7 +652,7 @@ function ChangeEmailSection({ currentEmail }: { currentEmail: string }) {
   const handle = async () => {
     if (!newEmail || newEmail === currentEmail) return;
     setSubmitting(true);
-    const { error } = await supabase.auth.updateUser({ email: newEmail });
+    const { error } = await supabase.auth.updateUser({ email: newEmail }, { emailRedirectTo: window.location.origin });
     if (error) {
       toast({ title: 'Could not update email', description: error.message, variant: 'destructive' });
     } else {
