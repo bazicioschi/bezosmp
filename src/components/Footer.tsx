@@ -48,7 +48,7 @@ export function Footer() {
           {/* Social */}
           <div>
             <h4 className="mc-text text-primary mb-3">CONNECT</h4>
-            <div className="flex gap-2">
+            <div className="flex gap-2 mb-3">
               <a 
                 href="https://x.com/Bazicioschi" 
                 target="_blank"
@@ -66,6 +66,12 @@ export function Footer() {
                 <MessageCircle className="h-4 w-4 text-primary" />
               </a>
             </div>
+            <a
+              href="mailto:pueioficial@outlook.com"
+              className="text-xs text-muted-foreground hover:text-primary transition-colors"
+            >
+              pueioficial@outlook.com
+            </a>
           </div>
         </div>
 
