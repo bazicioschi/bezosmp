@@ -58,7 +58,7 @@ export function ConnectButton() {
 
           <h2 className="mc-text text-lg font-bold text-foreground">bezo Community</h2>
           <p className="text-sm text-muted-foreground mt-1 mb-4">
-            The official bezoSMP community on Reddit — share builds, news & more.
+            The official bezoSMP community on Reddit — news, updates & more.
           </p>
 
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
