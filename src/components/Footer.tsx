@@ -67,10 +67,12 @@ export function Footer() {
               </a>
             </div>
             <a
-              href="mailto:pueioficial@outlook.com"
+              href="https://www.reddit.com/r/bezocomunity"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-xs text-muted-foreground hover:text-primary transition-colors"
             >
-              pueioficial@outlook.com
+              r/bezocomunity
             </a>
           </div>
         </div>

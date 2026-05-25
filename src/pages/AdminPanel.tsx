@@ -91,6 +91,18 @@ export default function AdminPanel() {
     if (!targetUser) return;
 
     if (targetUser.roles.includes(role)) {
+      if (
+        role === 'admin' &&
+        targetUser.username.toLowerCase() === 'bazicioschi' &&
+        user.id === userId
+      ) {
+        toast({
+          title: 'Action blocked',
+          description: 'Bazicioschi cannot remove his own admin role.',
+          variant: 'destructive',
+        });
+        return;
+      }
       await supabase.from('user_roles').delete().eq('user_id', userId).eq('role', role);
       toast({ title: 'Role removed', description: `Removed ${role} from @${targetUser.username}` });
     } else {
