@@ -29,22 +29,23 @@ export function ConnectButton() {
         </DialogHeader>
 
         {/* Banner */}
-        <div className="relative h-24 bg-gradient-to-br from-orange-500 via-red-500 to-orange-700 flex items-center justify-center">
-          <div className="absolute inset-0 opacity-20"
-            style={{
-              backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 7px,rgba(0,0,0,.3) 7px,rgba(0,0,0,.3) 8px),repeating-linear-gradient(90deg,transparent,transparent 7px,rgba(0,0,0,.3) 7px,rgba(0,0,0,.3) 8px)'
-            }}
+        <div className="relative h-24 overflow-hidden">
+          <img
+            src="https://styles.redditmedia.com/t5_hrz0mx/styles/bannerBackgroundImage_tu9hd3tx850h1.png"
+            alt="r/bezocomunity banner"
+            className="w-full h-full object-cover"
           />
-          <span className="mc-text text-white text-2xl font-bold tracking-widest glow-text drop-shadow-lg">
-            r/bezocomunity
-          </span>
         </div>
 
         {/* Avatar overlapping banner */}
         <div className="px-5 pb-5">
           <div className="-mt-8 mb-3 flex items-end justify-between">
-            <div className="h-16 w-16 rounded-full border-4 border-background bg-[#FF4500] flex items-center justify-center text-white shadow-lg">
-              <RedditIcon />
+            <div className="h-16 w-16 rounded-full border-4 border-background overflow-hidden shadow-lg">
+              <img
+                src="https://styles.redditmedia.com/t5_hrz0mx/styles/communityIcon_anv7cuws850h1.png"
+                alt="r/bezocomunity icon"
+                className="w-full h-full object-cover"
+              />
             </div>
             <a
               href="https://www.reddit.com/r/bezocomunity/"
