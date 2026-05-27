@@ -10,6 +10,7 @@ import { Header } from '@/components/Header';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { PostLinkPreview } from '@/components/PostLinkPreview';
+import { useRestrictions } from '@/hooks/useRestrictions';
 
 interface CollabInvite {
   id: string;
@@ -42,6 +43,7 @@ export default function Messages() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
+  const { isBanned, canMessage } = useRestrictions();
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -162,7 +164,7 @@ export default function Messages() {
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !user || !recipientId || sending) return;
+    if (!newMessage.trim() || !user || !recipientId || sending || !canMessage) return;
 
     setSending(true);
     const { error } = await supabase.from('messages').insert({
@@ -441,6 +443,7 @@ export default function Messages() {
           </div>
 
           {/* Message Input */}
+          {canMessage ? (
           <form onSubmit={handleSend} className="p-4 border-t border-border bg-background/50">
             <div className="flex gap-3">
               <Input
@@ -463,6 +466,11 @@ export default function Messages() {
               </Button>
             </div>
           </form>
+          ) : (
+            <div className="p-4 border-t border-border text-center text-destructive mc-text text-sm">
+              🚫 Your account has been restricted from sending messages.
+            </div>
+          )}
         </div>
       </main>
     </div>

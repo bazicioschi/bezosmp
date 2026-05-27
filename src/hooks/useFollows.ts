@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
+import { useRestrictions } from '@/hooks/useRestrictions';
 
 export function useFollows() {
   const { user } = useAuth();
+  const { isBanned, isSuspended } = useRestrictions();
   const [following, setFollowing] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
@@ -30,7 +32,7 @@ export function useFollows() {
   };
 
   const toggleFollow = useCallback(async (targetUserId: string) => {
-    if (!user) return;
+    if (!user || isBanned || isSuspended) return;
     
     const isFollowing = following.has(targetUserId);
     
@@ -46,7 +48,7 @@ export function useFollows() {
         following_id: targetUserId,
       });
     }
-  }, [user, following]);
+  }, [user, following, isBanned, isSuspended]);
 
   const isFollowing = useCallback((targetUserId: string) => {
     return following.has(targetUserId);

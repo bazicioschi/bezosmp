@@ -136,7 +136,7 @@ export function PostCard({
   }, [id]);
 
   const handleSavePost = async () => {
-    if (!user) return;
+    if (!user || isBanned || isSuspended) return;
     playClick();
     if (isSaved) {
       await supabase.from('saved_posts').delete().eq('post_id', id).eq('user_id', user.id);
