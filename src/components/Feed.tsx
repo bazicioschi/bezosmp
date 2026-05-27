@@ -117,6 +117,7 @@ export function Feed({ refreshTrigger }: FeedProps) {
     const { data: postsData, error } = await supabase
       .from('posts')
       .select('*')
+      .eq('blocked', false)
       .order('created_at', { ascending: false })
       .range(0, PAGE_SIZE - 1);
 
@@ -142,6 +143,7 @@ export function Feed({ refreshTrigger }: FeedProps) {
     const { data: postsData, error } = await supabase
       .from('posts')
       .select('*')
+      .eq('blocked', false)
       .order('created_at', { ascending: false })
       .range(from, to);
 

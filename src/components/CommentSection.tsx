@@ -34,8 +34,7 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
   const { playClick, playPop, playUnpop } = useSoundEffects();
   const { canComment } = useRestrictions();
   const { isAdmin, isModerator, isOwner } = useAdmin();
-  // Admins cannot manually delete comments per policy; only Moderators and Owners can.
-  const canDeleteAnyComment = isModerator || isOwner;
+  const canDeleteAnyComment = isAdmin || isModerator || isOwner;
   // Admins, Moderators, and Owners can still edit comments.
   const canEditAnyComment = isAdmin || isModerator || isOwner;
   const [comments, setComments] = useState<Comment[]>([]);

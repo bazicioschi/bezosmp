@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 export function Header() {
   const { playClick } = useSoundEffects();
   const { user, signOut } = useAuth();
-  const { isAdmin, isOwner } = useAdmin();
+  const { isAdmin, isModerator, isOwner, canModerate } = useAdmin();
   const { theme } = useTheme();
   const { unreadInbox } = useNotifications();
   const [username, setUsername] = useState<string | null>(null);
@@ -27,7 +27,7 @@ export function Header() {
       .then(({ data }) => setUsername(data?.username ?? null));
   }, [user]);
 
-  const adminLabel = username?.toLowerCase() === 'bazicioschi' ? 'OWNER' : 'ADMIN';
+  const adminLabel = isOwner ? 'OWNER' : isAdmin ? 'ADMIN' : 'MOD';
 
   return (
     <header className="sticky top-0 z-50 border-b-2 border-border bg-card/95 backdrop-blur-sm">
@@ -85,7 +85,7 @@ export function Header() {
                   <span className="hidden md:inline mc-text text-sm">SUPPORT</span>
                 </Link>
               </Button>
-              {isAdmin && (
+              {canModerate && (
                 <Button variant="ghost" size="sm" asChild className="mc-slot hover:mc-slot-active px-3 h-8" onClick={() => playClick()}>
                   <Link to="/admin" className="flex items-center gap-2">
                     <Shield className="h-4 w-4" />

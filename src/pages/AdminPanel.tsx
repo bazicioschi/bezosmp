@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Ban, UserX, MessageSquareOff, PenOff, Loader2, Crown, ShieldCheck, RefreshCw } from 'lucide-react';
+import { Shield, Ban, UserX, MessageSquareOff, PenOff, Loader2, Crown, ShieldCheck, RefreshCw, Clock } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -14,12 +14,13 @@ interface UserWithRestrictions {
   user_id: string;
   username: string;
   restrictions: string[];
+  suspendedUntil: string | null;
   roles: string[];
 }
 
 export default function AdminPanel() {
   const { user } = useAuth();
-  const { isAdmin, loading: adminLoading } = useAdmin();
+  const { isAdmin, canModerate, loading: adminLoading } = useAdmin();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
@@ -28,10 +29,10 @@ export default function AdminPanel() {
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    if (!adminLoading && !isAdmin) {
+    if (!adminLoading && !canModerate) {
       navigate('/');
     }
-  }, [isAdmin, adminLoading]);
+  }, [canModerate, adminLoading]);
 
   const refreshFeed = async () => {
     setRefreshing(true);
@@ -57,15 +58,21 @@ export default function AdminPanel() {
       const userIds = profiles.map(p => p.user_id);
 
       const [{ data: restrictions }, { data: roles }] = await Promise.all([
-        supabase.from('user_restrictions').select('user_id, restriction_type').in('user_id', userIds),
+        supabase.from('user_restrictions').select('user_id, restriction_type, expires_at').in('user_id', userIds),
         supabase.from('user_roles').select('user_id, role').in('user_id', userIds),
       ]);
 
+      const now = new Date().toISOString();
       const restrictionsMap = new Map<string, string[]>();
+      const suspendedUntilMap = new Map<string, string | null>();
       restrictions?.forEach(r => {
+        if (r.expires_at && r.expires_at <= now) return; // skip expired
         const existing = restrictionsMap.get(r.user_id) || [];
         existing.push(r.restriction_type);
         restrictionsMap.set(r.user_id, existing);
+        if (r.restriction_type === 'suspended') {
+          suspendedUntilMap.set(r.user_id, r.expires_at ?? null);
+        }
       });
 
       const rolesMap = new Map<string, string[]>();
@@ -79,6 +86,7 @@ export default function AdminPanel() {
         user_id: p.user_id,
         username: p.username,
         restrictions: restrictionsMap.get(p.user_id) || [],
+        suspendedUntil: suspendedUntilMap.get(p.user_id) ?? null,
         roles: rolesMap.get(p.user_id) || [],
       })));
     }
@@ -127,6 +135,33 @@ export default function AdminPanel() {
     searchUsers();
   };
 
+  const suspendUser = async (userId: string, days: number | null) => {
+    if (!user) return;
+    const targetUser = users.find(u => u.user_id === userId);
+    if (!targetUser) return;
+
+    // Remove existing suspension first
+    await supabase.from('user_restrictions').delete().eq('user_id', userId).eq('restriction_type', 'suspended');
+
+    if (days !== null) {
+      const expires_at = days === -1 ? null : new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+      await supabase.from('user_restrictions').insert({
+        user_id: userId,
+        restriction_type: 'suspended',
+        created_by: user.id,
+        expires_at,
+        reason: days === -1 ? 'Permanent suspension' : `Suspended for ${days} days`,
+      });
+      toast({
+        title: 'User suspended',
+        description: `@${targetUser.username} suspended ${days === -1 ? 'permanently' : `for ${days} days`}`,
+      });
+    } else {
+      toast({ title: 'User unsuspended', description: `@${targetUser.username} is no longer suspended` });
+    }
+    searchUsers();
+  };
+
   if (adminLoading) {
     return (
       <div className="min-h-screen bg-background mc-bedrock flex items-center justify-center">
@@ -135,7 +170,7 @@ export default function AdminPanel() {
     );
   }
 
-  if (!isAdmin) return null;
+  if (!canModerate) return null;
 
   return (
     <div className="min-h-screen bg-background mc-bedrock">
@@ -184,9 +219,12 @@ export default function AdminPanel() {
                   {u.roles.includes('moderator') && (
                     <span className="text-xs bg-accent/20 text-accent-foreground px-2 py-0.5 rounded font-bold">MOD</span>
                   )}
+                {u.restrictions.includes('suspended') && (
+                    <span className="text-xs bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded font-bold">SUSPENDED</span>
+                  )}
                 </div>
-                {u.restrictions.length > 0 && (
-                  <span className="text-xs text-destructive">{u.restrictions.length} restriction(s)</span>
+                {u.restrictions.filter(r => r !== 'suspended').length > 0 && (
+                  <span className="text-xs text-destructive">{u.restrictions.filter(r => r !== 'suspended').length} restriction(s)</span>
                 )}
               </div>
 
@@ -255,6 +293,59 @@ export default function AdminPanel() {
                     <Ban className="h-3 w-3" />
                     Ban
                   </Button>
+                </div>
+              </div>
+
+              {/* Suspension */}
+              <div className="mt-3">
+                <p className="text-xs text-muted-foreground mb-1.5 font-semibold uppercase">Suspension</p>
+                {u.restrictions.includes('suspended') && (
+                  <p className="text-xs text-orange-400 mb-1.5">
+                    Suspended {u.suspendedUntil ? `until ${new Date(u.suspendedUntil).toLocaleDateString()}` : 'permanently'}
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {u.restrictions.includes('suspended') ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => suspendUser(u.user_id, null)}
+                      className="gap-1 text-orange-400 border-orange-500/30 hover:bg-orange-500/10"
+                    >
+                      <Clock className="h-3 w-3" />
+                      Unsuspend
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => suspendUser(u.user_id, 7)}
+                        className="gap-1"
+                      >
+                        <Clock className="h-3 w-3" />
+                        Suspend 7d
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => suspendUser(u.user_id, 30)}
+                        className="gap-1"
+                      >
+                        <Clock className="h-3 w-3" />
+                        Suspend 30d
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => suspendUser(u.user_id, -1)}
+                        className="gap-1 text-destructive border-destructive/30 hover:bg-destructive/10"
+                      >
+                        <Ban className="h-3 w-3" />
+                        Suspend Permanently
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

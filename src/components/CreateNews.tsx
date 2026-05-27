@@ -24,7 +24,7 @@ const SUPPORTED_VIDEO_TYPES = [
 export function CreateNews({ onNewsCreated }: CreateNewsProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { isAdmin } = useAdmin();
+  const { canModerate } = useAdmin();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -206,7 +206,7 @@ export function CreateNews({ onNewsCreated }: CreateNewsProps) {
     if (videoInputRef.current) videoInputRef.current.value = '';
   };
 
-  if (!user || !isAdmin) return null;
+  if (!user || !canModerate) return null;
 
   if (!showForm) {
     return (

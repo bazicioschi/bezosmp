@@ -13,6 +13,7 @@ import { InviteCollabDialog } from '@/components/InviteCollabDialog';
 import { useFollows } from '@/hooks/useFollows';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useTheme } from '@/hooks/useTheme';
+import { useAdmin } from '@/hooks/useAdmin';
 import { parseBioPrivacy, type SocialLink } from '@/lib/utils';
 
 interface Profile {
@@ -59,6 +60,7 @@ export default function UserProfile() {
   const { isFollowing, toggleFollow } = useFollows();
   const { playPop } = useSoundEffects();
   const { theme } = useTheme();
+  const { canModerate } = useAdmin();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,6 +75,8 @@ export default function UserProfile() {
   const [viewerAllowed, setViewerAllowed] = useState(true);
   const [linkedAccounts, setLinkedAccounts] = useState<{ user_id: string; username: string; avatar_url: string | null }[]>([]);
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
+  const [isSuspended, setIsSuspended] = useState(false);
+  const [suspendedUntil, setSuspendedUntil] = useState<Date | null>(null);
 
   useEffect(() => {
     if (userId) {
@@ -86,6 +90,15 @@ export default function UserProfile() {
           setIsProfileAdmin(roles.includes('admin'));
           setIsProfileModerator(roles.includes('moderator'));
         });
+      // Check suspension status via security-definer RPC (bypasses RLS)
+      supabase.rpc('is_user_suspended', { target_user_id: userId }).then(({ data: suspended }) => {
+        setIsSuspended(!!suspended);
+        if (suspended) {
+          supabase.rpc('get_suspension_expiry', { target_user_id: userId }).then(({ data: expiry }) => {
+            setSuspendedUntil(expiry ? new Date(expiry) : null);
+          });
+        }
+      });
     }
   }, [userId, user]);
 
@@ -346,6 +359,24 @@ export default function UserProfile() {
             <span className="text-sm">Joined {formatDate(profile.created_at)}</span>
           </div>
 
+          {/* Suspension banners */}
+          {isSuspended && isOwnProfile && (
+            <div className="mt-3 rounded-lg border-2 border-orange-500/60 bg-orange-500/10 p-3">
+              <p className="text-orange-400 font-bold text-sm">⚠ Your account is suspended</p>
+              <p className="text-orange-300 text-xs mt-0.5">
+                {suspendedUntil
+                  ? `Until ${suspendedUntil.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`
+                  : 'Permanently suspended'}
+              </p>
+              <p className="text-muted-foreground text-xs mt-1">You cannot post, comment, or chat while suspended.</p>
+            </div>
+          )}
+          {isSuspended && !isOwnProfile && canModerate && (
+            <div className="mt-3 rounded-lg border-2 border-orange-500/40 bg-orange-500/10 p-2">
+              <p className="text-orange-400 font-bold text-xs">⚠ This account is currently suspended</p>
+            </div>
+          )}
+
           {/* Linked accounts */}
           {linkedAccounts.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2 items-center">
@@ -442,6 +473,14 @@ export default function UserProfile() {
           <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
             <Lock className="h-10 w-10" />
             <p className="font-bold text-foreground text-lg">This account is private</p>
+          </div>
+        ) : isSuspended && !isOwnProfile && !canModerate ? (
+          <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
+            <Shield className="h-10 w-10 text-orange-400" />
+            <p className="font-bold text-foreground text-lg">Account Suspended</p>
+            <p className="text-sm text-center max-w-xs">
+              This account has been suspended and is not accessible.
+            </p>
           </div>
         ) : (
           <>

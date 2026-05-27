@@ -32,7 +32,7 @@ const MAX_IMAGES = 10;
 export function CreatePost({ onPostCreated }: CreatePostProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { canPost } = useRestrictions();
+  const { canPost, isSuspended, suspendedUntil } = useRestrictions();
   const [content, setContent] = useState('');
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -483,10 +483,14 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     return (
       <div className="px-4 py-6 border-b-2 border-border text-center space-y-1">
         <p className="text-destructive mc-text text-lg">
-          ⚠️ This account has been restricted from posting.
+          {isSuspended ? '🚫 Your account is suspended' : '⚠️ This account has been restricted from posting.'}
         </p>
         <p className="text-muted-foreground text-sm">
-          You are unable to create new posts. If you believe this is a mistake, please contact support.
+          {isSuspended
+            ? suspendedUntil
+              ? `You are suspended until ${suspendedUntil.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}. You cannot post, comment, or chat.`
+              : 'Your account is permanently suspended. You cannot post, comment, or chat.'
+            : 'You are unable to create new posts. If you believe this is a mistake, please contact support.'}
         </p>
       </div>
     );

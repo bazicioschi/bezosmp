@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Trash2, Share, Bookmark, BookmarkCheck, Pencil, X, Check } from 'lucide-react';
+import { Heart, MessageCircle, Trash2, Share, Bookmark, BookmarkCheck, Pencil, X, Check, Ban } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -236,6 +236,15 @@ export function PostCard({
     setIsDeleting(false);
   };
 
+  const handleBlock = async () => {
+    if (!canModerate) return;
+    setIsDeleting(true);
+    playClick();
+    await supabase.from('posts').update({ blocked: true }).eq('id', id);
+    onDelete();
+    setIsDeleting(false);
+  };
+
   const handleProfileClick = () => {
     navigate(`/user/${userId}`);
   };
@@ -368,46 +377,83 @@ export function PostCard({
             <span className="text-muted-foreground text-sm">
               {formatDistanceToNow(new Date(createdAt), { addSuffix: false })}
             </span>
-            {user?.id === userId && !isEditing && (
+            {(user?.id === userId || canModerate) && !isEditing && (
               <div className="flex items-center gap-1 ml-auto">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={(e) => { e.stopPropagation(); handleEdit(); }}
-                  className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/20"
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
+                {user?.id === userId && (
+                  <>
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      onClick={(e) => e.stopPropagation()}
-                      className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/20"
+                      onClick={(e) => { e.stopPropagation(); handleEdit(); }}
+                      className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/20"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Pencil className="h-4 w-4" />
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="minecraft-card minecraft-border">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="mc-text text-xl">Delete Post?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Are you sure you want to delete this post? This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel className="mc-btn">No, Cancel</AlertDialogCancel>
-                      <AlertDialogAction 
-                        onClick={handleDelete}
-                        disabled={isDeleting}
-                        className="mc-btn-primary bg-destructive hover:bg-destructive/90"
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={(e) => e.stopPropagation()}
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/20"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="minecraft-card minecraft-border">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="mc-text text-xl">Delete Post?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete this post? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="mc-btn">No, Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={handleDelete}
+                            disabled={isDeleting}
+                            className="mc-btn-primary bg-destructive hover:bg-destructive/90"
+                          >
+                            {isDeleting ? 'Deleting...' : 'Yes, Delete'}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </>
+                )}
+                {canModerate && user?.id !== userId && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => e.stopPropagation()}
+                        className="h-7 w-7 text-muted-foreground hover:text-orange-500 hover:bg-orange-500/20"
+                        title="Block post"
                       >
-                        {isDeleting ? 'Deleting...' : 'Yes, Delete'}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                        <Ban className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="minecraft-card minecraft-border">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="mc-text text-xl">Block Post?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This post will be hidden from all users. This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="mc-btn">Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleBlock}
+                          disabled={isDeleting}
+                          className="mc-btn-primary bg-destructive hover:bg-destructive/90"
+                        >
+                          {isDeleting ? 'Blocking...' : 'Block Post'}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
               </div>
             )}
           </div>
