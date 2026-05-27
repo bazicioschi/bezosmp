@@ -117,13 +117,12 @@ export function Feed({ refreshTrigger }: FeedProps) {
     const { data: postsData, error } = await supabase
       .from('posts')
       .select('*')
-      .eq('blocked', false)
       .order('created_at', { ascending: false })
       .range(0, PAGE_SIZE - 1);
 
     if (error || !postsData) { setLoading(false); return; }
 
-    const enriched = await enrichPosts(postsData);
+    const enriched = await enrichPosts(postsData.filter((p: any) => p.blocked !== true));
     setPosts(enriched);
     const more = postsData.length === PAGE_SIZE;
     hasMoreRef.current = more;
@@ -143,12 +142,11 @@ export function Feed({ refreshTrigger }: FeedProps) {
     const { data: postsData, error } = await supabase
       .from('posts')
       .select('*')
-      .eq('blocked', false)
       .order('created_at', { ascending: false })
       .range(from, to);
 
     if (!error && postsData) {
-      const enriched = await enrichPosts(postsData);
+      const enriched = await enrichPosts(postsData.filter((p: any) => p.blocked !== true));
       setPosts(prev => {
         const existingIds = new Set(prev.map(p => p.id));
         const newPosts = enriched.filter(p => !existingIds.has(p.id));
