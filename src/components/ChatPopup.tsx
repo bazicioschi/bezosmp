@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
+import { useRestrictions } from '@/hooks/useRestrictions';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -29,6 +30,7 @@ export function ChatPopup() {
   const [loading, setLoading] = useState(false);
   const { playClick } = useSoundEffects();
   const { user } = useAuth();
+  const { isBanned, isSuspended } = useRestrictions();
 
   useEffect(() => {
     if (open && user) {
@@ -117,6 +119,14 @@ export function ChatPopup() {
         <Link to="/login">
           <MessageCircle className="h-4 w-4" />
         </Link>
+      </Button>
+    );
+  }
+
+  if (isBanned || isSuspended) {
+    return (
+      <Button variant="ghost" size="sm" disabled className="mc-slot px-3 h-8 opacity-40 cursor-not-allowed">
+        <MessageCircle className="h-4 w-4" />
       </Button>
     );
   }

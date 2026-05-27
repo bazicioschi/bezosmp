@@ -89,7 +89,7 @@ export function NewsCard({
   };
 
   const handleSaveEdit = async () => {
-    if (!user || user.id !== userId || !editTitle.trim() || !editContent.trim()) return;
+    if (!user || (!canModerate && user.id !== userId) || !editTitle.trim() || !editContent.trim()) return;
     
     setIsSaving(true);
     playClick();

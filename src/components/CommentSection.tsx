@@ -32,7 +32,7 @@ interface CommentSectionProps {
 export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: CommentSectionProps) {
   const { user } = useAuth();
   const { playClick, playPop, playUnpop } = useSoundEffects();
-  const { canComment } = useRestrictions();
+  const { canComment, isBanned, isSuspended } = useRestrictions();
   const { isAdmin, isModerator, isOwner } = useAdmin();
   const canDeleteAnyComment = isAdmin || isModerator || isOwner;
   // Admins, Moderators, and Owners can still edit comments.
@@ -166,7 +166,7 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
   };
 
   const handleLikeComment = async (commentId: string, isLiked: boolean) => {
-    if (!user) return;
+    if (!user || isBanned || isSuspended) return;
 
     if (isLiked) {
       playUnpop();

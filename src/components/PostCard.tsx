@@ -24,6 +24,7 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useToast } from '@/hooks/use-toast';
 import { ImageLightbox } from './ImageLightbox';
 import { useAdmin } from '@/hooks/useAdmin';
+import { useRestrictions } from '@/hooks/useRestrictions';
 import { QuickReactions } from './QuickReactions';
 import { SharePostDialog } from './SharePostDialog';
 
@@ -71,6 +72,7 @@ export function PostCard({
   const { toast } = useToast();
   const { playClick, playPop, playUnpop } = useSoundEffects();
   const { canModerate } = useAdmin();
+  const { isBanned, isSuspended } = useRestrictions();
   const [showComments, setShowComments] = useState(false);
   const [localCommentsCount, setLocalCommentsCount] = useState(commentsCount);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -212,7 +214,7 @@ export function PostCard({
   };
 
   const handleLike = async () => {
-    if (!user) return;
+    if (!user || isBanned || isSuspended) return;
 
     setIsAnimating(true);
     setTimeout(() => setIsAnimating(false), 300);
