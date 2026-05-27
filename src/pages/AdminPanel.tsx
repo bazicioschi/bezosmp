@@ -219,9 +219,6 @@ export default function AdminPanel() {
                   {u.roles.includes('moderator') && (
                     <span className="text-xs bg-accent/20 text-accent-foreground px-2 py-0.5 rounded font-bold">MOD</span>
                   )}
-                {u.restrictions.includes('suspended') && (
-                    <span className="text-xs bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded font-bold">SUSPENDED</span>
-                  )}
                 </div>
                 {u.restrictions.filter(r => r !== 'suspended').length > 0 && (
                   <span className="text-xs text-destructive">{u.restrictions.filter(r => r !== 'suspended').length} restriction(s)</span>
@@ -296,58 +293,6 @@ export default function AdminPanel() {
                 </div>
               </div>
 
-              {/* Suspension */}
-              <div className="mt-3">
-                <p className="text-xs text-muted-foreground mb-1.5 font-semibold uppercase">Suspension</p>
-                {u.restrictions.includes('suspended') && (
-                  <p className="text-xs text-orange-400 mb-1.5">
-                    Suspended {u.suspendedUntil ? `until ${new Date(u.suspendedUntil).toLocaleDateString()}` : 'permanently'}
-                  </p>
-                )}
-                <div className="flex flex-wrap gap-2">
-                  {u.restrictions.includes('suspended') ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => suspendUser(u.user_id, null)}
-                      className="gap-1 text-orange-400 border-orange-500/30 hover:bg-orange-500/10"
-                    >
-                      <Clock className="h-3 w-3" />
-                      Unsuspend
-                    </Button>
-                  ) : (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => suspendUser(u.user_id, 7)}
-                        className="gap-1"
-                      >
-                        <Clock className="h-3 w-3" />
-                        Suspend 7d
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => suspendUser(u.user_id, 30)}
-                        className="gap-1"
-                      >
-                        <Clock className="h-3 w-3" />
-                        Suspend 30d
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => suspendUser(u.user_id, -1)}
-                        className="gap-1 text-destructive border-destructive/30 hover:bg-destructive/10"
-                      >
-                        <Ban className="h-3 w-3" />
-                        Suspend Permanently
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </div>
             </div>
           ))}
         </div>
