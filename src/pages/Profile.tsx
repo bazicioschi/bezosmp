@@ -539,8 +539,9 @@ export default function Profile() {
                   size="sm"
                   disabled={!newSocialUrl.trim()}
                   onClick={() => {
-                    const url = newSocialUrl.trim();
-                    if (!url) return;
+                    const raw = newSocialUrl.trim();
+                    if (!raw) return;
+                    const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
                     if (socialLinks.some(s => s.url === url)) return;
                     setSocialLinks(prev => [...prev, { platform: newSocialPlatform, url }]);
                     setNewSocialUrl('');

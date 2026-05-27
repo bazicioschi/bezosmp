@@ -375,7 +375,7 @@ export default function UserProfile() {
               {socialLinks.map((s, i) => (
                 <a
                   key={i}
-                  href={s.url}
+                  href={/^https?:\/\//i.test(s.url) ? s.url : `https://${s.url}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary/60 hover:bg-secondary border border-border hover:border-primary/50 transition-colors text-xs text-foreground capitalize"
