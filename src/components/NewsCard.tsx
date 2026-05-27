@@ -59,6 +59,7 @@ export function NewsCard({
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(title);
   const [editContent, setEditContent] = useState(content);
+  const [editTag, setEditTag] = useState<string | null>(tag ?? null);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleDelete = async () => {
@@ -77,6 +78,7 @@ export function NewsCard({
   const handleEdit = () => {
     setEditTitle(title);
     setEditContent(content);
+    setEditTag(tag ?? null);
     setIsEditing(true);
     playClick();
   };
@@ -85,6 +87,7 @@ export function NewsCard({
     setIsEditing(false);
     setEditTitle(title);
     setEditContent(content);
+    setEditTag(tag ?? null);
     playClick();
   };
 
@@ -96,7 +99,7 @@ export function NewsCard({
     
     const { error } = await supabase
       .from('news')
-      .update({ title: editTitle.trim(), content: editContent.trim() })
+      .update({ title: editTitle.trim(), content: editContent.trim(), tag: editTag })
       .eq('id', id);
     
     if (error) {
@@ -223,6 +226,36 @@ export function NewsCard({
                 placeholder="What's the news?"
                 maxLength={2000}
               />
+              <div className="flex flex-wrap gap-2">
+                {(['announcement', 'update', 'event', 'warning', 'bug-fix', 'feature'] as const).map((t) => {
+                  const tagStyles: Record<string, string> = {
+                    announcement: 'border-blue-500/60 text-blue-400 hover:bg-blue-500/20',
+                    update: 'border-green-500/60 text-green-400 hover:bg-green-500/20',
+                    event: 'border-purple-500/60 text-purple-400 hover:bg-purple-500/20',
+                    warning: 'border-yellow-500/60 text-yellow-400 hover:bg-yellow-500/20',
+                    'bug-fix': 'border-red-500/60 text-red-400 hover:bg-red-500/20',
+                    feature: 'border-emerald-500/60 text-emerald-400 hover:bg-emerald-500/20',
+                  };
+                  const activeStyles: Record<string, string> = {
+                    announcement: 'bg-blue-500/20',
+                    update: 'bg-green-500/20',
+                    event: 'bg-purple-500/20',
+                    warning: 'bg-yellow-500/20',
+                    'bug-fix': 'bg-red-500/20',
+                    feature: 'bg-emerald-500/20',
+                  };
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setEditTag(editTag === t ? null : t)}
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium mc-text border transition-colors ${tagStyles[t]} ${editTag === t ? activeStyles[t] : ''}`}
+                    >
+                      {t}
+                    </button>
+                  );
+                })}
+              </div>
               <div className="flex items-center gap-2 justify-end">
                 <Button
                   variant="ghost"
