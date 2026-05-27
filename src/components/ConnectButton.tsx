@@ -39,7 +39,7 @@ export function ConnectButton() {
 
         {/* Avatar overlapping banner */}
         <div className="px-5 pb-5">
-          <div className="-mt-8 mb-3 flex items-end justify-between">
+          <div className="-mt-8 mb-3 flex items-end justify-between relative z-10">
             <div className="h-16 w-16 rounded-full border-4 border-background overflow-hidden shadow-lg">
               <img
                 src="https://styles.redditmedia.com/t5_hrz0mx/styles/communityIcon_anv7cuws850h1.png"
