@@ -95,6 +95,11 @@ export default function AdminPanel() {
 
   const toggleRole = async (userId: string, role: 'admin' | 'moderator') => {
     if (!user) return;
+    // Only the owner (bazicioschi) can grant or remove roles
+    if (!isOwner) {
+      toast({ title: 'Access denied', description: 'Only the server owner can manage roles.', variant: 'destructive' });
+      return;
+    }
     const targetUser = users.find(u => u.user_id === userId);
     if (!targetUser) return;
 
@@ -231,7 +236,8 @@ export default function AdminPanel() {
                 )}
               </div>
 
-              {/* Role management */}
+              {/* Role management — only visible to the owner */}
+              {isOwner && (
               <div className="mb-3">
                 <p className="text-xs text-muted-foreground mb-1.5 font-semibold uppercase">Roles</p>
                 <div className="flex flex-wrap gap-2">
@@ -255,6 +261,7 @@ export default function AdminPanel() {
                   </Button>
                 </div>
               </div>
+              )}
 
               {/* Restrictions */}
               <div>
