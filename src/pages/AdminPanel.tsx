@@ -20,7 +20,7 @@ interface UserWithRestrictions {
 
 export default function AdminPanel() {
   const { user } = useAuth();
-  const { isAdmin, canModerate, loading: adminLoading } = useAdmin();
+  const { isAdmin, isOwner, canModerate, loading: adminLoading } = useAdmin();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
