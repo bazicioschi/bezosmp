@@ -224,10 +224,10 @@ export default function AdminPanel() {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-foreground mc-text text-lg">@{u.username}</span>
-                  {u.roles.includes('admin') && (
+                  {isOwner && u.roles.includes('admin') && (
                     <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded font-bold">ADMIN</span>
                   )}
-                  {u.roles.includes('moderator') && (
+                  {isOwner && u.roles.includes('moderator') && (
                     <span className="text-xs bg-accent/20 text-accent-foreground px-2 py-0.5 rounded font-bold">MOD</span>
                   )}
                 </div>
