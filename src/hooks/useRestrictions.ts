@@ -25,6 +25,26 @@ export function useRestrictions(targetUserId?: string) {
 
       const now = new Date().toISOString();
       const active = (data ?? []).filter(r => !r.expires_at || r.expires_at > now);
+
+      // Also check localStorage for automod bans (RLS blocks DB writes for regular users)
+      const localBanRaw = localStorage.getItem(`automod_ban_${userId}`);
+      if (localBanRaw) {
+        try {
+          const localBan = JSON.parse(localBanRaw);
+          if (localBan.expires_at && localBan.expires_at > now) {
+            // Only add if not already present from DB
+            if (!active.find(r => r.restriction_type === 'banned')) {
+              active.push({ restriction_type: 'banned', expires_at: localBan.expires_at });
+            }
+          } else {
+            // Ban expired, clean up
+            localStorage.removeItem(`automod_ban_${userId}`);
+          }
+        } catch {
+          localStorage.removeItem(`automod_ban_${userId}`);
+        }
+      }
+
       setRestrictions(active.map(r => r.restriction_type));
 
       const suspRow = active.find(r => r.restriction_type === 'suspended');

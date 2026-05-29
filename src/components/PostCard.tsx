@@ -79,6 +79,7 @@ export function PostCard({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(content);
+  const [displayContent, setDisplayContent] = useState(content);
   const [isSaving, setIsSaving] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -253,14 +254,14 @@ export function PostCard({
 
   const handleEdit = () => {
     if (user?.id !== userId) return;
-    setEditContent(content);
+    setEditContent(displayContent);
     setIsEditing(true);
     playClick();
   };
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    setEditContent(content);
+    setEditContent(displayContent);
     playClick();
   };
 
@@ -273,7 +274,8 @@ export function PostCard({
     const { error } = await supabase
       .from('posts')
       .update({ content: editContent.trim() })
-      .eq('id', id);
+      .eq('id', id)
+      .eq('user_id', user.id);
     
     if (error) {
       toast({
@@ -282,6 +284,7 @@ export function PostCard({
         variant: 'destructive',
       });
     } else {
+      setDisplayContent(editContent.trim());
       toast({
         title: 'Post updated',
         description: 'Your post has been updated successfully.',
@@ -465,6 +468,7 @@ export function PostCard({
               <Textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
+                autoFocus
                 className="minecraft-input min-h-[80px] resize-none"
                 placeholder="What's on your mind?"
               />
@@ -491,7 +495,7 @@ export function PostCard({
               </div>
             </div>
           ) : (
-            <p className="mt-2 text-foreground whitespace-pre-wrap break-words leading-relaxed">{renderContentWithMentions(content)}</p>
+            <p className="mt-2 text-foreground whitespace-pre-wrap break-words leading-relaxed">{renderContentWithMentions(displayContent)}</p>
           )}
 
           {imageUrl && (() => {

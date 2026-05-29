@@ -125,6 +125,12 @@ export default function AdminPanel() {
     const targetUser = users.find(u => u.user_id === userId);
     if (!targetUser) return;
 
+    // Owners cannot be banned
+    if (type === 'banned' && targetUser.roles.includes('owner')) {
+      toast({ title: 'Action blocked', description: 'The server owner cannot be banned.', variant: 'destructive' });
+      return;
+    }
+
     if (targetUser.restrictions.includes(type)) {
       await supabase.from('user_restrictions').delete().eq('user_id', userId).eq('restriction_type', type);
       toast({ title: 'Restriction removed', description: `Removed ${type} from @${targetUser.username}` });
@@ -286,6 +292,8 @@ export default function AdminPanel() {
                     size="sm"
                     onClick={() => toggleRestriction(u.user_id, 'banned')}
                     className="gap-1"
+                    disabled={u.roles.includes('owner')}
+                    title={u.roles.includes('owner') ? 'Cannot ban the server owner' : undefined}
                   >
                     <Ban className="h-3 w-3" />
                     Ban

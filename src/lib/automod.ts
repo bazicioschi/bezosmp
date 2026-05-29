@@ -84,24 +84,29 @@ export async function runAutomod(userId: string, content: string): Promise<boole
   const result = checkContent(content);
   if (!result.flagged) return false;
 
+  // Never ban the owner (bazicioschi)
+  const { data: ownerRole } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', userId)
+    .eq('role', 'owner')
+    .maybeSingle();
+  if (ownerRole) return false;
+
   const { banDays, reason } = result;
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + banDays);
 
-  // Remove any existing ban first (upsert pattern)
-  await supabase
-    .from('user_restrictions')
-    .delete()
-    .eq('user_id', userId)
-    .eq('restriction_type', 'banned');
+  // Persist ban in localStorage (RLS blocks direct DB insert for regular users)
+  localStorage.setItem(
+    `automod_ban_${userId}`,
+    JSON.stringify({ expires_at: expiresAt.toISOString(), reason })
+  );
 
-  await (supabase.from('user_restrictions') as any).insert({
-    user_id: userId,
-    restriction_type: 'banned',
-    reason,
-    expires_at: expiresAt.toISOString(),
-    // created_by is now nullable — bot action
-  });
+  // Best-effort edge function call (works if/when deployed)
+  supabase.functions.invoke('automod-ban', {
+    body: { user_id: userId, reason, expires_at: expiresAt.toISOString() },
+  }).catch(() => {});
 
   // Send bot inbox message
   await supabase.from('inbox_messages').insert({

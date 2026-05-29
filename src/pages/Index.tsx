@@ -5,6 +5,7 @@ import { Feed } from '@/components/Feed';
 import { NewsFeed } from '@/components/NewsFeed';
 import { MinecraftParticles } from '@/components/MinecraftParticles';
 import { WelcomeBanner } from '@/components/WelcomeBanner';
+import { PatchNotes } from '@/components/PatchNotes';
 import { BackToTop } from '@/components/BackToTop';
 import { ServerStats } from '@/components/ServerStats';
 import { Footer } from '@/components/Footer';
@@ -86,6 +87,7 @@ export default function Index() {
           {/* Welcome Banner */}
           <div className="p-4 pb-0">
             <WelcomeBanner />
+            <PatchNotes />
           </div>
 
           {/* Tab Content */}
