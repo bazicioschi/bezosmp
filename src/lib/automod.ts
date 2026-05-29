@@ -97,7 +97,13 @@ export async function runAutomod(userId: string, content: string): Promise<boole
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + banDays);
 
-  // Persist ban in localStorage (RLS blocks direct DB insert for regular users)
+  // Write ban expiry to the user's own profile row (bypasses RLS — user can update their own profile)
+  await supabase
+    .from('profiles')
+    .update({ automod_banned_until: expiresAt.toISOString() })
+    .eq('user_id', userId);
+
+  // Also store in localStorage as instant local fallback
   localStorage.setItem(
     `automod_ban_${userId}`,
     JSON.stringify({ expires_at: expiresAt.toISOString(), reason })

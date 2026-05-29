@@ -18,26 +18,38 @@ export function useRestrictions(targetUserId?: string) {
     }
 
     const fetch = async () => {
-      const { data } = await supabase
-        .from('user_restrictions')
-        .select('restriction_type, expires_at')
-        .eq('user_id', userId);
+      const [{ data: restrictionRows }, { data: profile }] = await Promise.all([
+        supabase
+          .from('user_restrictions')
+          .select('restriction_type, expires_at')
+          .eq('user_id', userId),
+        supabase
+          .from('profiles')
+          .select('automod_banned_until')
+          .eq('user_id', userId)
+          .maybeSingle(),
+      ]);
 
       const now = new Date().toISOString();
-      const active = (data ?? []).filter(r => !r.expires_at || r.expires_at > now);
+      const active = (restrictionRows ?? []).filter(r => !r.expires_at || r.expires_at > now);
 
-      // Also check localStorage for automod bans (RLS blocks DB writes for regular users)
+      // Check server-side automod ban stored in profile
+      if (profile?.automod_banned_until && profile.automod_banned_until > now) {
+        if (!active.find(r => r.restriction_type === 'banned')) {
+          active.push({ restriction_type: 'banned', expires_at: profile.automod_banned_until });
+        }
+      }
+
+      // Also check localStorage as instant local fallback
       const localBanRaw = localStorage.getItem(`automod_ban_${userId}`);
       if (localBanRaw) {
         try {
           const localBan = JSON.parse(localBanRaw);
           if (localBan.expires_at && localBan.expires_at > now) {
-            // Only add if not already present from DB
             if (!active.find(r => r.restriction_type === 'banned')) {
               active.push({ restriction_type: 'banned', expires_at: localBan.expires_at });
             }
           } else {
-            // Ban expired, clean up
             localStorage.removeItem(`automod_ban_${userId}`);
           }
         } catch {
