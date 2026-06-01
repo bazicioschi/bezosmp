@@ -58,15 +58,16 @@ export default function AdminPanel() {
     if (profiles) {
       const userIds = profiles.map(p => p.user_id);
 
-      const [{ data: restrictions }, { data: roles }] = await Promise.all([
+      const [{ data: restrictions }, { data: roles }, { data: verifications }] = await Promise.all([
         supabase.from('user_restrictions').select('user_id, restriction_type, expires_at').in('user_id', userIds),
         supabase.from('user_roles').select('user_id, role').in('user_id', userIds),
+        supabase.from('user_verifications').select('user_id').in('user_id', userIds),
       ]);
 
       const now = new Date().toISOString();
       const restrictionsMap = new Map<string, string[]>();
       const suspendedUntilMap = new Map<string, string | null>();
-      restrictions?.forEach(r => {
+      restrictions?.forEach((r: any) => {
         if (r.expires_at && r.expires_at <= now) return; // skip expired
         const existing = restrictionsMap.get(r.user_id) || [];
         existing.push(r.restriction_type);
@@ -83,12 +84,15 @@ export default function AdminPanel() {
         rolesMap.set(r.user_id, existing);
       });
 
+      const verifiedSet = new Set<string>((verifications || []).map((v: any) => v.user_id));
+
       setUsers(profiles.map(p => ({
         user_id: p.user_id,
         username: p.username,
         restrictions: restrictionsMap.get(p.user_id) || [],
         suspendedUntil: suspendedUntilMap.get(p.user_id) ?? null,
         roles: rolesMap.get(p.user_id) || [],
+        verified: verifiedSet.has(p.user_id),
       })));
     }
     setLoading(false);
