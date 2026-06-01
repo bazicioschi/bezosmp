@@ -256,6 +256,9 @@ export default function AdminPanel() {
                   {u.roles.includes('moderator') && (
                     <span className="text-xs bg-accent/20 text-accent-foreground px-2 py-0.5 rounded font-bold">MOD</span>
                   )}
+                  {u.verified && (
+                    <BadgeCheck className="h-4 w-4 text-primary fill-primary/20" />
+                  )}
                 </div>
                 {u.restrictions.filter(r => r !== 'suspended').length > 0 && (
                   <span className="text-xs text-destructive">{u.restrictions.filter(r => r !== 'suspended').length} restriction(s)</span>
