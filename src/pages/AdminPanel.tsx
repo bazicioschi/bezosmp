@@ -9,6 +9,7 @@ import { useAdmin } from '@/hooks/useAdmin';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 type BadgeColor = 'default' | 'red' | 'blue' | 'green' | 'gold' | 'purple' | 'pink' | 'cyan';
 
