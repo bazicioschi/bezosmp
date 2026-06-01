@@ -42,6 +42,15 @@ export default function AdminPanel() {
   const [users, setUsers] = useState<UserWithRestrictions[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [myUsername, setMyUsername] = useState<string>('');
+
+  const isBazicioschi = myUsername.toLowerCase() === 'bazicioschi' && isOwner;
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('profiles').select('username').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => setMyUsername(data?.username || ''));
+  }, [user]);
 
   useEffect(() => {
     if (!adminLoading && !canModerate) {
