@@ -288,6 +288,15 @@ export default function AdminPanel() {
                     <ShieldCheck className="h-3 w-3" />
                     Moderator
                   </Button>
+                  <Button
+                    variant={u.verified ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => toggleVerified(u.user_id)}
+                    className="gap-1"
+                  >
+                    <BadgeCheck className="h-3 w-3" />
+                    {u.verified ? 'Verified' : 'Verify'}
+                  </Button>
                 </div>
               </div>
               )}
