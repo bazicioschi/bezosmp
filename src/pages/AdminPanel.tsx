@@ -10,6 +10,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
+type BadgeColor = 'default' | 'red' | 'blue' | 'green' | 'gold' | 'purple' | 'pink' | 'cyan';
+
 interface UserWithRestrictions {
   user_id: string;
   username: string;
@@ -17,7 +19,19 @@ interface UserWithRestrictions {
   suspendedUntil: string | null;
   roles: string[];
   verified: boolean;
+  badgeColor: BadgeColor | null;
 }
+
+const BADGE_COLORS: { value: BadgeColor; label: string; swatch: string }[] = [
+  { value: 'default', label: 'Default (theme)', swatch: 'bg-primary' },
+  { value: 'red',     label: 'Red',     swatch: 'bg-red-500' },
+  { value: 'blue',    label: 'Blue',    swatch: 'bg-blue-500' },
+  { value: 'green',   label: 'Green',   swatch: 'bg-green-500' },
+  { value: 'gold',    label: 'Gold',    swatch: 'bg-yellow-400' },
+  { value: 'purple',  label: 'Purple',  swatch: 'bg-purple-500' },
+  { value: 'pink',    label: 'Pink',    swatch: 'bg-pink-500' },
+  { value: 'cyan',    label: 'Cyan',    swatch: 'bg-cyan-400' },
+];
 
 export default function AdminPanel() {
   const { user } = useAuth();
