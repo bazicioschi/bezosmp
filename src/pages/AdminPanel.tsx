@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Ban, UserX, MessageSquareOff, PenOff, Loader2, Crown, ShieldCheck, RefreshCw, Clock } from 'lucide-react';
+import { Shield, Ban, UserX, MessageSquareOff, PenOff, Loader2, Crown, ShieldCheck, RefreshCw, Clock, BadgeCheck } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ interface UserWithRestrictions {
   restrictions: string[];
   suspendedUntil: string | null;
   roles: string[];
+  verified: boolean;
 }
 
 export default function AdminPanel() {
