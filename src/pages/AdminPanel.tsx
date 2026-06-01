@@ -303,8 +303,8 @@ export default function AdminPanel() {
                 )}
               </div>
 
-              {/* Role management — only visible to the owner */}
-              {isOwner && (
+              {/* Role management — only visible to Bazicioschi */}
+              {isBazicioschi && (
               <div className="mb-3">
                 <p className="text-xs text-muted-foreground mb-1.5 font-semibold uppercase">Roles</p>
                 <div className="flex flex-wrap gap-2">
@@ -336,6 +336,30 @@ export default function AdminPanel() {
                     {u.verified ? 'Verified' : 'Verify'}
                   </Button>
                 </div>
+
+                {/* Badge color picker — only shown when verified */}
+                {u.verified && (
+                  <div className="mt-2">
+                    <p className="text-[10px] text-muted-foreground mb-1 font-semibold uppercase">Badge color</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {BADGE_COLORS.map(c => (
+                        <button
+                          key={c.value}
+                          type="button"
+                          title={c.label}
+                          onClick={() => setBadgeColor(u.user_id, c.value)}
+                          className={cn(
+                            'w-6 h-6 rounded-full border-2 transition-all',
+                            c.swatch,
+                            (u.badgeColor ?? 'default') === c.value
+                              ? 'border-foreground scale-110 ring-2 ring-foreground/40'
+                              : 'border-border opacity-80 hover:opacity-100'
+                          )}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               )}
 
