@@ -15,6 +15,7 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useTheme } from '@/hooks/useTheme';
 import { useAdmin } from '@/hooks/useAdmin';
 import { parseBioPrivacy, type SocialLink } from '@/lib/utils';
+import { VerifiedBadge } from '@/components/VerifiedBadge';
 
 interface Profile {
   id: string;
@@ -348,6 +349,7 @@ export default function UserProfile() {
         <div className="px-4 pt-12 pb-4">
           <h1 className={`font-display text-xl font-bold flex items-center gap-2 ${theme === 'bazimazi' ? 'text-black' : 'text-white'}`}>
             {profile.username}
+            <VerifiedBadge userId={profile.user_id} className="[&>svg]:h-5 [&>svg]:w-5" />
           </h1>
           
           {profile.bio && !isPrivate && (

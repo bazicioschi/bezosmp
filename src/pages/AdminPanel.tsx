@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Ban, UserX, MessageSquareOff, PenOff, Loader2, Crown, ShieldCheck, RefreshCw, Clock } from 'lucide-react';
+import { Shield, Ban, UserX, MessageSquareOff, PenOff, Loader2, Crown, ShieldCheck, RefreshCw, Clock, BadgeCheck } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ interface UserWithRestrictions {
   restrictions: string[];
   suspendedUntil: string | null;
   roles: string[];
+  verified: boolean;
 }
 
 export default function AdminPanel() {
@@ -57,15 +58,16 @@ export default function AdminPanel() {
     if (profiles) {
       const userIds = profiles.map(p => p.user_id);
 
-      const [{ data: restrictions }, { data: roles }] = await Promise.all([
+      const [{ data: restrictions }, { data: roles }, { data: verifications }] = await Promise.all([
         supabase.from('user_restrictions').select('user_id, restriction_type, expires_at').in('user_id', userIds),
         supabase.from('user_roles').select('user_id, role').in('user_id', userIds),
+        supabase.from('user_verifications').select('user_id').in('user_id', userIds),
       ]);
 
       const now = new Date().toISOString();
       const restrictionsMap = new Map<string, string[]>();
       const suspendedUntilMap = new Map<string, string | null>();
-      restrictions?.forEach(r => {
+      restrictions?.forEach((r: any) => {
         if (r.expires_at && r.expires_at <= now) return; // skip expired
         const existing = restrictionsMap.get(r.user_id) || [];
         existing.push(r.restriction_type);
@@ -82,12 +84,15 @@ export default function AdminPanel() {
         rolesMap.set(r.user_id, existing);
       });
 
+      const verifiedSet = new Set<string>((verifications || []).map((v: any) => v.user_id));
+
       setUsers(profiles.map(p => ({
         user_id: p.user_id,
         username: p.username,
         restrictions: restrictionsMap.get(p.user_id) || [],
         suspendedUntil: suspendedUntilMap.get(p.user_id) ?? null,
         roles: rolesMap.get(p.user_id) || [],
+        verified: verifiedSet.has(p.user_id),
       })));
     }
     setLoading(false);
@@ -122,6 +127,27 @@ export default function AdminPanel() {
       await supabase.from('user_roles').insert({ user_id: userId, role });
       toast({ title: 'Role granted', description: `Granted ${role} to @${targetUser.username}` });
     }
+    searchUsers();
+  };
+
+  const toggleVerified = async (userId: string) => {
+    if (!user) return;
+    if (!isOwner) {
+      toast({ title: 'Access denied', description: 'Only Bazicioschi can verify users.', variant: 'destructive' });
+      return;
+    }
+    const targetUser = users.find(u => u.user_id === userId);
+    if (!targetUser) return;
+
+    if (targetUser.verified) {
+      await supabase.from('user_verifications').delete().eq('user_id', userId);
+      toast({ title: 'Verification removed', description: `@${targetUser.username} is no longer verified` });
+    } else {
+      await supabase.from('user_verifications').insert({ user_id: userId, granted_by: user.id });
+      toast({ title: 'User verified', description: `@${targetUser.username} is now verified` });
+    }
+    const { refreshVerified } = await import('@/hooks/useVerified');
+    refreshVerified();
     searchUsers();
   };
 
@@ -230,6 +256,9 @@ export default function AdminPanel() {
                   {u.roles.includes('moderator') && (
                     <span className="text-xs bg-accent/20 text-accent-foreground px-2 py-0.5 rounded font-bold">MOD</span>
                   )}
+                  {u.verified && (
+                    <BadgeCheck className="h-4 w-4 text-primary fill-primary/20" />
+                  )}
                 </div>
                 {u.restrictions.filter(r => r !== 'suspended').length > 0 && (
                   <span className="text-xs text-destructive">{u.restrictions.filter(r => r !== 'suspended').length} restriction(s)</span>
@@ -258,6 +287,15 @@ export default function AdminPanel() {
                   >
                     <ShieldCheck className="h-3 w-3" />
                     Moderator
+                  </Button>
+                  <Button
+                    variant={u.verified ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => toggleVerified(u.user_id)}
+                    className="gap-1"
+                  >
+                    <BadgeCheck className="h-3 w-3" />
+                    {u.verified ? 'Verified' : 'Verify'}
                   </Button>
                 </div>
               </div>

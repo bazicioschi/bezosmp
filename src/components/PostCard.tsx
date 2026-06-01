@@ -27,6 +27,7 @@ import { useAdmin } from '@/hooks/useAdmin';
 import { useRestrictions } from '@/hooks/useRestrictions';
 import { QuickReactions } from './QuickReactions';
 import { SharePostDialog } from './SharePostDialog';
+import { VerifiedBadge } from './VerifiedBadge';
 
 interface PostCardProps {
   id: string;
@@ -315,10 +316,11 @@ export function PostCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span 
-              className="font-semibold text-foreground cursor-pointer hover:text-primary transition-colors mc-text text-lg"
+              className="font-semibold text-foreground cursor-pointer hover:text-primary transition-colors mc-text text-lg inline-flex items-center gap-1"
               onClick={handleProfileClick}
             >
               {username}
+              <VerifiedBadge userId={userId} />
             </span>
             {(coAuthorId && coAuthorUsername) || collaborators.length > 0 ? (
               <span className="flex items-center gap-1 text-muted-foreground text-sm">
