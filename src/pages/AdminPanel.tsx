@@ -9,6 +9,9 @@ import { useAdmin } from '@/hooks/useAdmin';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+
+type BadgeColor = 'default' | 'red' | 'blue' | 'green' | 'gold' | 'purple' | 'pink' | 'cyan';
 
 interface UserWithRestrictions {
   user_id: string;
@@ -17,7 +20,19 @@ interface UserWithRestrictions {
   suspendedUntil: string | null;
   roles: string[];
   verified: boolean;
+  badgeColor: BadgeColor | null;
 }
+
+const BADGE_COLORS: { value: BadgeColor; label: string; swatch: string }[] = [
+  { value: 'default', label: 'Default (theme)', swatch: 'bg-primary' },
+  { value: 'red',     label: 'Red',     swatch: 'bg-red-500' },
+  { value: 'blue',    label: 'Blue',    swatch: 'bg-blue-500' },
+  { value: 'green',   label: 'Green',   swatch: 'bg-green-500' },
+  { value: 'gold',    label: 'Gold',    swatch: 'bg-yellow-400' },
+  { value: 'purple',  label: 'Purple',  swatch: 'bg-purple-500' },
+  { value: 'pink',    label: 'Pink',    swatch: 'bg-pink-500' },
+  { value: 'cyan',    label: 'Cyan',    swatch: 'bg-cyan-400' },
+];
 
 export default function AdminPanel() {
   const { user } = useAuth();
@@ -28,6 +43,15 @@ export default function AdminPanel() {
   const [users, setUsers] = useState<UserWithRestrictions[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [myUsername, setMyUsername] = useState<string>('');
+
+  const isBazicioschi = myUsername.toLowerCase() === 'bazicioschi' && isOwner;
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('profiles').select('username').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => setMyUsername(data?.username || ''));
+  }, [user]);
 
   useEffect(() => {
     if (!adminLoading && !canModerate) {
@@ -61,7 +85,7 @@ export default function AdminPanel() {
       const [{ data: restrictions }, { data: roles }, { data: verifications }] = await Promise.all([
         supabase.from('user_restrictions').select('user_id, restriction_type, expires_at').in('user_id', userIds),
         supabase.from('user_roles').select('user_id, role').in('user_id', userIds),
-        supabase.from('user_verifications').select('user_id').in('user_id', userIds),
+        supabase.from('user_verifications').select('user_id, badge_color').in('user_id', userIds),
       ]);
 
       const now = new Date().toISOString();
@@ -84,7 +108,10 @@ export default function AdminPanel() {
         rolesMap.set(r.user_id, existing);
       });
 
-      const verifiedSet = new Set<string>((verifications || []).map((v: any) => v.user_id));
+      const verifiedMap = new Map<string, BadgeColor>();
+      (verifications || []).forEach((v: any) => {
+        verifiedMap.set(v.user_id, (v.badge_color as BadgeColor) || 'default');
+      });
 
       setUsers(profiles.map(p => ({
         user_id: p.user_id,
@@ -92,7 +119,8 @@ export default function AdminPanel() {
         restrictions: restrictionsMap.get(p.user_id) || [],
         suspendedUntil: suspendedUntilMap.get(p.user_id) ?? null,
         roles: rolesMap.get(p.user_id) || [],
-        verified: verifiedSet.has(p.user_id),
+        verified: verifiedMap.has(p.user_id),
+        badgeColor: verifiedMap.get(p.user_id) ?? null,
       })));
     }
     setLoading(false);
@@ -100,9 +128,9 @@ export default function AdminPanel() {
 
   const toggleRole = async (userId: string, role: 'admin' | 'moderator') => {
     if (!user) return;
-    // Only the owner (bazicioschi) can grant or remove roles
-    if (!isOwner) {
-      toast({ title: 'Access denied', description: 'Only the server owner can manage roles.', variant: 'destructive' });
+    // Only Bazicioschi (the server owner) can grant or remove roles
+    if (!isBazicioschi) {
+      toast({ title: 'Access denied', description: 'Only Bazicioschi can manage roles.', variant: 'destructive' });
       return;
     }
     const targetUser = users.find(u => u.user_id === userId);
@@ -132,7 +160,7 @@ export default function AdminPanel() {
 
   const toggleVerified = async (userId: string) => {
     if (!user) return;
-    if (!isOwner) {
+    if (!isBazicioschi) {
       toast({ title: 'Access denied', description: 'Only Bazicioschi can verify users.', variant: 'destructive' });
       return;
     }
@@ -143,9 +171,20 @@ export default function AdminPanel() {
       await supabase.from('user_verifications').delete().eq('user_id', userId);
       toast({ title: 'Verification removed', description: `@${targetUser.username} is no longer verified` });
     } else {
-      await supabase.from('user_verifications').insert({ user_id: userId, granted_by: user.id });
+      await supabase.from('user_verifications').insert({ user_id: userId, granted_by: user.id, badge_color: 'default' } as any);
       toast({ title: 'User verified', description: `@${targetUser.username} is now verified` });
     }
+    const { refreshVerified } = await import('@/hooks/useVerified');
+    refreshVerified();
+    searchUsers();
+  };
+
+  const setBadgeColor = async (userId: string, color: BadgeColor) => {
+    if (!user || !isBazicioschi) return;
+    const targetUser = users.find(u => u.user_id === userId);
+    if (!targetUser || !targetUser.verified) return;
+    await (supabase.from('user_verifications') as any).update({ badge_color: color }).eq('user_id', userId);
+    toast({ title: 'Badge color updated', description: `@${targetUser.username}: ${color}` });
     const { refreshVerified } = await import('@/hooks/useVerified');
     refreshVerified();
     searchUsers();
@@ -265,8 +304,8 @@ export default function AdminPanel() {
                 )}
               </div>
 
-              {/* Role management — only visible to the owner */}
-              {isOwner && (
+              {/* Role management — only visible to Bazicioschi */}
+              {isBazicioschi && (
               <div className="mb-3">
                 <p className="text-xs text-muted-foreground mb-1.5 font-semibold uppercase">Roles</p>
                 <div className="flex flex-wrap gap-2">
@@ -298,6 +337,30 @@ export default function AdminPanel() {
                     {u.verified ? 'Verified' : 'Verify'}
                   </Button>
                 </div>
+
+                {/* Badge color picker — only shown when verified */}
+                {u.verified && (
+                  <div className="mt-2">
+                    <p className="text-[10px] text-muted-foreground mb-1 font-semibold uppercase">Badge color</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {BADGE_COLORS.map(c => (
+                        <button
+                          key={c.value}
+                          type="button"
+                          title={c.label}
+                          onClick={() => setBadgeColor(u.user_id, c.value)}
+                          className={cn(
+                            'w-6 h-6 rounded-full border-2 transition-all',
+                            c.swatch,
+                            (u.badgeColor ?? 'default') === c.value
+                              ? 'border-foreground scale-110 ring-2 ring-foreground/40'
+                              : 'border-border opacity-80 hover:opacity-100'
+                          )}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               )}
 

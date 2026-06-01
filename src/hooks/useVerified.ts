@@ -1,21 +1,27 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-// Module-level cache so we don't refetch the whole set per component.
-let cache: Set<string> | null = null;
-let pending: Promise<Set<string>> | null = null;
-const listeners = new Set<(s: Set<string>) => void>();
+export type BadgeColor = 'default' | 'red' | 'blue' | 'green' | 'gold' | 'purple' | 'pink' | 'cyan';
 
-async function loadVerified(): Promise<Set<string>> {
+type VerifMap = Map<string, BadgeColor>;
+
+let cache: VerifMap | null = null;
+let pending: Promise<VerifMap> | null = null;
+const listeners = new Set<(m: VerifMap) => void>();
+
+async function loadVerified(): Promise<VerifMap> {
   if (cache) return cache;
   if (pending) return pending;
   pending = (async () => {
-    const { data } = await supabase.from('user_verifications').select('user_id');
-    const set = new Set<string>((data || []).map((r: any) => r.user_id));
-    cache = set;
+    const { data } = await supabase.from('user_verifications').select('user_id, badge_color');
+    const map: VerifMap = new Map();
+    (data || []).forEach((r: any) => {
+      map.set(r.user_id, (r.badge_color as BadgeColor) || 'default');
+    });
+    cache = map;
     pending = null;
-    listeners.forEach((l) => l(set));
-    return set;
+    listeners.forEach((l) => l(map));
+    return map;
   })();
   return pending;
 }
@@ -25,18 +31,30 @@ export function refreshVerified() {
   return loadVerified();
 }
 
-export function useVerifiedSet() {
-  const [set, setSet] = useState<Set<string>>(cache ?? new Set());
+export function useVerifiedMap() {
+  const [map, setMap] = useState<VerifMap>(cache ?? new Map());
   useEffect(() => {
-    loadVerified().then(setSet);
-    const l = (s: Set<string>) => setSet(new Set(s));
+    loadVerified().then(setMap);
+    const l = (m: VerifMap) => setMap(new Map(m));
     listeners.add(l);
     return () => { listeners.delete(l); };
   }, []);
-  return set;
+  return map;
+}
+
+// Back-compat
+export function useVerifiedSet() {
+  const map = useVerifiedMap();
+  return new Set(map.keys());
 }
 
 export function useIsVerified(userId?: string | null) {
-  const set = useVerifiedSet();
-  return !!userId && set.has(userId);
+  const map = useVerifiedMap();
+  return !!userId && map.has(userId);
+}
+
+export function useVerifiedColor(userId?: string | null): BadgeColor | null {
+  const map = useVerifiedMap();
+  if (!userId) return null;
+  return map.get(userId) ?? null;
 }

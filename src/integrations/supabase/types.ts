@@ -550,18 +550,21 @@ export type Database = {
       }
       user_verifications: {
         Row: {
+          badge_color: string | null
           created_at: string
           granted_by: string
           id: string
           user_id: string
         }
         Insert: {
+          badge_color?: string | null
           created_at?: string
           granted_by: string
           id?: string
           user_id: string
         }
         Update: {
+          badge_color?: string | null
           created_at?: string
           granted_by?: string
           id?: string
