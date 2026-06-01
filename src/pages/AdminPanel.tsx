@@ -75,7 +75,7 @@ export default function AdminPanel() {
       const [{ data: restrictions }, { data: roles }, { data: verifications }] = await Promise.all([
         supabase.from('user_restrictions').select('user_id, restriction_type, expires_at').in('user_id', userIds),
         supabase.from('user_roles').select('user_id, role').in('user_id', userIds),
-        supabase.from('user_verifications').select('user_id').in('user_id', userIds),
+        supabase.from('user_verifications').select('user_id, badge_color').in('user_id', userIds),
       ]);
 
       const now = new Date().toISOString();
@@ -98,7 +98,10 @@ export default function AdminPanel() {
         rolesMap.set(r.user_id, existing);
       });
 
-      const verifiedSet = new Set<string>((verifications || []).map((v: any) => v.user_id));
+      const verifiedMap = new Map<string, BadgeColor>();
+      (verifications || []).forEach((v: any) => {
+        verifiedMap.set(v.user_id, (v.badge_color as BadgeColor) || 'default');
+      });
 
       setUsers(profiles.map(p => ({
         user_id: p.user_id,
@@ -106,7 +109,8 @@ export default function AdminPanel() {
         restrictions: restrictionsMap.get(p.user_id) || [],
         suspendedUntil: suspendedUntilMap.get(p.user_id) ?? null,
         roles: rolesMap.get(p.user_id) || [],
-        verified: verifiedSet.has(p.user_id),
+        verified: verifiedMap.has(p.user_id),
+        badgeColor: verifiedMap.get(p.user_id) ?? null,
       })));
     }
     setLoading(false);
