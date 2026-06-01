@@ -127,9 +127,9 @@ export default function AdminPanel() {
 
   const toggleRole = async (userId: string, role: 'admin' | 'moderator') => {
     if (!user) return;
-    // Only the owner (bazicioschi) can grant or remove roles
-    if (!isOwner) {
-      toast({ title: 'Access denied', description: 'Only the server owner can manage roles.', variant: 'destructive' });
+    // Only Bazicioschi (the server owner) can grant or remove roles
+    if (!isBazicioschi) {
+      toast({ title: 'Access denied', description: 'Only Bazicioschi can manage roles.', variant: 'destructive' });
       return;
     }
     const targetUser = users.find(u => u.user_id === userId);
@@ -159,7 +159,7 @@ export default function AdminPanel() {
 
   const toggleVerified = async (userId: string) => {
     if (!user) return;
-    if (!isOwner) {
+    if (!isBazicioschi) {
       toast({ title: 'Access denied', description: 'Only Bazicioschi can verify users.', variant: 'destructive' });
       return;
     }
@@ -170,9 +170,20 @@ export default function AdminPanel() {
       await supabase.from('user_verifications').delete().eq('user_id', userId);
       toast({ title: 'Verification removed', description: `@${targetUser.username} is no longer verified` });
     } else {
-      await supabase.from('user_verifications').insert({ user_id: userId, granted_by: user.id });
+      await supabase.from('user_verifications').insert({ user_id: userId, granted_by: user.id, badge_color: 'default' } as any);
       toast({ title: 'User verified', description: `@${targetUser.username} is now verified` });
     }
+    const { refreshVerified } = await import('@/hooks/useVerified');
+    refreshVerified();
+    searchUsers();
+  };
+
+  const setBadgeColor = async (userId: string, color: BadgeColor) => {
+    if (!user || !isBazicioschi) return;
+    const targetUser = users.find(u => u.user_id === userId);
+    if (!targetUser || !targetUser.verified) return;
+    await (supabase.from('user_verifications') as any).update({ badge_color: color }).eq('user_id', userId);
+    toast({ title: 'Badge color updated', description: `@${targetUser.username}: ${color}` });
     const { refreshVerified } = await import('@/hooks/useVerified');
     refreshVerified();
     searchUsers();
