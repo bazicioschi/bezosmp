@@ -130,6 +130,27 @@ export default function AdminPanel() {
     searchUsers();
   };
 
+  const toggleVerified = async (userId: string) => {
+    if (!user) return;
+    if (!isOwner) {
+      toast({ title: 'Access denied', description: 'Only Bazicioschi can verify users.', variant: 'destructive' });
+      return;
+    }
+    const targetUser = users.find(u => u.user_id === userId);
+    if (!targetUser) return;
+
+    if (targetUser.verified) {
+      await supabase.from('user_verifications').delete().eq('user_id', userId);
+      toast({ title: 'Verification removed', description: `@${targetUser.username} is no longer verified` });
+    } else {
+      await supabase.from('user_verifications').insert({ user_id: userId, granted_by: user.id });
+      toast({ title: 'User verified', description: `@${targetUser.username} is now verified` });
+    }
+    const { refreshVerified } = await import('@/hooks/useVerified');
+    refreshVerified();
+    searchUsers();
+  };
+
   const toggleRestriction = async (userId: string, type: string) => {
     if (!user) return;
     const targetUser = users.find(u => u.user_id === userId);
