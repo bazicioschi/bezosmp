@@ -283,8 +283,9 @@ export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: Com
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
                 <div>
-                  <span className="font-display font-medium text-sm text-foreground">
+                  <span className="font-display font-medium text-sm text-foreground inline-flex items-center gap-1">
                     {comment.username}
+                    <VerifiedBadge userId={comment.user_id} />
                   </span>
                   <span className="ml-2 text-xs text-muted-foreground">
                     {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
