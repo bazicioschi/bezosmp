@@ -339,6 +339,7 @@ export type Database = {
       }
       posts: {
         Row: {
+          blocked: boolean
           co_author_id: string | null
           content: string
           created_at: string
@@ -350,6 +351,7 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
+          blocked?: boolean
           co_author_id?: string | null
           content: string
           created_at?: string
@@ -361,6 +363,7 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
+          blocked?: boolean
           co_author_id?: string | null
           content?: string
           created_at?: string
@@ -375,31 +378,37 @@ export type Database = {
       }
       profiles: {
         Row: {
+          automod_banned_until: string | null
           avatar_url: string | null
           banner_url: string | null
           bio: string | null
           created_at: string
           id: string
+          is_private: boolean
           updated_at: string
           user_id: string
           username: string
         }
         Insert: {
+          automod_banned_until?: string | null
           avatar_url?: string | null
           banner_url?: string | null
           bio?: string | null
           created_at?: string
           id?: string
+          is_private?: boolean
           updated_at?: string
           user_id: string
           username: string
         }
         Update: {
+          automod_banned_until?: string | null
           avatar_url?: string | null
           banner_url?: string | null
           bio?: string | null
           created_at?: string
           id?: string
+          is_private?: boolean
           updated_at?: string
           user_id?: string
           username?: string
@@ -507,6 +516,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string
+          expires_at: string | null
           id: string
           reason: string | null
           restriction_type: string
@@ -515,6 +525,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by: string
+          expires_at?: string | null
           id?: string
           reason?: string | null
           restriction_type: string
@@ -523,6 +534,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string
+          expires_at?: string | null
           id?: string
           reason?: string | null
           restriction_type?: string
@@ -577,6 +589,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_suspension_expiry: {
+        Args: { target_user_id: string }
+        Returns: string
+      }
       has_restriction: {
         Args: { _type: string; _user_id: string }
         Returns: boolean
@@ -588,6 +604,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_user_suspended: { Args: { target_user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "owner"
