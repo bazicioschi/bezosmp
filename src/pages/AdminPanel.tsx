@@ -11,7 +11,11 @@ import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
-type BadgeColor = 'default' | 'red' | 'blue' | 'green' | 'gold' | 'purple' | 'pink' | 'cyan';
+type BadgeColor =
+  | 'default'
+  | 'red' | 'blue' | 'green' | 'gold' | 'purple' | 'pink' | 'cyan'
+  | 'orange' | 'lime' | 'teal' | 'indigo' | 'rose' | 'amber' | 'emerald'
+  | 'sky' | 'fuchsia' | 'violet' | 'slate' | 'white' | 'black' | 'rainbow';
 
 interface UserWithRestrictions {
   user_id: string;
@@ -26,12 +30,26 @@ interface UserWithRestrictions {
 const BADGE_COLORS: { value: BadgeColor; label: string; swatch: string }[] = [
   { value: 'default', label: 'Default (theme)', swatch: 'bg-primary' },
   { value: 'red',     label: 'Red',     swatch: 'bg-red-500' },
-  { value: 'blue',    label: 'Blue',    swatch: 'bg-blue-500' },
-  { value: 'green',   label: 'Green',   swatch: 'bg-green-500' },
+  { value: 'orange',  label: 'Orange',  swatch: 'bg-orange-500' },
+  { value: 'amber',   label: 'Amber',   swatch: 'bg-amber-500' },
   { value: 'gold',    label: 'Gold',    swatch: 'bg-yellow-400' },
-  { value: 'purple',  label: 'Purple',  swatch: 'bg-purple-500' },
-  { value: 'pink',    label: 'Pink',    swatch: 'bg-pink-500' },
+  { value: 'lime',    label: 'Lime',    swatch: 'bg-lime-400' },
+  { value: 'green',   label: 'Green',   swatch: 'bg-green-500' },
+  { value: 'emerald', label: 'Emerald', swatch: 'bg-emerald-500' },
+  { value: 'teal',    label: 'Teal',    swatch: 'bg-teal-400' },
   { value: 'cyan',    label: 'Cyan',    swatch: 'bg-cyan-400' },
+  { value: 'sky',     label: 'Sky',     swatch: 'bg-sky-400' },
+  { value: 'blue',    label: 'Blue',    swatch: 'bg-blue-500' },
+  { value: 'indigo',  label: 'Indigo',  swatch: 'bg-indigo-500' },
+  { value: 'violet',  label: 'Violet',  swatch: 'bg-violet-500' },
+  { value: 'purple',  label: 'Purple',  swatch: 'bg-purple-500' },
+  { value: 'fuchsia', label: 'Fuchsia', swatch: 'bg-fuchsia-500' },
+  { value: 'pink',    label: 'Pink',    swatch: 'bg-pink-500' },
+  { value: 'rose',    label: 'Rose',    swatch: 'bg-rose-500' },
+  { value: 'slate',   label: 'Slate',   swatch: 'bg-slate-400' },
+  { value: 'white',   label: 'White',   swatch: 'bg-white' },
+  { value: 'black',   label: 'Black',   swatch: 'bg-black' },
+  { value: 'rainbow', label: 'Rainbow', swatch: 'bg-gradient-to-r from-red-500 via-yellow-400 to-purple-500' },
 ];
 
 export default function AdminPanel() {
