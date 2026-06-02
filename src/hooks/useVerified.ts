@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-export type BadgeColor = 'default' | 'red' | 'blue' | 'green' | 'gold' | 'purple' | 'pink' | 'cyan';
+export type BadgeColor =
+  | 'default'
+  | 'red' | 'blue' | 'green' | 'gold' | 'purple' | 'pink' | 'cyan'
+  | 'orange' | 'lime' | 'teal' | 'indigo' | 'rose' | 'amber' | 'emerald'
+  | 'sky' | 'fuchsia' | 'violet' | 'slate' | 'white' | 'black'
+  | 'rainbow';
 
 type VerifMap = Map<string, BadgeColor>;
 
