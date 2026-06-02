@@ -10,6 +10,7 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useRestrictions } from '@/hooks/useRestrictions';
 import { runAutomod } from '@/lib/automod';
 import { useAdmin } from '@/hooks/useAdmin';
+import { VerifiedBadge } from '@/components/VerifiedBadge';
 
 interface Comment {
   id: string;
