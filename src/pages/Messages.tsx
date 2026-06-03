@@ -52,6 +52,7 @@ export default function Messages() {
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [recipient, setRecipient] = useState<Profile | null>(null);
+  const [ownProfile, setOwnProfile] = useState<Profile | null>(null);
   const [recipientOnline, setRecipientOnline] = useState(false);
   const [respondingInvite, setRespondingInvite] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -124,6 +125,13 @@ export default function Messages() {
     if (profileData) {
       setRecipient(profileData);
     }
+
+    const { data: ownData } = await supabase
+      .from('profiles')
+      .select('user_id, username, avatar_url')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (ownData) setOwnProfile(ownData);
 
     // Fetch messages between users
     const { data: messagesData } = await supabase
@@ -374,6 +382,10 @@ export default function Messages() {
                             : 'bg-secondary text-foreground'
                       }`}
                     >
+                      <div className={`flex items-center gap-1 mb-1 text-xs font-display font-semibold ${isOwn && !isCollabInvite ? 'text-primary-foreground/90' : 'text-foreground/80'}`}>
+                        <span>{isOwn ? (ownProfile?.username ?? 'You') : (recipient?.username ?? '')}</span>
+                        <VerifiedBadge userId={isOwn ? user?.id : recipientId} />
+                      </div>
                       {isCollabInvite && collab ? (
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 text-primary font-display font-semibold text-sm">
