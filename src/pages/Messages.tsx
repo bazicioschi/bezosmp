@@ -11,6 +11,8 @@ import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { PostLinkPreview } from '@/components/PostLinkPreview';
 import { useRestrictions } from '@/hooks/useRestrictions';
+import { VerifiedBadge } from '@/components/VerifiedBadge';
+import { useVerifiedColor } from '@/hooks/useVerified';
 
 interface CollabInvite {
   id: string;
