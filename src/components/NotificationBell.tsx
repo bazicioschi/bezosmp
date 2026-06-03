@@ -105,14 +105,21 @@ export function NotificationBell() {
                     {notification.type === 'new_ticket' && (
                       <AlertCircle className="h-4 w-4 text-primary" />
                     )}
+                    {notification.type === 'post_blocked' && (
+                      <Ban className="h-4 w-4 text-destructive" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm">
-                      <span className="font-semibold text-primary mc-text">{notification.senderName}</span>
+                    <p className="text-sm inline-flex items-center gap-1 flex-wrap">
+                      <span className="font-semibold text-primary mc-text inline-flex items-center gap-1">
+                        {notification.senderName}
+                        {notification.type !== 'post_blocked' && <VerifiedBadge userId={notification.senderId} />}
+                      </span>
                       <span className="text-muted-foreground">
                         {notification.type === 'message' ? ' sent you a message' :
                          notification.type === 'news' ? ' posted new news' :
                          notification.type === 'new_ticket' ? ' submitted a new ticket' :
+                         notification.type === 'post_blocked' ? ' Your post was blocked by a moderator' :
                          ' replied to your ticket'}
                       </span>
                     </p>
