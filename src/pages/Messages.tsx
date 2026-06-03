@@ -323,7 +323,7 @@ export default function Messages() {
               <div>
                 <span className="font-display font-semibold text-foreground glow-text inline-flex items-center gap-1">
                   {recipient.username}
-                  {recipientColor && <VerifiedBadge color={recipientColor} />}
+                  {recipientColor && <VerifiedBadge userId={recipientId} />}
                 </span>
                 <span className={`text-xs font-display ${recipientOnline ? 'text-primary' : 'text-muted-foreground'}`}>
                   {recipientOnline ? 'Online' : 'Offline'}
