@@ -382,6 +382,10 @@ export default function Messages() {
                             : 'bg-secondary text-foreground'
                       }`}
                     >
+                      <div className={`flex items-center gap-1 mb-1 text-xs font-display font-semibold ${isOwn && !isCollabInvite ? 'text-primary-foreground/90' : 'text-foreground/80'}`}>
+                        <span>{isOwn ? (ownProfile?.username ?? 'You') : (recipient?.username ?? '')}</span>
+                        <VerifiedBadge userId={isOwn ? user?.id : recipientId} />
+                      </div>
                       {isCollabInvite && collab ? (
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 text-primary font-display font-semibold text-sm">
