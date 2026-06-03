@@ -376,6 +376,33 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_view_requests: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          requester_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          requester_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          requester_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           automod_banned_until: string | null

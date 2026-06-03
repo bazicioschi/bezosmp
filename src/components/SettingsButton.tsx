@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Palette, User } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Palette, User, Bell } from 'lucide-react';
+import { useNotificationPrefs, NOTIF_CATEGORY_LABELS, type NotifCategory } from '@/hooks/useNotificationPrefs';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -19,6 +20,7 @@ export function SettingsButton() {
   const { theme, setTheme, setCustomColor, isDark, isLight, isBaziMazi, isCato, isPizza, isGhast, isBuzzy, isCustom } = useTheme();
   const [soundsEnabled, setSoundsEnabled] = useState(true);
   const { isEnabled, setEnabled } = useSoundEffects();
+  const { prefs: notifPrefs, setPref: setNotifPref } = useNotificationPrefs();
   const { user } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [username, setUsername] = useState<string>('');
@@ -134,6 +136,33 @@ export function SettingsButton() {
               className="data-[state=checked]:bg-primary"
             />
           </div>
+
+          {/* Notification Preferences */}
+          <div className="space-y-2 border-t-2 border-border pt-3">
+            <div className="flex items-center gap-3">
+              <div className="mc-slot h-9 w-9 flex items-center justify-center">
+                <Bell className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="mc-text text-sm text-foreground">NOTIFICATIONS</p>
+                <p className="text-xs text-muted-foreground">Pick what alerts you</p>
+              </div>
+            </div>
+            <div className="space-y-1.5 pl-1">
+              {(Object.keys(NOTIF_CATEGORY_LABELS) as NotifCategory[]).map((cat) => (
+                <div key={cat} className="flex items-center justify-between gap-2 py-1">
+                  <span className="text-xs text-foreground">{NOTIF_CATEGORY_LABELS[cat]}</span>
+                  <Switch
+                    checked={notifPrefs[cat]}
+                    onCheckedChange={(v) => { setNotifPref(cat, v); playClick(); }}
+                    className="data-[state=checked]:bg-primary"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+
 
           {/* Theme Selection */}
           <div className="space-y-3">

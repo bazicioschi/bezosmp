@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, MessageCircle, X, Ticket, AlertCircle, Newspaper, Ban } from 'lucide-react';
+import { Bell, MessageCircle, X, Ticket, AlertCircle, Newspaper, Ban, Heart, UserPlus } from 'lucide-react';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { Button } from '@/components/ui/button';
 import {
@@ -39,6 +39,10 @@ export function NotificationBell() {
       navigate('/');
     } else if (notification.type === 'post_blocked') {
       navigate('/');
+    } else if (notification.type === 'like') {
+      navigate(notification.postId ? `/?post=${notification.postId}` : '/');
+    } else if (notification.type === 'access_request') {
+      navigate(`/user/${notification.senderId}`);
     }
     clearNotification(notification.id);
     setOpen(false);
@@ -108,6 +112,12 @@ export function NotificationBell() {
                     {notification.type === 'post_blocked' && (
                       <Ban className="h-4 w-4 text-destructive" />
                     )}
+                    {notification.type === 'like' && (
+                      <Heart className="h-4 w-4 text-pink-500" />
+                    )}
+                    {notification.type === 'access_request' && (
+                      <UserPlus className="h-4 w-4 text-primary" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm inline-flex items-center gap-1 flex-wrap">
@@ -120,6 +130,8 @@ export function NotificationBell() {
                          notification.type === 'news' ? ' posted new news' :
                          notification.type === 'new_ticket' ? ' submitted a new ticket' :
                          notification.type === 'post_blocked' ? ' Your post was blocked by a moderator' :
+                         notification.type === 'like' ? ' liked your post' :
+                         notification.type === 'access_request' ? ' wants to view your private profile' :
                          ' replied to your ticket'}
                       </span>
                     </p>

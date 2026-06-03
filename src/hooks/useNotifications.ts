@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
+import { getNotificationPrefs } from '@/hooks/useNotificationPrefs';
 
 interface Notification {
   id: string;
-  type: 'message' | 'ticket_reply' | 'new_ticket' | 'news' | 'post_blocked';
+  type: 'message' | 'ticket_reply' | 'new_ticket' | 'news' | 'post_blocked' | 'like' | 'access_request';
   senderId: string;
   senderName: string;
   content: string;
@@ -12,6 +13,7 @@ interface Notification {
   read: boolean;
   ticketId?: string;
   postId?: string;
+  requestId?: string;
 }
 
 export function useNotifications() {
@@ -54,6 +56,7 @@ export function useNotifications() {
     supabase
       .channel('notifications')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` }, (payload) => {
+        if (!getNotificationPrefs().message) return;
         setUnreadMessages((prev) => prev + 1);
         fetchSenderInfo(payload.new as { sender_id: string; content: string; created_at: string });
       })
@@ -69,23 +72,70 @@ export function useNotifications() {
         fetchUnreadCount();
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ticket_replies' }, (payload) => {
+        if (!getNotificationPrefs().ticket_reply) return;
         const reply = payload.new as { user_id: string; ticket_id: string; message: string; created_at: string };
         if (reply.user_id !== user.id) handleTicketReplyNotification(reply);
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'support_tickets' }, (payload) => {
+        if (!getNotificationPrefs().new_ticket) return;
         const ticket = payload.new as { user_id: string; id: string; subject: string; message: string; created_at: string };
         if (ticket.user_id !== user.id) handleNewTicketNotification(ticket);
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'news' }, (payload) => {
+        if (!getNotificationPrefs().news) return;
         const news = payload.new as { id: string; user_id: string; title: string; created_at: string };
         if (news.user_id !== user.id) handleNewsNotification(news);
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'posts', filter: `user_id=eq.${user.id}` }, (payload) => {
+        if (!getNotificationPrefs().post_blocked) return;
         const oldPost = payload.old as { blocked?: boolean };
         const newPost = payload.new as { id: string; blocked?: boolean; content?: string; created_at: string };
         if (!oldPost.blocked && newPost.blocked) handlePostBlockedNotification(newPost);
       })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'likes' }, (payload) => {
+        if (!getNotificationPrefs().like) return;
+        const like = payload.new as { user_id: string; post_id: string; created_at: string };
+        if (like.user_id !== user.id) handleLikeNotification(like);
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'profile_view_requests', filter: `owner_id=eq.${user.id}` }, (payload) => {
+        if (!getNotificationPrefs().access_request) return;
+        const req = payload.new as { id: string; requester_id: string; created_at: string };
+        handleAccessRequestNotification(req);
+      })
       .subscribe();
+  };
+
+  const handleLikeNotification = async (like: { user_id: string; post_id: string; created_at: string }) => {
+    const { data: post } = await supabase.from('posts').select('user_id, content').eq('id', like.post_id).maybeSingle();
+    if (!post || post.user_id !== user?.id) return;
+    const { data: profile } = await supabase.from('profiles').select('username').eq('user_id', like.user_id).maybeSingle();
+    const snippet = (post.content || '').substring(0, 40);
+    const notification: Notification = {
+      id: `like-${like.post_id}-${like.user_id}-${Date.now()}`,
+      type: 'like',
+      senderId: like.user_id,
+      senderName: profile?.username || 'Someone',
+      content: snippet ? `"${snippet}${(post.content || '').length > 40 ? '…' : ''}"` : 'liked your post',
+      createdAt: like.created_at,
+      read: false,
+      postId: like.post_id,
+    };
+    setNotifications((prev) => [notification, ...prev].slice(0, 10));
+  };
+
+  const handleAccessRequestNotification = async (req: { id: string; requester_id: string; created_at: string }) => {
+    const { data: profile } = await supabase.from('profiles').select('username').eq('user_id', req.requester_id).maybeSingle();
+    const notification: Notification = {
+      id: `access-${req.id}`,
+      type: 'access_request',
+      senderId: req.requester_id,
+      senderName: profile?.username || 'Someone',
+      content: 'wants to view your private profile',
+      createdAt: req.created_at,
+      read: false,
+      requestId: req.id,
+    };
+    setNotifications((prev) => [notification, ...prev].slice(0, 10));
   };
 
   const handlePostBlockedNotification = (post: { id: string; content?: string; created_at: string }) => {
