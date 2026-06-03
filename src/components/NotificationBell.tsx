@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, MessageCircle, X, Ticket, AlertCircle, Newspaper } from 'lucide-react';
+import { Bell, MessageCircle, X, Ticket, AlertCircle, Newspaper, Ban } from 'lucide-react';
+import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -35,6 +36,8 @@ export function NotificationBell() {
     } else if (notification.type === 'ticket_reply' || notification.type === 'new_ticket') {
       navigate('/support');
     } else if (notification.type === 'news') {
+      navigate('/');
+    } else if (notification.type === 'post_blocked') {
       navigate('/');
     }
     clearNotification(notification.id);
@@ -102,14 +105,21 @@ export function NotificationBell() {
                     {notification.type === 'new_ticket' && (
                       <AlertCircle className="h-4 w-4 text-primary" />
                     )}
+                    {notification.type === 'post_blocked' && (
+                      <Ban className="h-4 w-4 text-destructive" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm">
-                      <span className="font-semibold text-primary mc-text">{notification.senderName}</span>
+                    <p className="text-sm inline-flex items-center gap-1 flex-wrap">
+                      <span className="font-semibold text-primary mc-text inline-flex items-center gap-1">
+                        {notification.senderName}
+                        {notification.type !== 'post_blocked' && <VerifiedBadge userId={notification.senderId} />}
+                      </span>
                       <span className="text-muted-foreground">
                         {notification.type === 'message' ? ' sent you a message' :
                          notification.type === 'news' ? ' posted new news' :
                          notification.type === 'new_ticket' ? ' submitted a new ticket' :
+                         notification.type === 'post_blocked' ? ' Your post was blocked by a moderator' :
                          ' replied to your ticket'}
                       </span>
                     </p>

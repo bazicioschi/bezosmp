@@ -4,13 +4,14 @@ import { useAuth } from '@/lib/auth';
 
 interface Notification {
   id: string;
-  type: 'message' | 'ticket_reply' | 'new_ticket' | 'news';
+  type: 'message' | 'ticket_reply' | 'new_ticket' | 'news' | 'post_blocked';
   senderId: string;
   senderName: string;
   content: string;
   createdAt: string;
   read: boolean;
   ticketId?: string;
+  postId?: string;
 }
 
 export function useNotifications() {
@@ -79,7 +80,27 @@ export function useNotifications() {
         const news = payload.new as { id: string; user_id: string; title: string; created_at: string };
         if (news.user_id !== user.id) handleNewsNotification(news);
       })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'posts', filter: `user_id=eq.${user.id}` }, (payload) => {
+        const oldPost = payload.old as { blocked?: boolean };
+        const newPost = payload.new as { id: string; blocked?: boolean; content?: string; created_at: string };
+        if (!oldPost.blocked && newPost.blocked) handlePostBlockedNotification(newPost);
+      })
       .subscribe();
+  };
+
+  const handlePostBlockedNotification = (post: { id: string; content?: string; created_at: string }) => {
+    const snippet = (post.content || '').substring(0, 50);
+    const notification: Notification = {
+      id: `post-blocked-${post.id}`,
+      type: 'post_blocked',
+      senderId: 'system',
+      senderName: 'Moderation',
+      content: snippet ? `"${snippet}${(post.content || '').length > 50 ? '…' : ''}"` : 'Your post was blocked',
+      createdAt: new Date().toISOString(),
+      read: false,
+      postId: post.id,
+    };
+    setNotifications((prev) => [notification, ...prev].slice(0, 10));
   };
 
   const handleNewsNotification = async (news: { id: string; user_id: string; title: string; created_at: string }) => {
