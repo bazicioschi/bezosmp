@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
+import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { formatDistanceToNow } from 'date-fns';
 
 interface Conversation {
