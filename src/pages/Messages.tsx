@@ -46,6 +46,7 @@ export default function Messages() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const { isBanned, canMessage } = useRestrictions();
+  const recipientColor = useVerifiedColor(recipientId);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
