@@ -4,13 +4,14 @@ import { useAuth } from '@/lib/auth';
 
 interface Notification {
   id: string;
-  type: 'message' | 'ticket_reply' | 'new_ticket' | 'news';
+  type: 'message' | 'ticket_reply' | 'new_ticket' | 'news' | 'post_blocked';
   senderId: string;
   senderName: string;
   content: string;
   createdAt: string;
   read: boolean;
   ticketId?: string;
+  postId?: string;
 }
 
 export function useNotifications() {
