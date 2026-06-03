@@ -151,7 +151,10 @@ export default function MessagesList() {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-display font-semibold text-foreground">{conv.username}</span>
+                    <span className="font-display font-semibold text-foreground inline-flex items-center gap-1">
+                      {conv.username}
+                      <VerifiedBadge userId={conv.recipientId} />
+                    </span>
                     <span className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(conv.lastMessageAt), { addSuffix: true })}
                     </span>
