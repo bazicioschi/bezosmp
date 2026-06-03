@@ -20,6 +20,7 @@ export function SettingsButton() {
   const { theme, setTheme, setCustomColor, isDark, isLight, isBaziMazi, isCato, isPizza, isGhast, isBuzzy, isCustom } = useTheme();
   const [soundsEnabled, setSoundsEnabled] = useState(true);
   const { isEnabled, setEnabled } = useSoundEffects();
+  const { prefs: notifPrefs, setPref: setNotifPref } = useNotificationPrefs();
   const { user } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [username, setUsername] = useState<string>('');
