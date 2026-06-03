@@ -160,6 +160,9 @@ export function SettingsButton() {
                 </div>
               ))}
             </div>
+          </div>
+
+
 
           {/* Theme Selection */}
           <div className="space-y-3">
