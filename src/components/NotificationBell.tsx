@@ -39,6 +39,10 @@ export function NotificationBell() {
       navigate('/');
     } else if (notification.type === 'post_blocked') {
       navigate('/');
+    } else if (notification.type === 'like') {
+      navigate(notification.postId ? `/?post=${notification.postId}` : '/');
+    } else if (notification.type === 'access_request') {
+      navigate(`/user/${notification.senderId}`);
     }
     clearNotification(notification.id);
     setOpen(false);
