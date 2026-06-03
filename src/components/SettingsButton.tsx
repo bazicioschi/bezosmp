@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Palette, User } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Palette, User, Bell } from 'lucide-react';
+import { useNotificationPrefs, NOTIF_CATEGORY_LABELS, type NotifCategory } from '@/hooks/useNotificationPrefs';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
