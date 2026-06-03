@@ -11,6 +11,8 @@ import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { PostLinkPreview } from '@/components/PostLinkPreview';
 import { useRestrictions } from '@/hooks/useRestrictions';
+import { VerifiedBadge } from '@/components/VerifiedBadge';
+import { useVerifiedColor } from '@/hooks/useVerified';
 
 interface CollabInvite {
   id: string;
@@ -44,6 +46,7 @@ export default function Messages() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const { isBanned, canMessage } = useRestrictions();
+  const recipientColor = useVerifiedColor(recipientId);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -318,8 +321,9 @@ export default function Messages() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <span className="font-display font-semibold text-foreground glow-text block">
+                <span className="font-display font-semibold text-foreground glow-text inline-flex items-center gap-1">
                   {recipient.username}
+                  {recipientColor && <VerifiedBadge userId={recipientId} />}
                 </span>
                 <span className={`text-xs font-display ${recipientOnline ? 'text-primary' : 'text-muted-foreground'}`}>
                   {recipientOnline ? 'Online' : 'Offline'}
