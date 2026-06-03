@@ -321,8 +321,9 @@ export default function Messages() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <span className="font-display font-semibold text-foreground glow-text block">
+                <span className="font-display font-semibold text-foreground glow-text inline-flex items-center gap-1">
                   {recipient.username}
+                  {recipientColor && <VerifiedBadge color={recipientColor} />}
                 </span>
                 <span className={`text-xs font-display ${recipientOnline ? 'text-primary' : 'text-muted-foreground'}`}>
                   {recipientOnline ? 'Online' : 'Offline'}
