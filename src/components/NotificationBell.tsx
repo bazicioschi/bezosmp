@@ -37,6 +37,8 @@ export function NotificationBell() {
       navigate('/support');
     } else if (notification.type === 'news') {
       navigate('/');
+    } else if (notification.type === 'post_blocked') {
+      navigate('/');
     }
     clearNotification(notification.id);
     setOpen(false);
