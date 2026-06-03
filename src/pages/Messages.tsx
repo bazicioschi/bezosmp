@@ -126,6 +126,13 @@ export default function Messages() {
       setRecipient(profileData);
     }
 
+    const { data: ownData } = await supabase
+      .from('profiles')
+      .select('user_id, username, avatar_url')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (ownData) setOwnProfile(ownData);
+
     // Fetch messages between users
     const { data: messagesData } = await supabase
       .from('messages')
