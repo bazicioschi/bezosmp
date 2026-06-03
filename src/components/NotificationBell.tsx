@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, MessageCircle, X, Ticket, AlertCircle, Newspaper, Ban } from 'lucide-react';
+import { Bell, MessageCircle, X, Ticket, AlertCircle, Newspaper, Ban, Heart, UserPlus } from 'lucide-react';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { Button } from '@/components/ui/button';
 import {
