@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
+import { getNotificationPrefs } from '@/hooks/useNotificationPrefs';
 
 interface Notification {
   id: string;
-  type: 'message' | 'ticket_reply' | 'new_ticket' | 'news' | 'post_blocked';
+  type: 'message' | 'ticket_reply' | 'new_ticket' | 'news' | 'post_blocked' | 'like' | 'access_request';
   senderId: string;
   senderName: string;
   content: string;
@@ -12,6 +13,7 @@ interface Notification {
   read: boolean;
   ticketId?: string;
   postId?: string;
+  requestId?: string;
 }
 
 export function useNotifications() {
