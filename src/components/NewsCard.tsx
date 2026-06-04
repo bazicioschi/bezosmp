@@ -280,8 +280,8 @@ export function NewsCard({
             </div>
           ) : (
             <>
-              <h3 className="mc-text text-xl text-foreground glow-text mb-2">{title}</h3>
-              <p className="text-foreground/90 whitespace-pre-wrap leading-relaxed">{content}</p>
+              <h3 className="mc-text text-xl text-foreground glow-text mb-2 break-words">{title}</h3>
+              <p className="text-foreground/90 whitespace-pre-wrap leading-relaxed break-words">{content}</p>
             </>
           )}
 
