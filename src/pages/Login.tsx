@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Gamepad2, LogIn, Loader2, Pickaxe, Eye, EyeOff } from 'lucide-react';
+import { Gamepad2, LogIn, Loader2, Pickaxe, Eye, EyeOff, ShieldAlert, LifeBuoy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth } from '@/lib/auth';
+import { useAuth, BANNED_FLAG_KEY, type BannedInfo } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { formatDistanceToNow } from 'date-fns';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -17,6 +18,29 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formState, setFormState] = useState<'idle' | 'error' | 'success'>('idle');
+  const [bannedInfo, setBannedInfo] = useState<BannedInfo | null>(null);
+
+  useEffect(() => {
+    const raw = sessionStorage.getItem(BANNED_FLAG_KEY);
+    if (raw) {
+      try {
+        const info: BannedInfo = JSON.parse(raw);
+        // Only show if still active
+        if (!info.expires_at || new Date(info.expires_at).getTime() > Date.now()) {
+          setBannedInfo(info);
+        } else {
+          sessionStorage.removeItem(BANNED_FLAG_KEY);
+        }
+      } catch {
+        sessionStorage.removeItem(BANNED_FLAG_KEY);
+      }
+    }
+  }, []);
+
+  const dismissBan = () => {
+    sessionStorage.removeItem(BANNED_FLAG_KEY);
+    setBannedInfo(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,6 +116,28 @@ export default function Login() {
             <h1 className="font-display text-2xl font-bold text-foreground glow-text tracking-wider">WELCOME BACK</h1>
             <p className="text-muted-foreground mt-1 font-display text-sm">Sign in to bezoSMP</p>
           </div>
+
+          {bannedInfo && (
+            <div className="mb-6 p-4 rounded-lg border-2 border-destructive bg-destructive/10 space-y-2">
+              <div className="flex items-center gap-2 text-destructive font-display font-bold">
+                <ShieldAlert className="h-5 w-5" />
+                Your account has been banned
+              </div>
+              <p className="text-sm text-destructive/90">{bannedInfo.reason}</p>
+              <p className="text-xs text-muted-foreground">
+                {bannedInfo.expires_at
+                  ? <>Ban expires <span className="font-semibold">{formatDistanceToNow(new Date(bannedInfo.expires_at), { addSuffix: true })}</span> ({new Date(bannedInfo.expires_at).toLocaleString()}).</>
+                  : <span className="font-semibold">This ban is permanent.</span>}
+              </p>
+              <div className="flex gap-2 pt-1">
+                <Button asChild size="sm" variant="outline" className="gap-1">
+                  <Link to="/support"><LifeBuoy className="h-4 w-4" />Contact support</Link>
+                </Button>
+                <Button size="sm" variant="ghost" onClick={dismissBan}>Dismiss</Button>
+              </div>
+            </div>
+          )}
+
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
