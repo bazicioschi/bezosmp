@@ -117,6 +117,28 @@ export default function Login() {
             <p className="text-muted-foreground mt-1 font-display text-sm">Sign in to bezoSMP</p>
           </div>
 
+          {bannedInfo && (
+            <div className="mb-6 p-4 rounded-lg border-2 border-destructive bg-destructive/10 space-y-2">
+              <div className="flex items-center gap-2 text-destructive font-display font-bold">
+                <ShieldAlert className="h-5 w-5" />
+                Your account has been banned
+              </div>
+              <p className="text-sm text-destructive/90">{bannedInfo.reason}</p>
+              <p className="text-xs text-muted-foreground">
+                {bannedInfo.expires_at
+                  ? <>Ban expires <span className="font-semibold">{formatDistanceToNow(new Date(bannedInfo.expires_at), { addSuffix: true })}</span> ({new Date(bannedInfo.expires_at).toLocaleString()}).</>
+                  : <span className="font-semibold">This ban is permanent.</span>}
+              </p>
+              <div className="flex gap-2 pt-1">
+                <Button asChild size="sm" variant="outline" className="gap-1">
+                  <Link to="/support"><LifeBuoy className="h-4 w-4" />Contact support</Link>
+                </Button>
+                <Button size="sm" variant="ghost" onClick={dismissBan}>Dismiss</Button>
+              </div>
+            </div>
+          )}
+
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="identifier" className="font-display text-sm tracking-wide">EMAIL OR USERNAME</Label>
