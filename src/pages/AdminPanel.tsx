@@ -15,7 +15,9 @@ type BadgeColor =
   | 'default'
   | 'red' | 'blue' | 'green' | 'gold' | 'purple' | 'pink' | 'cyan'
   | 'orange' | 'lime' | 'teal' | 'indigo' | 'rose' | 'amber' | 'emerald'
-  | 'sky' | 'fuchsia' | 'violet' | 'slate' | 'white' | 'black' | 'rainbow';
+  | 'sky' | 'fuchsia' | 'violet' | 'slate' | 'white' | 'black'
+  | 'magenta' | 'crimson' | 'mint' | 'coral' | 'lavender' | 'neon' | 'bronze'
+  | 'rainbow' | 'ladybug';
 
 interface UserWithRestrictions {
   user_id: string;
@@ -30,19 +32,26 @@ interface UserWithRestrictions {
 const BADGE_COLORS: { value: BadgeColor; label: string; swatch: string }[] = [
   { value: 'default', label: 'Default (theme)', swatch: 'bg-primary' },
   { value: 'red',     label: 'Red',     swatch: 'bg-red-500' },
+  { value: 'crimson', label: 'Crimson', swatch: 'bg-[#dc143c]' },
+  { value: 'coral',   label: 'Coral',   swatch: 'bg-[#ff7f50]' },
   { value: 'orange',  label: 'Orange',  swatch: 'bg-orange-500' },
   { value: 'amber',   label: 'Amber',   swatch: 'bg-amber-500' },
+  { value: 'bronze',  label: 'Bronze',  swatch: 'bg-[#cd7f32]' },
   { value: 'gold',    label: 'Gold',    swatch: 'bg-yellow-400' },
   { value: 'lime',    label: 'Lime',    swatch: 'bg-lime-400' },
+  { value: 'neon',    label: 'Neon',    swatch: 'bg-[#39ff14]' },
   { value: 'green',   label: 'Green',   swatch: 'bg-green-500' },
+  { value: 'mint',    label: 'Mint',    swatch: 'bg-[#3eb489]' },
   { value: 'emerald', label: 'Emerald', swatch: 'bg-emerald-500' },
   { value: 'teal',    label: 'Teal',    swatch: 'bg-teal-400' },
   { value: 'cyan',    label: 'Cyan',    swatch: 'bg-cyan-400' },
   { value: 'sky',     label: 'Sky',     swatch: 'bg-sky-400' },
   { value: 'blue',    label: 'Blue',    swatch: 'bg-blue-500' },
   { value: 'indigo',  label: 'Indigo',  swatch: 'bg-indigo-500' },
+  { value: 'lavender',label: 'Lavender',swatch: 'bg-[#b497d6]' },
   { value: 'violet',  label: 'Violet',  swatch: 'bg-violet-500' },
   { value: 'purple',  label: 'Purple',  swatch: 'bg-purple-500' },
+  { value: 'magenta', label: 'Magenta', swatch: 'bg-[#ff00ff]' },
   { value: 'fuchsia', label: 'Fuchsia', swatch: 'bg-fuchsia-500' },
   { value: 'pink',    label: 'Pink',    swatch: 'bg-pink-500' },
   { value: 'rose',    label: 'Rose',    swatch: 'bg-rose-500' },
@@ -50,7 +59,12 @@ const BADGE_COLORS: { value: BadgeColor; label: string; swatch: string }[] = [
   { value: 'white',   label: 'White',   swatch: 'bg-white' },
   { value: 'black',   label: 'Black',   swatch: 'bg-black' },
   { value: 'rainbow', label: 'Rainbow', swatch: 'bg-gradient-to-r from-red-500 via-yellow-400 to-purple-500' },
+  { value: 'ladybug', label: '🐞 Ladybug (exclusive)', swatch: 'bg-red-600 ring-2 ring-black' },
 ];
+
+const BAZICIOSCHI_ID = '1c2fd2f9-d5d2-4a3b-bd6a-b735200b7200';
+const CATOTHERAT_ID  = '3207126e-7b1e-42dd-a635-4ff2f849dbbc';
+const CATO_BAZ_ATTEMPTS_KEY = 'cato_baz_ban_attempts';
 
 export default function AdminPanel() {
   const { user } = useAuth();
