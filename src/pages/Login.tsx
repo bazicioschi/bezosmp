@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Gamepad2, LogIn, Loader2, Pickaxe, Eye, EyeOff } from 'lucide-react';
+import { Gamepad2, LogIn, Loader2, Pickaxe, Eye, EyeOff, ShieldAlert, LifeBuoy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth } from '@/lib/auth';
+import { useAuth, BANNED_FLAG_KEY, type BannedInfo } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { formatDistanceToNow } from 'date-fns';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -17,6 +18,29 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formState, setFormState] = useState<'idle' | 'error' | 'success'>('idle');
+  const [bannedInfo, setBannedInfo] = useState<BannedInfo | null>(null);
+
+  useEffect(() => {
+    const raw = sessionStorage.getItem(BANNED_FLAG_KEY);
+    if (raw) {
+      try {
+        const info: BannedInfo = JSON.parse(raw);
+        // Only show if still active
+        if (!info.expires_at || new Date(info.expires_at).getTime() > Date.now()) {
+          setBannedInfo(info);
+        } else {
+          sessionStorage.removeItem(BANNED_FLAG_KEY);
+        }
+      } catch {
+        sessionStorage.removeItem(BANNED_FLAG_KEY);
+      }
+    }
+  }, []);
+
+  const dismissBan = () => {
+    sessionStorage.removeItem(BANNED_FLAG_KEY);
+    setBannedInfo(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
