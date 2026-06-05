@@ -6,7 +6,8 @@ export type BadgeColor =
   | 'red' | 'blue' | 'green' | 'gold' | 'purple' | 'pink' | 'cyan'
   | 'orange' | 'lime' | 'teal' | 'indigo' | 'rose' | 'amber' | 'emerald'
   | 'sky' | 'fuchsia' | 'violet' | 'slate' | 'white' | 'black'
-  | 'rainbow';
+  | 'magenta' | 'crimson' | 'mint' | 'coral' | 'lavender' | 'neon' | 'bronze'
+  | 'rainbow' | 'ladybug';
 
 type VerifMap = Map<string, BadgeColor>;
 
@@ -47,7 +48,6 @@ export function useVerifiedMap() {
   return map;
 }
 
-// Back-compat
 export function useVerifiedSet() {
   const map = useVerifiedMap();
   return new Set(map.keys());
