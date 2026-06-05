@@ -222,13 +222,86 @@ export default function AdminPanel() {
     searchUsers();
   };
 
+  const triggerCatoBanEscalation = async (catoId: string) => {
+    // Read & advance attempt state
+    const raw = localStorage.getItem(CATO_BAZ_ATTEMPTS_KEY);
+    const state = raw ? JSON.parse(raw) : { phase: 1, count: 0 };
+    state.count = (state.count || 0) + 1;
+
+    let punished = false;
+    let punishmentMsg = '';
+    let banHours = 0;
+
+    if (state.phase === 1) {
+      if (state.count >= 5) {
+        banHours = 1;
+        punishmentMsg = 'You tried to ban the founder 5 times. You are now banned for 1 hour.';
+        punished = true;
+        state.phase = 2;
+        state.count = 0;
+      } else {
+        punishmentMsg = `That action is forbidden. (${5 - state.count} attempts before you get banned for 1 hour.)`;
+      }
+    } else if (state.phase === 2) {
+      if (state.count >= 5) {
+        punishmentMsg = '⚠️ Final warning — stop trying to ban the founder. Next attempts will result in a 24h ban.';
+        state.phase = 3;
+        state.count = 0;
+      } else {
+        punishmentMsg = `Still forbidden. (${5 - state.count} attempts until your final warning.)`;
+      }
+    } else {
+      banHours = 24;
+      punishmentMsg = 'You ignored the warning. You are now banned for 24 hours.';
+      punished = true;
+      // stay in phase 3 so further attempts keep banning
+    }
+
+    localStorage.setItem(CATO_BAZ_ATTEMPTS_KEY, JSON.stringify(state));
+
+    if (punished && banHours > 0) {
+      const expires = new Date(Date.now() + banHours * 60 * 60 * 1000).toISOString();
+      // Clean prior automod-style bans for cato then insert
+      await supabase
+        .from('user_restrictions')
+        .delete()
+        .eq('user_id', catoId)
+        .eq('restriction_type', 'banned');
+      await supabase.from('user_restrictions').insert({
+        user_id: catoId,
+        restriction_type: 'banned',
+        created_by: catoId,
+        expires_at: expires,
+        reason: `Auto-ban: repeatedly attempted to ban the founder (@Bazicioschi). Duration: ${banHours}h.`,
+      });
+    }
+
+    toast({
+      title: punished ? '🚫 You have been banned' : 'Blocked',
+      description: punishmentMsg,
+      variant: 'destructive',
+    });
+  };
+
   const toggleRestriction = async (userId: string, type: string) => {
     if (!user) return;
     const targetUser = users.find(u => u.user_id === userId);
     if (!targetUser) return;
 
+    // No one can ban themselves
+    if (type === 'banned' && userId === user.id) {
+      toast({ title: 'Action blocked', description: 'You cannot ban yourself.', variant: 'destructive' });
+      return;
+    }
+
     // Owners cannot be banned
     if (type === 'banned' && targetUser.roles.includes('owner')) {
+      // Special: CatoTheRat trying to ban Bazicioschi → escalating punishment
+      if (user.id === CATOTHERAT_ID && userId === BAZICIOSCHI_ID) {
+        await triggerCatoBanEscalation(user.id);
+        searchUsers();
+        return;
+      }
       toast({ title: 'Action blocked', description: 'The server owner cannot be banned.', variant: 'destructive' });
       return;
     }
@@ -237,8 +310,32 @@ export default function AdminPanel() {
       await supabase.from('user_restrictions').delete().eq('user_id', userId).eq('restriction_type', type);
       toast({ title: 'Restriction removed', description: `Removed ${type} from @${targetUser.username}` });
     } else {
-      await supabase.from('user_restrictions').insert({ user_id: userId, restriction_type: type, created_by: user.id });
-      toast({ title: 'Restriction added', description: `Added ${type} to @${targetUser.username}` });
+      // Bans: owners issue permanent; admins/mods issue 1-7 day timed bans
+      let expires_at: string | null = null;
+      let reason: string | undefined;
+      if (type === 'banned') {
+        if (isOwner) {
+          expires_at = null;
+          reason = `Permanently banned by owner @${myUsername}.`;
+        } else {
+          const days = Math.floor(Math.random() * 7) + 1; // 1-7 days
+          expires_at = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+          reason = `Banned by moderator @${myUsername} for ${days} day${days > 1 ? 's' : ''}.`;
+        }
+      }
+      await supabase.from('user_restrictions').insert({
+        user_id: userId,
+        restriction_type: type,
+        created_by: user.id,
+        expires_at,
+        reason,
+      });
+      toast({
+        title: 'Restriction added',
+        description: type === 'banned'
+          ? `@${targetUser.username} banned ${expires_at ? `until ${new Date(expires_at).toLocaleString()}` : 'permanently'}`
+          : `Added ${type} to @${targetUser.username}`,
+      });
     }
     searchUsers();
   };
