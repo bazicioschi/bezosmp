@@ -63,7 +63,7 @@ function themeDefaultClass(theme: string): string {
 }
 
 function LadybugIcon({ className }: { className?: string }) {
-  // Exact lucide BadgeCheck silhouette, recolored red, with a tiny ladybug motif replacing the check
+  // Lucide BadgeCheck silhouette in red, with a proper ladybug (head + antennas + spots) inside
   const badgePath =
     "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z";
   return (
@@ -77,13 +77,22 @@ function LadybugIcon({ className }: { className?: string }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d={badgePath} fillOpacity={0.2} />
-      {/* ladybug motif (replaces the check) */}
-      <line x1="12" y1="8.5" x2="12" y2="15.5" />
-      <circle cx="10" cy="11" r="0.6" fill="#e11d48" stroke="none" />
-      <circle cx="14" cy="11" r="0.6" fill="#e11d48" stroke="none" />
-      <circle cx="10" cy="14" r="0.6" fill="#e11d48" stroke="none" />
-      <circle cx="14" cy="14" r="0.6" fill="#e11d48" stroke="none" />
+      {/* badge silhouette */}
+      <path d={badgePath} />
+      {/* antennas */}
+      <path d="M10.2 7.4 L8.8 5.8" stroke="#0d0d0d" strokeWidth={0.8} fill="none" />
+      <path d="M13.8 7.4 L15.2 5.8" stroke="#0d0d0d" strokeWidth={0.8} fill="none" />
+      <circle cx="8.6" cy="5.6" r="0.5" fill="#0d0d0d" stroke="none" />
+      <circle cx="15.4" cy="5.6" r="0.5" fill="#0d0d0d" stroke="none" />
+      {/* head */}
+      <ellipse cx="12" cy="8.2" rx="2" ry="1.4" fill="#0d0d0d" stroke="none" />
+      {/* body split line (wings) */}
+      <line x1="12" y1="9.4" x2="12" y2="15.6" stroke="#0d0d0d" strokeWidth={0.8} />
+      {/* spots */}
+      <circle cx="10" cy="11.2" r="0.7" fill="#0d0d0d" stroke="none" />
+      <circle cx="14" cy="11.2" r="0.7" fill="#0d0d0d" stroke="none" />
+      <circle cx="10" cy="14" r="0.7" fill="#0d0d0d" stroke="none" />
+      <circle cx="14" cy="14" r="0.7" fill="#0d0d0d" stroke="none" />
     </svg>
   );
 }
