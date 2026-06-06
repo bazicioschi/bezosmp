@@ -63,25 +63,33 @@ function themeDefaultClass(theme: string): string {
 }
 
 function LadybugIcon({ className }: { className?: string }) {
+  // Scalloped verification-badge silhouette (like BadgeCheck) with a ladybug inside
+  const badgePath =
+    "M12 1.5l2.2 1.6 2.7-.3 1.5 2.3 2.5 1 .1 2.7 1.5 2.3-1.5 2.3-.1 2.7-2.5 1-1.5 2.3-2.7-.3L12 22.5l-2.2-1.6-2.7.3-1.5-2.3-2.5-1-.1-2.7L1.5 12l1.5-2.3.1-2.7 2.5-1 1.5-2.3 2.7.3L12 1.5z";
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      {/* antennas */}
-      <path d="M9 4 L7 1.5" stroke="#111" strokeWidth="1.2" strokeLinecap="round" fill="none" />
-      <path d="M15 4 L17 1.5" stroke="#111" strokeWidth="1.2" strokeLinecap="round" fill="none" />
-      <circle cx="7" cy="1.5" r="0.9" fill="#111" />
-      <circle cx="17" cy="1.5" r="0.9" fill="#111" />
-      {/* head */}
-      <ellipse cx="12" cy="5.5" rx="3.2" ry="2.2" fill="#111" />
-      {/* body */}
-      <ellipse cx="12" cy="14" rx="8" ry="8" fill="#e11d48" stroke="#111" strokeWidth="1" />
-      {/* center line */}
-      <path d="M12 7 L12 21.5" stroke="#111" strokeWidth="1" />
-      {/* spots */}
-      <circle cx="8"  cy="11" r="1.3" fill="#111" />
-      <circle cx="16" cy="11" r="1.3" fill="#111" />
-      <circle cx="7.5" cy="16" r="1.1" fill="#111" />
-      <circle cx="16.5" cy="16" r="1.1" fill="#111" />
-      <circle cx="12" cy="19" r="0.9" fill="#111" />
+      <defs>
+        <clipPath id="ladybug-badge-clip">
+          <path d={badgePath} />
+        </clipPath>
+      </defs>
+      <path d={badgePath} fill="#e11d48" stroke="#111" strokeWidth="1" strokeLinejoin="round" />
+      <g clipPath="url(#ladybug-badge-clip)">
+        {/* antennas */}
+        <path d="M10.7 6.7 L9.3 5.3" stroke="#111" strokeWidth="0.8" strokeLinecap="round" />
+        <path d="M13.3 6.7 L14.7 5.3" stroke="#111" strokeWidth="0.8" strokeLinecap="round" />
+        <circle cx="9.3" cy="5.3" r="0.55" fill="#111" />
+        <circle cx="14.7" cy="5.3" r="0.55" fill="#111" />
+        {/* head */}
+        <ellipse cx="12" cy="8" rx="2.4" ry="1.6" fill="#111" />
+        {/* body center line */}
+        <path d="M12 9.5 L12 17" stroke="#111" strokeWidth="0.8" />
+        {/* spots */}
+        <circle cx="9.8" cy="12" r="0.9" fill="#111" />
+        <circle cx="14.2" cy="12" r="0.9" fill="#111" />
+        <circle cx="9.8" cy="15" r="0.75" fill="#111" />
+        <circle cx="14.2" cy="15" r="0.75" fill="#111" />
+      </g>
     </svg>
   );
 }
