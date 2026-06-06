@@ -63,52 +63,27 @@ function themeDefaultClass(theme: string): string {
 }
 
 function LadybugIcon({ className }: { className?: string }) {
-  // Match lucide BadgeCheck's scalloped silhouette, styled as a metallic red ladybug emblem
+  // Exact lucide BadgeCheck silhouette, recolored red, with a tiny ladybug motif replacing the check
   const badgePath =
     "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z";
   return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <defs>
-        <radialGradient id="lb-body" cx="35%" cy="30%" r="80%">
-          <stop offset="0%" stopColor="#ff8a8a" />
-          <stop offset="45%" stopColor="#e11d48" />
-          <stop offset="100%" stopColor="#7f1020" />
-        </radialGradient>
-        <linearGradient id="lb-shine" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.55" />
-          <stop offset="60%" stopColor="#ffffff" stopOpacity="0" />
-        </linearGradient>
-        <clipPath id="lb-clip">
-          <path d={badgePath} />
-        </clipPath>
-        <filter id="lb-shadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="0.6" stdDeviation="0.5" floodColor="#000" floodOpacity="0.45" />
-        </filter>
-      </defs>
-
-      <g filter="url(#lb-shadow)">
-        <path d={badgePath} fill="url(#lb-body)" stroke="#3a0a14" strokeWidth="0.7" strokeLinejoin="round" />
-      </g>
-
-      <g clipPath="url(#lb-clip)">
-        {/* center elytra split */}
-        <path d="M12 8.5 V19" stroke="#2a0810" strokeWidth="0.6" opacity="0.85" />
-        {/* head */}
-        <path d="M8.5 8.5 Q12 5.4 15.5 8.5 Q12 9.6 8.5 8.5 Z" fill="#0d0d0d" />
-        {/* antennas */}
-        <path d="M10.2 6.4 L9 4.8" stroke="#0d0d0d" strokeWidth="0.55" strokeLinecap="round" />
-        <path d="M13.8 6.4 L15 4.8" stroke="#0d0d0d" strokeWidth="0.55" strokeLinecap="round" />
-        <circle cx="9" cy="4.8" r="0.5" fill="#0d0d0d" />
-        <circle cx="15" cy="4.8" r="0.5" fill="#0d0d0d" />
-        {/* spots */}
-        <circle cx="9.4" cy="12" r="1.05" fill="#0d0d0d" />
-        <circle cx="14.6" cy="12" r="1.05" fill="#0d0d0d" />
-        <circle cx="9.7" cy="15.6" r="0.85" fill="#0d0d0d" />
-        <circle cx="14.3" cy="15.6" r="0.85" fill="#0d0d0d" />
-        <circle cx="12" cy="17.6" r="0.65" fill="#0d0d0d" />
-        {/* highlight sheen */}
-        <ellipse cx="9.5" cy="9.5" rx="3.2" ry="2" fill="url(#lb-shine)" />
-      </g>
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="#e11d48"
+      stroke="#e11d48"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d={badgePath} fillOpacity={0.2} />
+      {/* ladybug motif (replaces the check) */}
+      <line x1="12" y1="8.5" x2="12" y2="15.5" />
+      <circle cx="10" cy="11" r="0.6" fill="#e11d48" stroke="none" />
+      <circle cx="14" cy="11" r="0.6" fill="#e11d48" stroke="none" />
+      <circle cx="10" cy="14" r="0.6" fill="#e11d48" stroke="none" />
+      <circle cx="14" cy="14" r="0.6" fill="#e11d48" stroke="none" />
     </svg>
   );
 }
