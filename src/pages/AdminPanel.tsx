@@ -17,7 +17,7 @@ type BadgeColor =
   | 'orange' | 'lime' | 'teal' | 'indigo' | 'rose' | 'amber' | 'emerald'
   | 'sky' | 'fuchsia' | 'violet' | 'slate' | 'white' | 'black'
   | 'magenta' | 'crimson' | 'mint' | 'coral' | 'lavender' | 'neon' | 'bronze'
-  | 'rainbow' | 'ladybug';
+  | 'rainbow' | 'ladybug' | 'rat';
 
 interface UserWithRestrictions {
   user_id: string;
@@ -60,6 +60,7 @@ const BADGE_COLORS: { value: BadgeColor; label: string; swatch: string }[] = [
   { value: 'black',   label: 'Black',   swatch: 'bg-black' },
   { value: 'rainbow', label: 'Rainbow', swatch: 'bg-gradient-to-r from-red-500 via-yellow-400 to-purple-500' },
   { value: 'ladybug', label: '🐞 Ladybug (exclusive)', swatch: 'bg-red-600 ring-2 ring-black' },
+  { value: 'rat',     label: '🐀 Rat (exclusive)',      swatch: 'bg-slate-500 ring-2 ring-pink-300' },
 ];
 
 const BAZICIOSCHI_ID = '1c2fd2f9-d5d2-4a3b-bd6a-b735200b7200';

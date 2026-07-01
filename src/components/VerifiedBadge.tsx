@@ -28,8 +28,8 @@ const COLOR_CLASSES: Record<string, string> = {
   fuchsia:  'text-fuchsia-500 fill-fuchsia-500/20',
   violet:   'text-violet-500 fill-violet-500/20',
   slate:    'text-slate-400 fill-slate-400/20',
-  white:    'text-white fill-white/20',
-  black:    'text-black fill-black/20',
+  white:    'text-white fill-white/30 [stroke:black] [stroke-width:0.6] drop-shadow-[0_0_2px_rgba(0,0,0,0.9)]',
+  black:    'text-black fill-black/30 [stroke:white] [stroke-width:0.6] drop-shadow-[0_0_2px_rgba(255,255,255,0.9)]',
   magenta:  'text-[#ff00ff] fill-[#ff00ff]/20',
   crimson:  'text-[#dc143c] fill-[#dc143c]/20',
   mint:     'text-[#3eb489] fill-[#3eb489]/20',
@@ -47,7 +47,7 @@ const COLOR_LABELS: Record<string, string> = {
   sky: 'Sky', fuchsia: 'Fuchsia', violet: 'Violet', slate: 'Slate',
   white: 'White', black: 'Black', magenta: 'Magenta', crimson: 'Crimson',
   mint: 'Mint', coral: 'Coral', lavender: 'Lavender', neon: 'Neon Green',
-  bronze: 'Bronze', rainbow: 'Rainbow', ladybug: 'Ladybug',
+  bronze: 'Bronze', rainbow: 'Rainbow', ladybug: 'Ladybug', rat: 'Rat',
 };
 
 function themeDefaultClass(theme: string): string {
@@ -63,36 +63,49 @@ function themeDefaultClass(theme: string): string {
 }
 
 function LadybugIcon({ className }: { className?: string }) {
-  // Lucide BadgeCheck silhouette in red, with a proper ladybug (head + antennas + spots) inside
   const badgePath =
     "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z";
   return (
-    <svg
-      viewBox="0 0 24 24"
-      className={className}
-      fill="#e11d48"
-      stroke="#e11d48"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {/* badge silhouette */}
+    <svg viewBox="0 0 24 24" className={className} fill="#e11d48" stroke="#e11d48" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d={badgePath} />
-      {/* antennas */}
       <path d="M10.2 7.4 L8.8 5.8" stroke="#0d0d0d" strokeWidth={0.8} fill="none" />
       <path d="M13.8 7.4 L15.2 5.8" stroke="#0d0d0d" strokeWidth={0.8} fill="none" />
       <circle cx="8.6" cy="5.6" r="0.5" fill="#0d0d0d" stroke="none" />
       <circle cx="15.4" cy="5.6" r="0.5" fill="#0d0d0d" stroke="none" />
-      {/* head */}
       <ellipse cx="12" cy="8.2" rx="2" ry="1.4" fill="#0d0d0d" stroke="none" />
-      {/* body split line (wings) */}
       <line x1="12" y1="9.4" x2="12" y2="15.6" stroke="#0d0d0d" strokeWidth={0.8} />
-      {/* spots */}
       <circle cx="10" cy="11.2" r="0.7" fill="#0d0d0d" stroke="none" />
       <circle cx="14" cy="11.2" r="0.7" fill="#0d0d0d" stroke="none" />
       <circle cx="10" cy="14" r="0.7" fill="#0d0d0d" stroke="none" />
       <circle cx="14" cy="14" r="0.7" fill="#0d0d0d" stroke="none" />
+    </svg>
+  );
+}
+
+function RatIcon({ className }: { className?: string }) {
+  // Same scalloped badge silhouette, gray metallic with a rat face inside
+  const badgePath =
+    "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z";
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="#94a3b8" stroke="#475569" strokeWidth={1.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d={badgePath} />
+      {/* ears */}
+      <circle cx="9" cy="8" r="1.6" fill="#f9a8d4" stroke="#475569" strokeWidth={0.7} />
+      <circle cx="15" cy="8" r="1.6" fill="#f9a8d4" stroke="#475569" strokeWidth={0.7} />
+      <circle cx="9" cy="8" r="0.7" fill="#fda4af" stroke="none" />
+      <circle cx="15" cy="8" r="0.7" fill="#fda4af" stroke="none" />
+      {/* face */}
+      <ellipse cx="12" cy="12.6" rx="3.4" ry="3" fill="#cbd5e1" stroke="#475569" strokeWidth={0.7} />
+      {/* eyes */}
+      <circle cx="10.6" cy="12.1" r="0.5" fill="#0d0d0d" stroke="none" />
+      <circle cx="13.4" cy="12.1" r="0.5" fill="#0d0d0d" stroke="none" />
+      {/* nose */}
+      <circle cx="12" cy="13.6" r="0.55" fill="#f472b6" stroke="none" />
+      {/* whiskers */}
+      <line x1="12" y1="13.9" x2="9.5" y2="14.3" stroke="#0d0d0d" strokeWidth={0.4} />
+      <line x1="12" y1="13.9" x2="14.5" y2="14.3" stroke="#0d0d0d" strokeWidth={0.4} />
+      <line x1="12" y1="14.2" x2="9.5" y2="14.9" stroke="#0d0d0d" strokeWidth={0.4} />
+      <line x1="12" y1="14.2" x2="14.5" y2="14.9" stroke="#0d0d0d" strokeWidth={0.4} />
     </svg>
   );
 }
@@ -104,10 +117,12 @@ export function VerifiedBadge({ userId, className }: VerifiedBadgeProps) {
 
   const isRainbow = color === 'rainbow';
   const isLadybug = color === 'ladybug';
+  const isRat = color === 'rat';
+  const isCustom = isRainbow || isLadybug || isRat;
   const colorClass =
-    color === 'default' || (!isRainbow && !isLadybug && !COLOR_CLASSES[color])
+    color === 'default' || (!isCustom && !COLOR_CLASSES[color])
       ? themeDefaultClass(theme)
-      : isRainbow || isLadybug
+      : isCustom
         ? ''
         : COLOR_CLASSES[color];
 
@@ -124,6 +139,8 @@ export function VerifiedBadge({ userId, className }: VerifiedBadgeProps) {
         >
           {isLadybug ? (
             <LadybugIcon className="h-4 w-4" />
+          ) : isRat ? (
+            <RatIcon className="h-4 w-4" />
           ) : (
             <BadgeCheck
               className={cn('h-4 w-4', colorClass)}
@@ -152,6 +169,7 @@ export function VerifiedBadge({ userId, className }: VerifiedBadgeProps) {
       <PopoverContent className="w-64 text-xs leading-relaxed space-y-1">
         <div className="font-display text-sm font-semibold flex items-center gap-1.5">
           {isLadybug && <LadybugIcon className="h-3.5 w-3.5" />}
+          {isRat && <RatIcon className="h-3.5 w-3.5" />}
           {label} verification badge
         </div>
         {isLadybug ? (
@@ -159,10 +177,15 @@ export function VerifiedBadge({ userId, className }: VerifiedBadgeProps) {
             The <span className="font-semibold">Ladybug</span> verification badge is a unique custom badge
             given exclusively to <span className="text-primary font-medium">@Bazicioschi</span> — the founder of bezoSMP.
           </p>
+        ) : isRat ? (
+          <p>
+            The <span className="font-semibold">Rat</span> verification badge is a unique custom badge
+            given exclusively to <span className="text-primary font-medium">@CatoTheRat</span> — co-owner of bezoSMP.
+          </p>
         ) : (
           <p>
-            This verification badge (color: <span className="font-semibold">{label}</span>) was given to this account
-            by the owner for being a team account or for reaching past 1000 followers.
+            Color: <span className="font-semibold">{label}</span>. This verification badge was given to this
+            account by the owner for being a team account, a friend of the owner, or for reaching past 1,000 followers.
           </p>
         )}
       </PopoverContent>

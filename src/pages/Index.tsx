@@ -103,7 +103,7 @@ export default function Index() {
             <div className="minecraft-card p-4">
             <h3 className="mc-text text-lg text-primary mb-2 glow-text">DID YOU KNOW?</h3>
               <p className="text-sm text-muted-foreground">
-                BezoSMP was created by Bazicioschi and his friend's help Cato. Cato-2013 Bazicioschi-2019
+                BezoSMP was created by Bazicioschi and his friend's help Cato. cato-2014 Bazicioschi-2019
               </p>
             </div>
           </div>

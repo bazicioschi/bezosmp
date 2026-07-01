@@ -7,7 +7,7 @@ export type BadgeColor =
   | 'orange' | 'lime' | 'teal' | 'indigo' | 'rose' | 'amber' | 'emerald'
   | 'sky' | 'fuchsia' | 'violet' | 'slate' | 'white' | 'black'
   | 'magenta' | 'crimson' | 'mint' | 'coral' | 'lavender' | 'neon' | 'bronze'
-  | 'rainbow' | 'ladybug';
+  | 'rainbow' | 'ladybug' | 'rat';
 
 type VerifMap = Map<string, BadgeColor>;
 
