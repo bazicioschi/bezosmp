@@ -62,7 +62,7 @@ export default function Support() {
         const profile = profileMap.get(t.user_id);
         return {
           ...t,
-          username: profile?.username || 'Unknown',
+          username: profile?.username || (t as any).contact_name || 'Guest',
           avatarUrl: profile?.avatar_url || null,
         };
       }));
