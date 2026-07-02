@@ -29,6 +29,9 @@ import { QuickReactions } from './QuickReactions';
 import { SharePostDialog } from './SharePostDialog';
 import { VerifiedBadge } from './VerifiedBadge';
 
+const BAZICIOSCHI_ID = '1c2fd2f9-d5d2-4a3b-bd6a-b735200b7200';
+const CATOTHERAT_ID = '3207126e-7b1e-42dd-a635-4ff2f849dbbc';
+
 interface PostCardProps {
   id: string;
   content: string;
@@ -428,7 +431,7 @@ export function PostCard({
                     </AlertDialog>
                   </>
                 )}
-                {canModerate && user?.id !== userId && (
+                {canModerate && user?.id !== userId && !(user?.id === CATOTHERAT_ID && userId === BAZICIOSCHI_ID) && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button

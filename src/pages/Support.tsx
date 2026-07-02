@@ -31,6 +31,8 @@ export default function Support() {
   const { toast } = useToast();
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [contactName, setContactName] = useState('');
+  const [anonSubmitted, setAnonSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [fetchingTickets, setFetchingTickets] = useState(true);

@@ -170,25 +170,26 @@ export default function CollabPost() {
     setPublishing(true);
 
     try {
-      // Create the post — author is always the inviter (sender of the collab invite)
+      // Reversed flow: the INVITEE writes the content and publishes the post
+      // under their own account, with the inviter credited as co-author.
       const { data: post, error: postError } = await supabase
         .from('posts')
         .insert({
-          user_id: session.inviter_id,
+          user_id: user.id,
           content: content.trim(),
           image_url: imageUrls.length > 0
             ? (imageUrls.length === 1 ? imageUrls[0] : JSON.stringify(imageUrls))
             : null,
-          co_author_id: null,
+          co_author_id: session.inviter_id,
         })
         .select()
         .single();
 
       if (postError || !post) throw postError ?? new Error('Failed to create post');
 
-      // Insert all session members except the inviter (post author) as post_collaborators
+      // Credit everyone else in the session (inviter + other invitees) as collaborators
       const otherMembers = session.members.filter(
-        m => m.user_id !== session.inviter_id && (m.status === 'accepted' || m.role === 'invitee')
+        m => m.user_id !== user.id && (m.role === 'inviter' || m.status === 'accepted' || m.role === 'invitee')
       );
       if (otherMembers.length > 0) {
         await supabase.from('post_collaborators').insert(
@@ -203,7 +204,16 @@ export default function CollabPost() {
         .eq('inviter_id', session.inviter_id)
         .eq('subject', session.subject);
 
-      toast({ title: 'Post published!', description: 'Your collaborative post is now live.' });
+      // Notify the inviter that the collab post went live
+      await supabase.from('inbox_messages').insert({
+        user_id: session.inviter_id,
+        type: 'collab_accepted',
+        subject: 'Your collab post is live!',
+        body: `Your collaboration "${session.subject}" was published by a collaborator.`,
+        data: { post_id: post.id },
+      });
+
+      toast({ title: 'Post published!', description: 'Your collaborative post is now live under your account.' });
       navigate('/');
     } catch {
       toast({ title: 'Error', description: 'Failed to publish post. Please try again.', variant: 'destructive' });
