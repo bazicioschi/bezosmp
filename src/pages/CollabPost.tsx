@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Loader2, Users, ImagePlus, X, Send } from 'lucide-react';
+import { Loader2, Users, ImagePlus, Video, X, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/lib/auth';
@@ -37,9 +37,12 @@ export default function CollabPost() {
   const [content, setContent] = useState('');
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -165,6 +168,39 @@ export default function CollabPost() {
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    const allowed = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-matroska', 'video/3gpp2'];
+    if (!file.type.startsWith('video/') && !allowed.includes(file.type)) {
+      toast({ title: 'Unsupported format', description: 'Please upload a valid video file.', variant: 'destructive' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024 * 1024) {
+      toast({ title: 'File too large', description: 'Video must be under 5GB', variant: 'destructive' });
+      return;
+    }
+    setUploading(true);
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'mp4';
+    const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const blobUrl = URL.createObjectURL(file);
+    setVideoPreview(blobUrl);
+    const { error } = await supabase.storage.from('post-videos').upload(fileName, file, { contentType: file.type });
+    if (error) {
+      toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
+      setVideoPreview(null);
+    } else {
+      const { data } = supabase.storage.from('post-videos').getPublicUrl(fileName);
+      setVideoUrl(data.publicUrl);
+    }
+    setUploading(false);
+  };
+
+  const removeVideo = () => {
+    setVideoUrl(null);
+    setVideoPreview(null);
+  };
+
   const handlePublish = async () => {
     if (!user || !session || !content.trim() || publishing) return;
     setPublishing(true);
@@ -180,6 +216,7 @@ export default function CollabPost() {
           image_url: imageUrls.length > 0
             ? (imageUrls.length === 1 ? imageUrls[0] : JSON.stringify(imageUrls))
             : null,
+          video_url: videoUrl,
           co_author_id: session.inviter_id,
         })
         .select()
@@ -303,6 +340,22 @@ export default function CollabPost() {
             </div>
           )}
 
+          {/* Video preview */}
+          {videoPreview && (
+            <div className="relative mt-3 rounded overflow-hidden minecraft-border">
+              <video src={videoPreview} controls className="w-full max-h-96 bg-black" />
+              <Button
+                type="button"
+                variant="secondary"
+                size="icon"
+                className="absolute top-1 right-1 h-6 w-6"
+                onClick={removeVideo}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
+
           <div className="flex items-center justify-between pt-3 border-t border-border mt-3">
             <div className="flex items-center gap-2">
               <input
@@ -313,15 +366,32 @@ export default function CollabPost() {
                 className="hidden"
                 onChange={handleImageUpload}
               />
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/*"
+                className="hidden"
+                onChange={handleVideoUpload}
+              />
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={uploading || imageUrls.length >= MAX_IMAGES}
+                disabled={uploading || imageUrls.length >= MAX_IMAGES || !!videoUrl}
                 title="Add images"
               >
                 <ImagePlus className="h-5 w-5 text-primary" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => videoInputRef.current?.click()}
+                disabled={uploading || !!videoUrl || imageUrls.length > 0}
+                title="Add video"
+              >
+                <Video className="h-5 w-5 text-primary" />
               </Button>
               {uploading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
             </div>
