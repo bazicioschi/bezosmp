@@ -168,6 +168,39 @@ export default function CollabPost() {
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    const allowed = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-matroska', 'video/3gpp2'];
+    if (!file.type.startsWith('video/') && !allowed.includes(file.type)) {
+      toast({ title: 'Unsupported format', description: 'Please upload a valid video file.', variant: 'destructive' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024 * 1024) {
+      toast({ title: 'File too large', description: 'Video must be under 5GB', variant: 'destructive' });
+      return;
+    }
+    setUploading(true);
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'mp4';
+    const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const blobUrl = URL.createObjectURL(file);
+    setVideoPreview(blobUrl);
+    const { error } = await supabase.storage.from('post-videos').upload(fileName, file, { contentType: file.type });
+    if (error) {
+      toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
+      setVideoPreview(null);
+    } else {
+      const { data } = supabase.storage.from('post-videos').getPublicUrl(fileName);
+      setVideoUrl(data.publicUrl);
+    }
+    setUploading(false);
+  };
+
+  const removeVideo = () => {
+    setVideoUrl(null);
+    setVideoPreview(null);
+  };
+
   const handlePublish = async () => {
     if (!user || !session || !content.trim() || publishing) return;
     setPublishing(true);
