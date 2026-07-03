@@ -440,7 +440,42 @@ export function PostCard({
                     </AlertDialog>
                   </>
                 )}
-                {canModerate && user?.id !== userId && !(user?.id === CATOTHERAT_ID && userId === BAZICIOSCHI_ID) && (
+                {canModThisPost && user?.id !== userId && (
+                  <>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => e.stopPropagation()}
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/20"
+                          title="Delete post (mod)"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="minecraft-card minecraft-border">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="mc-text text-xl">Delete Post?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Permanently delete this post as a moderator. This cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="mc-btn">Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleDelete}
+                            disabled={isDeleting}
+                            className="mc-btn-primary bg-destructive hover:bg-destructive/90"
+                          >
+                            {isDeleting ? 'Deleting...' : 'Delete'}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </>
+                )}
+                {canModThisPost && user?.id !== userId && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button
