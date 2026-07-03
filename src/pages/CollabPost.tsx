@@ -216,6 +216,7 @@ export default function CollabPost() {
           image_url: imageUrls.length > 0
             ? (imageUrls.length === 1 ? imageUrls[0] : JSON.stringify(imageUrls))
             : null,
+          video_url: videoUrl,
           co_author_id: session.inviter_id,
         })
         .select()
