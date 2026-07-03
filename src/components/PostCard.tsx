@@ -234,20 +234,29 @@ export function PostCard({
     onLikeToggle();
   };
 
+  const canModThisPost = canModerate && !(user?.id === CATOTHERAT_ID && userId === BAZICIOSCHI_ID);
+
   const handleDelete = async () => {
-    if (!user || user.id !== userId) return;
+    if (!user) return;
+    if (user.id !== userId && !canModThisPost) return;
     setIsDeleting(true);
     playClick();
-    await supabase.from('posts').delete().eq('id', id);
+    const { error } = await supabase.from('posts').delete().eq('id', id);
+    if (error) {
+      toast({ title: 'Failed to delete', description: error.message, variant: 'destructive' });
+    }
     onDelete();
     setIsDeleting(false);
   };
 
   const handleBlock = async () => {
-    if (!canModerate) return;
+    if (!canModThisPost) return;
     setIsDeleting(true);
     playClick();
-    await supabase.from('posts').update({ blocked: true }).eq('id', id);
+    const { error } = await supabase.from('posts').update({ blocked: true }).eq('id', id);
+    if (error) {
+      toast({ title: 'Failed to block', description: error.message, variant: 'destructive' });
+    }
     onDelete();
     setIsDeleting(false);
   };
