@@ -340,6 +340,22 @@ export default function CollabPost() {
             </div>
           )}
 
+          {/* Video preview */}
+          {videoPreview && (
+            <div className="relative mt-3 rounded overflow-hidden minecraft-border">
+              <video src={videoPreview} controls className="w-full max-h-96 bg-black" />
+              <Button
+                type="button"
+                variant="secondary"
+                size="icon"
+                className="absolute top-1 right-1 h-6 w-6"
+                onClick={removeVideo}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
+
           <div className="flex items-center justify-between pt-3 border-t border-border mt-3">
             <div className="flex items-center gap-2">
               <input
@@ -350,15 +366,32 @@ export default function CollabPost() {
                 className="hidden"
                 onChange={handleImageUpload}
               />
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/*"
+                className="hidden"
+                onChange={handleVideoUpload}
+              />
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={uploading || imageUrls.length >= MAX_IMAGES}
+                disabled={uploading || imageUrls.length >= MAX_IMAGES || !!videoUrl}
                 title="Add images"
               >
                 <ImagePlus className="h-5 w-5 text-primary" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => videoInputRef.current?.click()}
+                disabled={uploading || !!videoUrl || imageUrls.length > 0}
+                title="Add video"
+              >
+                <Video className="h-5 w-5 text-primary" />
               </Button>
               {uploading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
             </div>
