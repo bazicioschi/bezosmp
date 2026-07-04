@@ -170,10 +170,20 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
     setInvitees([{ user_id: inviteeId, username: inviteeUsername }]);
     setSearchQuery('');
     setSearchResults([]);
+    setImageUrls([]);
+    setImagePreviews([]);
+    setVideoUrl(null);
+    setVideoPreview(null);
   };
+
+  const hasMedia = imageUrls.length > 0 || !!videoUrl;
 
   const handleInvite = async () => {
     if (!user || !subject.trim() || invitees.length === 0) return;
+    if (!hasMedia) {
+      toast({ title: 'Media required', description: 'Add at least one image or a video for the collab post.', variant: 'destructive' });
+      return;
+    }
     setLoading(true);
 
     try {
@@ -186,12 +196,16 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
 
       if (!myProfile) throw new Error('Profile not found');
 
+      const imagesField = imageUrls.length > 0 ? JSON.stringify(imageUrls) : null;
+
       // Insert one invite row per invitee (no session_id column needed)
       const inviteRows = invitees.map(inv => ({
         inviter_id: user.id,
         invitee_id: inv.user_id,
         subject: subject.trim(),
         status: 'pending',
+        image_urls: imagesField,
+        video_url: videoUrl,
       }));
 
       const { data: collabs, error: collabError } = await supabase
