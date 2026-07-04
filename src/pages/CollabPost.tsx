@@ -364,9 +364,6 @@ export default function CollabPost() {
           </p>
 
           <div className="flex items-center justify-end pt-3 border-t border-border mt-3">
-            <div className="flex items-center gap-2">
-
-
             <Button
               onClick={handlePublish}
               disabled={!content.trim() || publishing || uploading}
