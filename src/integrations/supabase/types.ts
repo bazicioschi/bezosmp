@@ -255,32 +255,38 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          image_urls: string | null
           invitee_id: string
           inviter_id: string
           post_id: string | null
           session_id: string | null
           status: string
           subject: string
+          video_url: string | null
         }
         Insert: {
           created_at?: string
           id?: string
+          image_urls?: string | null
           invitee_id: string
           inviter_id: string
           post_id?: string | null
           session_id?: string | null
           status?: string
           subject: string
+          video_url?: string | null
         }
         Update: {
           created_at?: string
           id?: string
+          image_urls?: string | null
           invitee_id?: string
           inviter_id?: string
           post_id?: string | null
           session_id?: string | null
           status?: string
           subject?: string
+          video_url?: string | null
         }
         Relationships: [
           {
