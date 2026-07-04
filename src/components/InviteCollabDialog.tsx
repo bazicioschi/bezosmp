@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Users, X, Search, Loader2 } from 'lucide-react';
+import { Users, X, Search, Loader2, ImagePlus, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,7 +38,72 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Invitee[]>([]);
   const [searching, setSearching] = useState(false);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<number | null>(null);
+
+  const MAX_IMAGES = 10;
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !user) return;
+    const remaining = MAX_IMAGES - imageUrls.length;
+    const toUpload = Array.from(files).slice(0, remaining);
+    for (const file of toUpload) {
+      if (!file.type.startsWith('image/')) continue;
+      if (file.size > 5 * 1024 * 1024) {
+        toast({ title: 'File too large', description: `${file.name} must be under 5MB`, variant: 'destructive' });
+        continue;
+      }
+      setUploading(true);
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreviews(prev => [...prev, reader.result as string]);
+      reader.readAsDataURL(file);
+      const { error } = await supabase.storage.from('post-images').upload(fileName, file);
+      if (!error) {
+        const { data } = supabase.storage.from('post-images').getPublicUrl(fileName);
+        setImageUrls(prev => [...prev, data.publicUrl]);
+      }
+      setUploading(false);
+    }
+  };
+
+  const removeImage = (i: number) => {
+    setImageUrls(prev => prev.filter((_, idx) => idx !== i));
+    setImagePreviews(prev => prev.filter((_, idx) => idx !== i));
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (!file.type.startsWith('video/')) return;
+    if (file.size > 5 * 1024 * 1024 * 1024) {
+      toast({ title: 'File too large', description: 'Video must be under 5GB', variant: 'destructive' });
+      return;
+    }
+    setUploading(true);
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'mp4';
+    const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    setVideoPreview(URL.createObjectURL(file));
+    const { error } = await supabase.storage.from('post-videos').upload(fileName, file, { contentType: file.type });
+    if (!error) {
+      const { data } = supabase.storage.from('post-videos').getPublicUrl(fileName);
+      setVideoUrl(data.publicUrl);
+    } else {
+      toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
+      setVideoPreview(null);
+    }
+    setUploading(false);
+  };
+
+  const removeVideo = () => { setVideoUrl(null); setVideoPreview(null); };
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -105,10 +170,20 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
     setInvitees([{ user_id: inviteeId, username: inviteeUsername }]);
     setSearchQuery('');
     setSearchResults([]);
+    setImageUrls([]);
+    setImagePreviews([]);
+    setVideoUrl(null);
+    setVideoPreview(null);
   };
+
+  const hasMedia = imageUrls.length > 0 || !!videoUrl;
 
   const handleInvite = async () => {
     if (!user || !subject.trim() || invitees.length === 0) return;
+    if (!hasMedia) {
+      toast({ title: 'Media required', description: 'Add at least one image or a video for the collab post.', variant: 'destructive' });
+      return;
+    }
     setLoading(true);
 
     try {
@@ -121,12 +196,16 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
 
       if (!myProfile) throw new Error('Profile not found');
 
+      const imagesField = imageUrls.length > 0 ? JSON.stringify(imageUrls) : null;
+
       // Insert one invite row per invitee (no session_id column needed)
       const inviteRows = invitees.map(inv => ({
         inviter_id: user.id,
         invitee_id: inv.user_id,
         subject: subject.trim(),
         status: 'pending',
+        image_urls: imagesField,
+        video_url: videoUrl,
       }));
 
       const { data: collabs, error: collabError } = await supabase
@@ -263,12 +342,54 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
             />
             <p className="text-xs text-muted-foreground">{subject.length}/200</p>
           </div>
+
+          {/* Media (inviter provides) */}
+          <div className="space-y-2">
+            <Label className="font-display text-sm">Media (required)</Label>
+            <p className="text-xs text-muted-foreground -mt-1">
+              You add the image(s) or video. The invitee writes the caption and publishes.
+            </p>
+
+            {imagePreviews.length > 0 && (
+              <div className={`grid gap-2 ${imagePreviews.length === 1 ? 'grid-cols-1' : imagePreviews.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                {imagePreviews.map((src, i) => (
+                  <div key={i} className="relative rounded overflow-hidden aspect-square minecraft-border">
+                    <img src={src} alt="" className="w-full h-full object-cover" />
+                    <Button type="button" variant="secondary" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => removeImage(i)}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {videoPreview && (
+              <div className="relative rounded overflow-hidden minecraft-border">
+                <video src={videoPreview} controls className="w-full max-h-64 bg-black" />
+                <Button type="button" variant="secondary" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={removeVideo}>
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2">
+              <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
+              <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} />
+              <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploading || imageUrls.length >= MAX_IMAGES || !!videoUrl} className="gap-1.5">
+                <ImagePlus className="h-4 w-4" /> Add image
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => videoInputRef.current?.click()} disabled={uploading || !!videoUrl || imageUrls.length > 0} className="gap-1.5">
+                <Video className="h-4 w-4" /> Add video
+              </Button>
+              {uploading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            </div>
+          </div>
         </div>
         <DialogFooter className="gap-2">
           <Button variant="ghost" onClick={() => setOpen(false)} disabled={loading}>
             Cancel
           </Button>
-          <Button onClick={handleInvite} disabled={!subject.trim() || loading} className="font-display gap-1.5">
+          <Button onClick={handleInvite} disabled={!subject.trim() || loading || uploading || !hasMedia} className="font-display gap-1.5">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Users className="h-4 w-4" />}
             {loading ? 'Sending…' : `Send Invite${invitees.length > 1 ? 's' : ''}`}
           </Button>

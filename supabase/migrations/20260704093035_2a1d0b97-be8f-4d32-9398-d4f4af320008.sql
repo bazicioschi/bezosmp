@@ -1,0 +1,1 @@
+ALTER TABLE public.post_collaborations ADD COLUMN IF NOT EXISTS image_urls text, ADD COLUMN IF NOT EXISTS video_url text;

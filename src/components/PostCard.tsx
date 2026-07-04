@@ -234,7 +234,9 @@ export function PostCard({
     onLikeToggle();
   };
 
-  const canModThisPost = canModerate && !(user?.id === CATOTHERAT_ID && userId === BAZICIOSCHI_ID);
+  const isCato = user?.id === CATOTHERAT_ID;
+  const catoBlocked = isCato && userId === BAZICIOSCHI_ID;
+  const canModThisPost = (canModerate || isCato) && !catoBlocked;
 
   const handleDelete = async () => {
     if (!user) return;

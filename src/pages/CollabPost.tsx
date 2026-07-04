@@ -126,6 +126,28 @@ export default function CollabPost() {
       }),
     ];
 
+    // Preload media provided by the inviter
+    const inviteAny = myInvite as any;
+    if (inviteAny.image_urls) {
+      try {
+        const parsed = JSON.parse(inviteAny.image_urls);
+        if (Array.isArray(parsed)) {
+          setImageUrls(parsed);
+          setImagePreviews(parsed);
+        } else if (typeof parsed === 'string') {
+          setImageUrls([parsed]);
+          setImagePreviews([parsed]);
+        }
+      } catch {
+        setImageUrls([inviteAny.image_urls]);
+        setImagePreviews([inviteAny.image_urls]);
+      }
+    }
+    if (inviteAny.video_url) {
+      setVideoUrl(inviteAny.video_url);
+      setVideoPreview(inviteAny.video_url);
+    }
+
     setSession({ session_id: inviteId, subject, inviter_id: inviterId, members });
     setLoading(false);
   };
@@ -320,82 +342,28 @@ export default function CollabPost() {
             className="min-h-[160px] bg-transparent border-0 resize-none text-base placeholder:text-muted-foreground focus-visible:ring-0 p-0 w-full"
           />
 
-          {/* Image previews */}
+          {/* Media provided by the inviter (read-only) */}
           {imagePreviews.length > 0 && (
             <div className={`mt-3 grid gap-2 ${imagePreviews.length === 1 ? 'grid-cols-1' : imagePreviews.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
               {imagePreviews.map((src, i) => (
                 <div key={i} className="relative rounded overflow-hidden aspect-square minecraft-border">
                   <img src={src} alt="" className="w-full h-full object-cover" />
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="icon"
-                    className="absolute top-1 right-1 h-6 w-6"
-                    onClick={() => removeImage(i)}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Video preview */}
           {videoPreview && (
             <div className="relative mt-3 rounded overflow-hidden minecraft-border">
               <video src={videoPreview} controls className="w-full max-h-96 bg-black" />
-              <Button
-                type="button"
-                variant="secondary"
-                size="icon"
-                className="absolute top-1 right-1 h-6 w-6"
-                onClick={removeVideo}
-              >
-                <X className="h-3 w-3" />
-              </Button>
             </div>
           )}
 
-          <div className="flex items-center justify-between pt-3 border-t border-border mt-3">
-            <div className="flex items-center gap-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={handleImageUpload}
-              />
-              <input
-                ref={videoInputRef}
-                type="file"
-                accept="video/*"
-                className="hidden"
-                onChange={handleVideoUpload}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading || imageUrls.length >= MAX_IMAGES || !!videoUrl}
-                title="Add images"
-              >
-                <ImagePlus className="h-5 w-5 text-primary" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => videoInputRef.current?.click()}
-                disabled={uploading || !!videoUrl || imageUrls.length > 0}
-                title="Add video"
-              >
-                <Video className="h-5 w-5 text-primary" />
-              </Button>
-              {uploading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-            </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Media was provided by the inviter. Just write your caption and publish.
+          </p>
 
+          <div className="flex items-center justify-end pt-3 border-t border-border mt-3">
             <Button
               onClick={handlePublish}
               disabled={!content.trim() || publishing || uploading}
