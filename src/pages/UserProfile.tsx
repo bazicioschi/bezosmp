@@ -411,7 +411,19 @@ export default function UserProfile() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/15 hover:bg-primary/25 border border-primary/40 hover:border-primary transition-colors text-xs font-semibold text-primary"
               >
-                <Link2 className="h-3.5 w-3.5" />
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+                  {/* left wing */}
+                  <path d="M8 10c-3 0-5-1.5-6-3 0 3 1.5 5 4 6" />
+                  <path d="M7 8c-2.5-.2-4-1-5-2 .5 2 2 3.2 4 3.6" />
+                  {/* right wing */}
+                  <path d="M16 10c3 0 5-1.5 6-3 0 3-1.5 5-4 6" />
+                  <path d="M17 8c2.5-.2 4-1 5-2-.5 2-2 3.2-4 3.6" />
+                  {/* hand / palm */}
+                  <path d="M10 13v-2a1 1 0 1 1 2 0v2" />
+                  <path d="M12 13v-3a1 1 0 1 1 2 0v3" />
+                  <path d="M14 13v-2a1 1 0 1 1 2 0v3" />
+                  <path d="M10 13v-1a1 1 0 1 0-2 0v4c0 2.5 2 4.5 4.5 4.5S17 18.5 17 16v-3" />
+                </svg>
                 pueios.lovable.app
               </a>
             </div>
