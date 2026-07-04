@@ -50,16 +50,18 @@ export default function Support() {
       .order('created_at', { ascending: false });
 
     if (data) {
-      const userIds = [...new Set(data.map(t => t.user_id))];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, username, avatar_url')
-        .in('user_id', userIds);
-
-      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+      const userIds = [...new Set(data.map(t => t.user_id).filter((x): x is string => !!x))];
+      let profileMap = new Map<string, { username: string; avatar_url: string | null }>();
+      if (userIds.length) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, username, avatar_url')
+          .in('user_id', userIds);
+        profileMap = new Map((profiles || []).map(p => [p.user_id, { username: p.username, avatar_url: p.avatar_url }]));
+      }
 
       setTickets(data.map(t => {
-        const profile = profileMap.get(t.user_id);
+        const profile = t.user_id ? profileMap.get(t.user_id) : null;
         return {
           ...t,
           username: profile?.username || (t as any).contact_name || 'Guest',
