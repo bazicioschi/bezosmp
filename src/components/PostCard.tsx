@@ -253,9 +253,17 @@ export function PostCard({
     if (!canModThisPost) return;
     setIsDeleting(true);
     playClick();
-    const { error } = await supabase.from('posts').update({ blocked: true }).eq('id', id);
+    const { data, error } = await supabase
+      .from('posts')
+      .update({ blocked: true })
+      .eq('id', id)
+      .select('id');
     if (error) {
       toast({ title: 'Failed to block', description: error.message, variant: 'destructive' });
+    } else if (!data || data.length === 0) {
+      toast({ title: 'Blocked (permission)', description: 'The database rejected the block. Contact an admin.', variant: 'destructive' });
+    } else {
+      toast({ title: 'Post blocked', description: 'This post is now hidden from users.' });
     }
     onDelete();
     setIsDeleting(false);
