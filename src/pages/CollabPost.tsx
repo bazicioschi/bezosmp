@@ -126,6 +126,28 @@ export default function CollabPost() {
       }),
     ];
 
+    // Preload media provided by the inviter
+    const inviteAny = myInvite as any;
+    if (inviteAny.image_urls) {
+      try {
+        const parsed = JSON.parse(inviteAny.image_urls);
+        if (Array.isArray(parsed)) {
+          setImageUrls(parsed);
+          setImagePreviews(parsed);
+        } else if (typeof parsed === 'string') {
+          setImageUrls([parsed]);
+          setImagePreviews([parsed]);
+        }
+      } catch {
+        setImageUrls([inviteAny.image_urls]);
+        setImagePreviews([inviteAny.image_urls]);
+      }
+    }
+    if (inviteAny.video_url) {
+      setVideoUrl(inviteAny.video_url);
+      setVideoPreview(inviteAny.video_url);
+    }
+
     setSession({ session_id: inviteId, subject, inviter_id: inviterId, members });
     setLoading(false);
   };
