@@ -402,6 +402,21 @@ export default function UserProfile() {
             </div>
           )}
 
+          {/* Puei official website button */}
+          {profile.user_id === 'a9028852-5bff-420e-90cc-20ad26c63c0f' && (
+            <div className="mt-3">
+              <a
+                href="https://pueios.lovable.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/15 hover:bg-primary/25 border border-primary/40 hover:border-primary transition-colors text-xs font-semibold text-primary"
+              >
+                <Link2 className="h-3.5 w-3.5" />
+                pueios.lovable.app
+              </a>
+            </div>
+          )}
+
           {/* Social media links */}
           {socialLinks.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
