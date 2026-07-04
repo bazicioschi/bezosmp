@@ -38,7 +38,72 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Invitee[]>([]);
   const [searching, setSearching] = useState(false);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<number | null>(null);
+
+  const MAX_IMAGES = 10;
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !user) return;
+    const remaining = MAX_IMAGES - imageUrls.length;
+    const toUpload = Array.from(files).slice(0, remaining);
+    for (const file of toUpload) {
+      if (!file.type.startsWith('image/')) continue;
+      if (file.size > 5 * 1024 * 1024) {
+        toast({ title: 'File too large', description: `${file.name} must be under 5MB`, variant: 'destructive' });
+        continue;
+      }
+      setUploading(true);
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreviews(prev => [...prev, reader.result as string]);
+      reader.readAsDataURL(file);
+      const { error } = await supabase.storage.from('post-images').upload(fileName, file);
+      if (!error) {
+        const { data } = supabase.storage.from('post-images').getPublicUrl(fileName);
+        setImageUrls(prev => [...prev, data.publicUrl]);
+      }
+      setUploading(false);
+    }
+  };
+
+  const removeImage = (i: number) => {
+    setImageUrls(prev => prev.filter((_, idx) => idx !== i));
+    setImagePreviews(prev => prev.filter((_, idx) => idx !== i));
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (!file.type.startsWith('video/')) return;
+    if (file.size > 5 * 1024 * 1024 * 1024) {
+      toast({ title: 'File too large', description: 'Video must be under 5GB', variant: 'destructive' });
+      return;
+    }
+    setUploading(true);
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'mp4';
+    const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    setVideoPreview(URL.createObjectURL(file));
+    const { error } = await supabase.storage.from('post-videos').upload(fileName, file, { contentType: file.type });
+    if (!error) {
+      const { data } = supabase.storage.from('post-videos').getPublicUrl(fileName);
+      setVideoUrl(data.publicUrl);
+    } else {
+      toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
+      setVideoPreview(null);
+    }
+    setUploading(false);
+  };
+
+  const removeVideo = () => { setVideoUrl(null); setVideoPreview(null); };
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
