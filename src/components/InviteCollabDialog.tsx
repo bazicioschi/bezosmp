@@ -342,12 +342,54 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
             />
             <p className="text-xs text-muted-foreground">{subject.length}/200</p>
           </div>
+
+          {/* Media (inviter provides) */}
+          <div className="space-y-2">
+            <Label className="font-display text-sm">Media (required)</Label>
+            <p className="text-xs text-muted-foreground -mt-1">
+              You add the image(s) or video. The invitee writes the caption and publishes.
+            </p>
+
+            {imagePreviews.length > 0 && (
+              <div className={`grid gap-2 ${imagePreviews.length === 1 ? 'grid-cols-1' : imagePreviews.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                {imagePreviews.map((src, i) => (
+                  <div key={i} className="relative rounded overflow-hidden aspect-square minecraft-border">
+                    <img src={src} alt="" className="w-full h-full object-cover" />
+                    <Button type="button" variant="secondary" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => removeImage(i)}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {videoPreview && (
+              <div className="relative rounded overflow-hidden minecraft-border">
+                <video src={videoPreview} controls className="w-full max-h-64 bg-black" />
+                <Button type="button" variant="secondary" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={removeVideo}>
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2">
+              <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
+              <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} />
+              <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploading || imageUrls.length >= MAX_IMAGES || !!videoUrl} className="gap-1.5">
+                <ImagePlus className="h-4 w-4" /> Add image
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => videoInputRef.current?.click()} disabled={uploading || !!videoUrl || imageUrls.length > 0} className="gap-1.5">
+                <Video className="h-4 w-4" /> Add video
+              </Button>
+              {uploading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            </div>
+          </div>
         </div>
         <DialogFooter className="gap-2">
           <Button variant="ghost" onClick={() => setOpen(false)} disabled={loading}>
             Cancel
           </Button>
-          <Button onClick={handleInvite} disabled={!subject.trim() || loading} className="font-display gap-1.5">
+          <Button onClick={handleInvite} disabled={!subject.trim() || loading || uploading || !hasMedia} className="font-display gap-1.5">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Users className="h-4 w-4" />}
             {loading ? 'Sending…' : `Send Invite${invitees.length > 1 ? 's' : ''}`}
           </Button>
