@@ -259,6 +259,7 @@ export type Database = {
           invitee_id: string
           inviter_id: string
           post_id: string | null
+          post_text: string | null
           session_id: string | null
           status: string
           subject: string
@@ -271,6 +272,7 @@ export type Database = {
           invitee_id: string
           inviter_id: string
           post_id?: string | null
+          post_text?: string | null
           session_id?: string | null
           status?: string
           subject: string
@@ -283,6 +285,7 @@ export type Database = {
           invitee_id?: string
           inviter_id?: string
           post_id?: string | null
+          post_text?: string | null
           session_id?: string | null
           status?: string
           subject?: string
