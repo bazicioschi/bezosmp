@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
-import { Users, X, Search, Loader2, ImagePlus, Video } from 'lucide-react';
+import { Users, X, Loader2, ImagePlus, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
@@ -16,28 +17,20 @@ import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-const MAX_INVITEES = 9; // 9 invitees + 1 inviter = 10 total
-
-interface Invitee {
-  user_id: string;
-  username: string;
-}
-
 interface InviteCollabDialogProps {
   inviteeId: string;
   inviteeUsername: string;
 }
+
+const MAX_IMAGES = 10;
 
 export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [subject, setSubject] = useState('');
+  const [postText, setPostText] = useState('');
   const [loading, setLoading] = useState(false);
-  const [invitees, setInvitees] = useState<Invitee[]>([{ user_id: inviteeId, username: inviteeUsername }]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<Invitee[]>([]);
-  const [searching, setSearching] = useState(false);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -45,9 +38,6 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
-  const debounceRef = useRef<number | null>(null);
-
-  const MAX_IMAGES = 10;
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -105,71 +95,9 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
 
   const removeVideo = () => { setVideoUrl(null); setVideoPreview(null); };
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    if (debounceRef.current) window.clearTimeout(debounceRef.current);
-    // Strip leading @ for searching
-    const term = query.trim().replace(/^@+/, '');
-    if (!term) { setSearchResults([]); return; }
-    debounceRef.current = window.setTimeout(async () => {
-      setSearching(true);
-      const excluded = [user?.id ?? '', ...invitees.map(i => i.user_id)];
-      const { data } = await supabase
-        .from('profiles')
-        .select('user_id, username')
-        .ilike('username', `${term}%`)
-        .not('user_id', 'in', `(${excluded.join(',')})`)
-        .limit(5);
-      setSearchResults(data ?? []);
-      setSearching(false);
-    }, 250);
-  };
-
-  // When user types a space or comma after @username, try to resolve and add it
-  const handleInputKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (invitees.length >= MAX_INVITEES) return;
-    const trigger = e.key === ' ' || e.key === ',' || e.key === 'Enter';
-    if (!trigger) return;
-    const term = searchQuery.trim().replace(/^@+/, '');
-    if (!term) return;
-    e.preventDefault();
-    // Exact-match lookup
-    const { data } = await supabase
-      .from('profiles')
-      .select('user_id, username')
-      .ilike('username', term)
-      .limit(1);
-    const found = data?.[0];
-    if (found && !invitees.some(i => i.user_id === found.user_id) && found.user_id !== user?.id) {
-      addInvitee(found);
-    } else if (searchResults[0]) {
-      addInvitee(searchResults[0]);
-    } else if (found && invitees.some(i => i.user_id === found.user_id)) {
-      toast({ title: 'Already added', description: `@${found.username} is already a collaborator.`, variant: 'destructive' });
-    } else if (found && found.user_id === user?.id) {
-      toast({ title: "That's you", description: "You can't invite yourself.", variant: 'destructive' });
-    } else {
-      toast({ title: 'User not found', description: `No account matches @${term}.`, variant: 'destructive' });
-    }
-  };
-
-  const addInvitee = (invitee: Invitee) => {
-    if (invitees.length >= MAX_INVITEES) return;
-    setInvitees(prev => [...prev, invitee]);
-    setSearchQuery('');
-    setSearchResults([]);
-  };
-
-  const removeInvitee = (userId: string) => {
-    if (userId === inviteeId) return; // cannot remove the preselected person
-    setInvitees(prev => prev.filter(i => i.user_id !== userId));
-  };
-
   const resetDialog = () => {
     setSubject('');
-    setInvitees([{ user_id: inviteeId, username: inviteeUsername }]);
-    setSearchQuery('');
-    setSearchResults([]);
+    setPostText('');
     setImageUrls([]);
     setImagePreviews([]);
     setVideoUrl(null);
@@ -179,7 +107,7 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
   const hasMedia = imageUrls.length > 0 || !!videoUrl;
 
   const handleInvite = async () => {
-    if (!user || !subject.trim() || invitees.length === 0) return;
+    if (!user || !subject.trim() || !postText.trim()) return;
     if (!hasMedia) {
       toast({ title: 'Media required', description: 'Add at least one image or a video for the collab post.', variant: 'destructive' });
       return;
@@ -187,7 +115,6 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
     setLoading(true);
 
     try {
-      // Fetch current user's username for the message
       const { data: myProfile } = await supabase
         .from('profiles')
         .select('username')
@@ -198,48 +125,37 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
 
       const imagesField = imageUrls.length > 0 ? JSON.stringify(imageUrls) : null;
 
-      // Insert one invite row per invitee (no session_id column needed)
-      const inviteRows = invitees.map(inv => ({
-        inviter_id: user.id,
-        invitee_id: inv.user_id,
-        subject: subject.trim(),
-        status: 'pending',
-        image_urls: imagesField,
-        video_url: videoUrl,
-      }));
-
-      const { data: collabs, error: collabError } = await supabase
+      const { data: collab, error: collabError } = await supabase
         .from('post_collaborations')
-        .insert(inviteRows)
-        .select();
+        .insert({
+          inviter_id: user.id,
+          invitee_id: inviteeId,
+          subject: subject.trim(),
+          post_text: postText.trim(),
+          status: 'pending',
+          image_urls: imagesField,
+          video_url: videoUrl,
+        })
+        .select()
+        .single();
 
-      if (collabError || !collabs) throw collabError ?? new Error('Failed to create invites');
+      if (collabError || !collab) throw collabError ?? new Error('Failed to create invite');
 
-      // Send inbox message to every invitee
-      // Include all collab IDs so CollabPost can group them
-      const allCollabIds = collabs.map(c => c.id);
-      const collaboratorNote = invitees.length > 1
-        ? ` · ${invitees.length} collaborators invited`
-        : '';
-      const messages = invitees.map((inv, idx) => ({
-        user_id: inv.user_id,
+      const { error: msgError } = await supabase.from('inbox_messages').insert({
+        user_id: inviteeId,
         type: 'collab_invite',
         subject: `${myProfile.username} has invited you to collaborate on a post`,
-        body: `Proposed subject: "${subject.trim()}"${collaboratorNote}`,
+        body: `Title: "${subject.trim()}"`,
         data: {
-          collab_id: collabs[idx].id,
-          all_collab_ids: allCollabIds,
+          collab_id: collab.id,
           inviter_id: user.id,
           inviter_username: myProfile.username,
           subject: subject.trim(),
         },
-      }));
-
-      const { error: msgError } = await supabase.from('inbox_messages').insert(messages);
+      });
       if (msgError) throw msgError;
 
-      const names = invitees.map(i => `@${i.username}`).join(', ');
-      toast({ title: 'Invitation sent!', description: `Sent to: ${names}` });
+      toast({ title: 'Invitation sent!', description: `Sent to @${inviteeUsername}` });
       setOpen(false);
       resetDialog();
     } catch (err) {
@@ -259,96 +175,45 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
           Collaborate
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display">Invite to Collaborate</DialogTitle>
+          <DialogTitle className="font-display">Invite @{inviteeUsername}</DialogTitle>
           <DialogDescription>
-            Co-author a post with up to {MAX_INVITEES} people (including yourself that's 5 total).
+            Co-author a post together. You write the title, caption and add media — they just accept and it goes live on your account with them credited.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
-          {/* Collaborators chips */}
-          <div className="space-y-2">
-            <Label className="font-display text-sm">
-              Collaborators ({invitees.length}/{MAX_INVITEES})
-            </Label>
-            <div className="flex flex-wrap gap-2 min-h-[32px]">
-              {invitees.map(inv => (
-                <span
-                  key={inv.user_id}
-                  className="inline-flex items-center gap-1.5 bg-primary/10 border border-primary/30 rounded-full px-3 py-1 text-xs font-display"
-                >
-                  @{inv.username}
-                  {inv.user_id !== inviteeId && (
-                    <button
-                      type="button"
-                      onClick={() => removeInvitee(inv.user_id)}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  )}
-                </span>
-              ))}
-            </div>
-            {/* User search to add more */}
-            {invitees.length < MAX_INVITEES && (
-              <div className="relative">
-                <div className="flex items-center gap-2 border minecraft-border rounded-md px-3 py-2">
-                  {searching ? (
-                    <Loader2 className="h-4 w-4 text-muted-foreground animate-spin shrink-0" />
-                  ) : (
-                    <Search className="h-4 w-4 text-muted-foreground shrink-0" />
-                  )}
-                  <input
-                    className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-                    placeholder="@username — press space to add another"
-                    value={searchQuery}
-                    onChange={e => handleSearch(e.target.value)}
-                    onKeyDown={handleInputKeyDown}
-                  />
-                </div>
-                {searchResults.length > 0 && (
-                  <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border rounded-md shadow-md overflow-hidden">
-                    {searchResults.map(r => (
-                      <button
-                        key={r.user_id}
-                        type="button"
-                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-accent text-sm text-left"
-                        onClick={() => addInvitee(r)}
-                      >
-                        <span className="font-medium">@{r.username}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Subject */}
+          {/* Title */}
           <div className="space-y-1">
-            <Label htmlFor="collab-subject" className="font-display text-sm">
-              Post subject
-            </Label>
+            <Label htmlFor="collab-subject" className="font-display text-sm">Title</Label>
             <Input
               id="collab-subject"
-              placeholder="Add subject"
+              placeholder="Give the collab a title"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               maxLength={200}
               className="minecraft-border"
-              onKeyDown={(e) => { if (e.key === 'Enter' && subject.trim()) handleInvite(); }}
             />
             <p className="text-xs text-muted-foreground">{subject.length}/200</p>
           </div>
 
-          {/* Media (inviter provides) */}
+          {/* Caption / post text */}
+          <div className="space-y-1">
+            <Label htmlFor="collab-text" className="font-display text-sm">Post caption</Label>
+            <Textarea
+              id="collab-text"
+              placeholder="Write the caption for the post…"
+              value={postText}
+              onChange={(e) => setPostText(e.target.value)}
+              maxLength={2000}
+              className="minecraft-border min-h-[100px]"
+            />
+            <p className="text-xs text-muted-foreground">{postText.length}/2000</p>
+          </div>
+
+          {/* Media */}
           <div className="space-y-2">
             <Label className="font-display text-sm">Media (required)</Label>
-            <p className="text-xs text-muted-foreground -mt-1">
-              You add the image(s) or video. The invitee writes the caption and publishes.
-            </p>
 
             {imagePreviews.length > 0 && (
               <div className={`grid gap-2 ${imagePreviews.length === 1 ? 'grid-cols-1' : imagePreviews.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
@@ -386,12 +251,10 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
           </div>
         </div>
         <DialogFooter className="gap-2">
-          <Button variant="ghost" onClick={() => setOpen(false)} disabled={loading}>
-            Cancel
-          </Button>
-          <Button onClick={handleInvite} disabled={!subject.trim() || loading || uploading || !hasMedia} className="font-display gap-1.5">
+          <Button variant="ghost" onClick={() => setOpen(false)} disabled={loading}>Cancel</Button>
+          <Button onClick={handleInvite} disabled={!subject.trim() || !postText.trim() || loading || uploading || !hasMedia} className="font-display gap-1.5">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Users className="h-4 w-4" />}
-            {loading ? 'Sending…' : `Send Invite${invitees.length > 1 ? 's' : ''}`}
+            {loading ? 'Sending…' : 'Send Invite'}
           </Button>
         </DialogFooter>
       </DialogContent>
