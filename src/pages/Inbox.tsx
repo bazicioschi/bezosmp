@@ -361,6 +361,14 @@ export default function Inbox() {
                         </Button>
                       </div>
                     )}
+                    {m.type === 'collab_ready' && m.data?.collab_id && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <Button size="sm" onClick={(e) => { e.stopPropagation(); markRead(m); navigate(`/collab/${m.data.collab_id}`); }} className="h-7 gap-1">
+                          <Send className="h-3 w-3" /> Post it now
+                        </Button>
+                      </div>
+                    )}
+
                     {/* Reply section */}
                     {(m.data?.inviter_id || m.data?.sender_id || m.data?.from_user_id) && m.type !== 'collab_invite' && (
                       <div className="mt-2">
