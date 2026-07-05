@@ -1,0 +1,1 @@
+ALTER TABLE public.post_collaborations ADD COLUMN IF NOT EXISTS post_text text;
