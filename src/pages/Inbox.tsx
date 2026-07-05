@@ -224,20 +224,21 @@ export default function Inbox() {
       return;
     }
 
-    // Notify the inviter
+    // Notify the inviter — they will be the one to publish
     const { error: notifyErr } = await supabase.from('inbox_messages').insert({
       user_id: inviterId,
-      type: 'collab_response',
-      subject: `${myProfile?.username ?? 'Someone'} has accepted your invitation`,
-      body: `They are ready to write the post about "${m.data?.subject}"`,
-      data: { collab_id: collabId },
+      type: 'collab_ready',
+      subject: `${myProfile?.username ?? 'Someone'} has accepted your collab — do you want to post it?`,
+      body: `Your collaboration "${m.data?.subject}" is ready to be published.`,
+      data: { collab_id: collabId, sender_id: user.id, sender_username: myProfile?.username },
     });
     if (notifyErr) console.error('Notify inviter error:', notifyErr);
 
     await supabase.from('inbox_messages').update({ read: true }).eq('id', m.id);
-    toast({ title: 'Collaboration accepted!' });
-    navigate(`/collab/${collabId}`);
+    toast({ title: 'Collaboration accepted!', description: 'The inviter will publish the post.' });
+    load();
   };
+
 
   const declineInvite = async (m: InboxMessage) => {
     const collabId = m.data?.collab_id;
