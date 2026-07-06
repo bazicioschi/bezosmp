@@ -127,8 +127,9 @@ export default function CollabPost() {
 
       toast({ title: 'Post published!', description: 'Your collaborative post is now live.' });
       navigate('/');
-    } catch {
-      toast({ title: 'Error', description: 'Failed to publish post. Please try again.', variant: 'destructive' });
+    } catch (err: any) {
+      console.error('Publish collab error:', err);
+      toast({ title: 'Error', description: err?.message || 'Failed to publish post. Please try again.', variant: 'destructive' });
     } finally {
       setPublishing(false);
     }
