@@ -2069,3 +2069,77 @@
   box-shadow: 0 0 15px rgba(170, 90, 255, 0.4), 0 0 30px rgba(170, 90, 255, 0.2), inset 0 0 15px rgba(170, 90, 255, 0.1);
   border: 2px solid rgba(170, 90, 255, 0.5) !important;
 }
+/* ============ 2000s (old social network, red) theme ============ */
+.mint-mode body,
+html.mint-mode body {
+  background: hsl(var(--background));
+  background-image: none;
+  font-family: "Lucida Grande", Tahoma, Verdana, Arial, sans-serif;
+  font-size: 12px;
+}
+
+.mint-mode .mc-text,
+.mint-mode h1, .mint-mode h2, .mint-mode h3,
+.mint-mode h4, .mint-mode h5, .mint-mode h6 {
+  font-family: "Lucida Grande", Tahoma, Verdana, Arial, sans-serif !important;
+  letter-spacing: 0;
+  text-shadow: none !important;
+}
+
+/* squared-off 2000s boxes */
+.mint-mode .minecraft-card,
+.mint-mode .mc-slot,
+.mint-mode [class*="rounded"] {
+  border-radius: 2px !important;
+}
+.mint-mode .rounded-full,
+.mint-mode [class*="avatar"] .rounded-full {
+  border-radius: 9999px !important;
+}
+
+.mint-mode .minecraft-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  box-shadow: none !important;
+}
+
+/* classic dark red title bars */
+.mint-mode header,
+.mint-mode .minecraft-card > .h-1 {
+  background: linear-gradient(180deg, hsl(0 60% 34%), hsl(0 65% 26%)) !important;
+  border-bottom: 1px solid hsl(0 60% 20%);
+}
+.mint-mode header * {
+  text-shadow: none !important;
+}
+
+/* card headers look like the old blue (now red) section bars */
+.mint-mode .minecraft-card > div:first-child {
+  background: hsl(0 35% 90%);
+}
+
+/* links + inputs */
+.mint-mode a { color: hsl(0 65% 35%); }
+.mint-mode a:hover { text-decoration: underline; }
+.mint-mode input,
+.mint-mode textarea {
+  border: 1px solid hsl(0 20% 60%) !important;
+  background: #fff !important;
+  border-radius: 2px !important;
+}
+
+/* chunky 2000s buttons */
+.mint-mode button:not([role="switch"]) {
+  border-radius: 2px !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+/* kill glow/pixel effects from the Minecraft themes */
+.mint-mode .glow-text,
+.mint-mode .redstone-glow,
+.mint-mode .pixel-border {
+  text-shadow: none !important;
+  box-shadow: none !important;
+  image-rendering: auto;
+}
