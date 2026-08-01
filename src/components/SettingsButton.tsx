@@ -17,7 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
   const { playClick } = useSoundEffects();
-  const { theme, setTheme, setCustomColor, isDark, isLight, isBaziMazi, isCato, isPizza, isGhast, isBuzzy, isCustom } = useTheme();
+  const { theme, setTheme, setCustomColor, isDark, isLight, isBaziMazi, isMint, isCato, isPizza, isGhast, isBuzzy, isCustom } = useTheme();
   const [soundsEnabled, setSoundsEnabled] = useState(true);
   const { isEnabled, setEnabled } = useSoundEffects();
   const { prefs: notifPrefs, setPref: setNotifPref } = useNotificationPrefs();
