@@ -177,7 +177,7 @@ export function SettingsButton() {
             </div>
             
             {/* Theme Options */}
-            <div className="grid grid-cols-3 gap-2 pl-12">
+            <div className="grid grid-cols-2 gap-2 pl-12">
               <button
                 onClick={() => handleThemeChange('dark')}
                 className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
@@ -187,27 +187,7 @@ export function SettingsButton() {
                 <Moon className="h-4 w-4" />
                 <span className="text-xs mc-text">Dark</span>
               </button>
-              
-              <button
-                onClick={() => handleThemeChange('ghast')}
-                className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                  isGhast ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
-                }`}
-              >
-                <Ghost className="h-4 w-4" />
-                <span className="text-xs mc-text">Ghast</span>
-              </button>
-              
-              <button
-                onClick={() => handleThemeChange('light')}
-                className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                  isLight ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
-                }`}
-              >
-                <Sun className="h-4 w-4" />
-                <span className="text-xs mc-text">Clean</span>
-              </button>
-              
+
               <button
                 onClick={() => handleThemeChange('bazimazi')}
                 className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
@@ -217,37 +197,17 @@ export function SettingsButton() {
                 <Bug className="h-4 w-4" />
                 <span className="text-xs mc-text">Bazi</span>
               </button>
-              
+
               <button
-                onClick={() => handleThemeChange('cato')}
+                onClick={() => handleThemeChange('mint')}
                 className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                  isCato ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
+                  isMint ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
                 }`}
               >
-                <Rat className="h-4 w-4" />
-                <span className="text-xs mc-text">Rat</span>
+                <Monitor className="h-4 w-4" />
+                <span className="text-xs mc-text">Mint 2000s</span>
               </button>
-              
-              <button
-                onClick={() => handleThemeChange('pizza')}
-                className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                  isPizza ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
-                }`}
-              >
-                <Pizza className="h-4 w-4" />
-                <span className="text-xs mc-text">Pizza</span>
-              </button>
-              
-              <button
-                onClick={() => handleThemeChange('buzzy')}
-                className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                  isBuzzy ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
-                }`}
-              >
-                <Flower className="h-4 w-4" />
-                <span className="text-xs mc-text">Buzzy</span>
-              </button>
-              
+
               <button
                 onClick={() => setShowColorPicker(!showColorPicker)}
                 className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
