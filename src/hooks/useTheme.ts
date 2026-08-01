@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export type ThemeMode = 'dark' | 'light' | 'bazimazi' | 'cato' | 'pizza' | 'ghast' | 'buzzy' | 'custom';
+export type ThemeMode = 'dark' | 'light' | 'bazimazi' | 'cato' | 'pizza' | 'ghast' | 'buzzy' | 'mint' | 'custom';
+
+export const AVAILABLE_THEMES: ThemeMode[] = ['dark', 'bazimazi', 'mint', 'custom'];
 
 export interface CustomThemeColors {
   primary: string;
@@ -29,8 +31,8 @@ export function hexToHsl(hex: string): { h: number; s: number; l: number } {
 
 export function useTheme() {
   const [theme, setThemeState] = useState<ThemeMode>(() => {
-    const stored = localStorage.getItem('mc-theme');
-    return (stored as ThemeMode) || 'dark';
+    const stored = localStorage.getItem('mc-theme') as ThemeMode | null;
+    return stored && AVAILABLE_THEMES.includes(stored) ? stored : 'dark';
   });
 
   const setTheme = useCallback((newTheme: ThemeMode) => {
@@ -39,10 +41,34 @@ export function useTheme() {
     
     const root = document.documentElement;
     
-    root.classList.remove('light-mode', 'dark-mode', 'bazimazi-mode', 'cato-mode', 'pizza-mode', 'ghast-mode', 'buzzy-mode');
+    root.classList.remove('light-mode', 'dark-mode', 'bazimazi-mode', 'cato-mode', 'pizza-mode', 'ghast-mode', 'buzzy-mode', 'mint-mode');
     root.style.removeProperty('color');
     
-    if (newTheme === 'light') {
+    if (newTheme === 'mint') {
+      root.classList.add('light-mode', 'mint-mode');
+      root.style.setProperty('--background', '150 12% 88%');
+      root.style.setProperty('--foreground', '150 15% 12%');
+      root.style.setProperty('--card', '150 14% 93%');
+      root.style.setProperty('--card-foreground', '150 15% 12%');
+      root.style.setProperty('--popover', '150 14% 93%');
+      root.style.setProperty('--popover-foreground', '150 15% 12%');
+      root.style.setProperty('--primary', '145 45% 32%');
+      root.style.setProperty('--primary-foreground', '0 0% 100%');
+      root.style.setProperty('--secondary', '150 12% 82%');
+      root.style.setProperty('--secondary-foreground', '150 15% 15%');
+      root.style.setProperty('--muted', '150 10% 78%');
+      root.style.setProperty('--muted-foreground', '150 8% 38%');
+      root.style.setProperty('--accent', '145 40% 70%');
+      root.style.setProperty('--accent-foreground', '150 20% 12%');
+      root.style.setProperty('--border', '150 12% 65%');
+      root.style.setProperty('--input', '150 14% 95%');
+      root.style.setProperty('--ring', '145 45% 32%');
+      root.style.setProperty('--sidebar-background', '150 14% 91%');
+      root.style.setProperty('--sidebar-foreground', '150 15% 15%');
+      root.style.setProperty('--sidebar-accent', '150 12% 84%');
+      root.style.setProperty('--sidebar-accent-foreground', '150 15% 15%');
+      root.style.setProperty('--sidebar-border', '150 12% 70%');
+    } else if (newTheme === 'light') {
       root.classList.add('light-mode');
       root.style.setProperty('--background', '0 0% 98%');
       root.style.setProperty('--foreground', '0 72% 45%');
@@ -280,10 +306,9 @@ export function useTheme() {
   }, []);
 
   const toggleTheme = useCallback(() => {
-    const themes: ThemeMode[] = ['dark', 'light', 'bazimazi', 'cato', 'pizza', 'ghast', 'buzzy', 'custom'];
-    const currentIndex = themes.indexOf(theme);
-    const nextIndex = (currentIndex + 1) % themes.length;
-    setTheme(themes[nextIndex]);
+    const currentIndex = AVAILABLE_THEMES.indexOf(theme);
+    const nextIndex = (currentIndex + 1) % AVAILABLE_THEMES.length;
+    setTheme(AVAILABLE_THEMES[nextIndex]);
   }, [theme, setTheme]);
 
   return {
@@ -294,6 +319,7 @@ export function useTheme() {
     isDark: theme === 'dark',
     isLight: theme === 'light',
     isBaziMazi: theme === 'bazimazi',
+    isMint: theme === 'mint',
     isCato: theme === 'cato',
     isPizza: theme === 'pizza',
     isGhast: theme === 'ghast',

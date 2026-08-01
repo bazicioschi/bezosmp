@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Palette, User, Bell } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Palette, User, Bell, Monitor } from 'lucide-react';
 import { useNotificationPrefs, NOTIF_CATEGORY_LABELS, type NotifCategory } from '@/hooks/useNotificationPrefs';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,7 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
   const { playClick } = useSoundEffects();
-  const { theme, setTheme, setCustomColor, isDark, isLight, isBaziMazi, isCato, isPizza, isGhast, isBuzzy, isCustom } = useTheme();
+  const { theme, setTheme, setCustomColor, isDark, isLight, isBaziMazi, isMint, isCato, isPizza, isGhast, isBuzzy, isCustom } = useTheme();
   const [soundsEnabled, setSoundsEnabled] = useState(true);
   const { isEnabled, setEnabled } = useSoundEffects();
   const { prefs: notifPrefs, setPref: setNotifPref } = useNotificationPrefs();
@@ -70,24 +70,16 @@ export function SettingsButton() {
 
   const getThemeIcon = () => {
     if (isCustom) return <Palette className="h-4 w-4 text-primary" />;
-    if (isDark) return <Moon className="h-4 w-4 text-primary" />;
+    if (isMint) return <Monitor className="h-4 w-4 text-primary" />;
     if (isBaziMazi) return <Bug className="h-4 w-4 text-primary" />;
-    if (isCato) return <Rat className="h-4 w-4 text-primary" />;
-    if (isPizza) return <Pizza className="h-4 w-4 text-primary" />;
-    if (isGhast) return <Ghost className="h-4 w-4 text-primary" />;
-    if (isBuzzy) return <Flower className="h-4 w-4 text-primary" />;
-    return <Sun className="h-4 w-4 text-primary" />;
+    return <Moon className="h-4 w-4 text-primary" />;
   };
 
   const getThemeName = () => {
     if (isCustom) return 'Custom Color';
-    if (isDark) return 'Red & Black (Minecraft)';
+    if (isMint) return 'Linux Mint (2000s)';
     if (isBaziMazi) return 'BaziMazi (Ladybug)';
-    if (isCato) return 'Rat';
-    if (isPizza) return 'Pizza (Green)';
-    if (isGhast) return 'Ghast (Minecraft)';
-    if (isBuzzy) return 'Buzzy (Bee)';
-    return 'Red & White (Clean)';
+    return 'Red & Black (Minecraft)';
   };
 
   return (
@@ -177,7 +169,7 @@ export function SettingsButton() {
             </div>
             
             {/* Theme Options */}
-            <div className="grid grid-cols-3 gap-2 pl-12">
+            <div className="grid grid-cols-2 gap-2 pl-12">
               <button
                 onClick={() => handleThemeChange('dark')}
                 className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
@@ -187,27 +179,7 @@ export function SettingsButton() {
                 <Moon className="h-4 w-4" />
                 <span className="text-xs mc-text">Dark</span>
               </button>
-              
-              <button
-                onClick={() => handleThemeChange('ghast')}
-                className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                  isGhast ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
-                }`}
-              >
-                <Ghost className="h-4 w-4" />
-                <span className="text-xs mc-text">Ghast</span>
-              </button>
-              
-              <button
-                onClick={() => handleThemeChange('light')}
-                className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                  isLight ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
-                }`}
-              >
-                <Sun className="h-4 w-4" />
-                <span className="text-xs mc-text">Clean</span>
-              </button>
-              
+
               <button
                 onClick={() => handleThemeChange('bazimazi')}
                 className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
@@ -217,37 +189,17 @@ export function SettingsButton() {
                 <Bug className="h-4 w-4" />
                 <span className="text-xs mc-text">Bazi</span>
               </button>
-              
+
               <button
-                onClick={() => handleThemeChange('cato')}
+                onClick={() => handleThemeChange('mint')}
                 className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                  isCato ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
+                  isMint ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
                 }`}
               >
-                <Rat className="h-4 w-4" />
-                <span className="text-xs mc-text">Rat</span>
+                <Monitor className="h-4 w-4" />
+                <span className="text-xs mc-text">Mint 2000s</span>
               </button>
-              
-              <button
-                onClick={() => handleThemeChange('pizza')}
-                className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                  isPizza ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
-                }`}
-              >
-                <Pizza className="h-4 w-4" />
-                <span className="text-xs mc-text">Pizza</span>
-              </button>
-              
-              <button
-                onClick={() => handleThemeChange('buzzy')}
-                className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                  isBuzzy ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
-                }`}
-              >
-                <Flower className="h-4 w-4" />
-                <span className="text-xs mc-text">Buzzy</span>
-              </button>
-              
+
               <button
                 onClick={() => setShowColorPicker(!showColorPicker)}
                 className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
@@ -357,7 +309,7 @@ export function SettingsButton() {
 
           <div className="pt-2 border-t border-border">
             <p className="text-xs text-muted-foreground text-center mc-text">
-              bezoSMP 2.8
+              bezoSMP 2.9
             </p>
           </div>
         </div>
