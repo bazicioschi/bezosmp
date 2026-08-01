@@ -45,29 +45,31 @@ export function useTheme() {
     root.style.removeProperty('color');
     
     if (newTheme === 'mint') {
+      // 2000s social-network look (old Facebook layout) in red
       root.classList.add('light-mode', 'mint-mode');
-      root.style.setProperty('--background', '150 12% 88%');
-      root.style.setProperty('--foreground', '150 15% 12%');
-      root.style.setProperty('--card', '150 14% 93%');
-      root.style.setProperty('--card-foreground', '150 15% 12%');
-      root.style.setProperty('--popover', '150 14% 93%');
-      root.style.setProperty('--popover-foreground', '150 15% 12%');
-      root.style.setProperty('--primary', '145 45% 32%');
+      root.style.setProperty('--background', '0 15% 92%');
+      root.style.setProperty('--foreground', '0 10% 15%');
+      root.style.setProperty('--card', '0 0% 100%');
+      root.style.setProperty('--card-foreground', '0 10% 15%');
+      root.style.setProperty('--popover', '0 0% 100%');
+      root.style.setProperty('--popover-foreground', '0 10% 15%');
+      root.style.setProperty('--primary', '0 65% 38%');
       root.style.setProperty('--primary-foreground', '0 0% 100%');
-      root.style.setProperty('--secondary', '150 12% 82%');
-      root.style.setProperty('--secondary-foreground', '150 15% 15%');
-      root.style.setProperty('--muted', '150 10% 78%');
-      root.style.setProperty('--muted-foreground', '150 8% 38%');
-      root.style.setProperty('--accent', '145 40% 70%');
-      root.style.setProperty('--accent-foreground', '150 20% 12%');
-      root.style.setProperty('--border', '150 12% 65%');
-      root.style.setProperty('--input', '150 14% 95%');
-      root.style.setProperty('--ring', '145 45% 32%');
-      root.style.setProperty('--sidebar-background', '150 14% 91%');
-      root.style.setProperty('--sidebar-foreground', '150 15% 15%');
-      root.style.setProperty('--sidebar-accent', '150 12% 84%');
-      root.style.setProperty('--sidebar-accent-foreground', '150 15% 15%');
-      root.style.setProperty('--sidebar-border', '150 12% 70%');
+      root.style.setProperty('--secondary', '0 35% 88%');
+      root.style.setProperty('--secondary-foreground', '0 55% 28%');
+      root.style.setProperty('--muted', '0 12% 86%');
+      root.style.setProperty('--muted-foreground', '0 8% 40%');
+      root.style.setProperty('--accent', '0 45% 82%');
+      root.style.setProperty('--accent-foreground', '0 60% 25%');
+      root.style.setProperty('--border', '0 25% 70%');
+      root.style.setProperty('--input', '0 0% 100%');
+      root.style.setProperty('--ring', '0 65% 38%');
+      root.style.setProperty('--sidebar-background', '0 20% 95%');
+      root.style.setProperty('--sidebar-foreground', '0 10% 18%');
+      root.style.setProperty('--sidebar-accent', '0 35% 88%');
+      root.style.setProperty('--sidebar-accent-foreground', '0 60% 25%');
+      root.style.setProperty('--sidebar-border', '0 25% 75%');
+
     } else if (newTheme === 'light') {
       root.classList.add('light-mode');
       root.style.setProperty('--background', '0 0% 98%');
