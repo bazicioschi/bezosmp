@@ -8,6 +8,8 @@ import { useAuth, BANNED_FLAG_KEY, type BannedInfo } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
+import { lovable } from '@/integrations/lovable/index';
+import { GoogleIcon } from '@/components/GoogleIcon';
 
 export default function Login() {
   const navigate = useNavigate();
