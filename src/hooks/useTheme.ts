@@ -306,10 +306,9 @@ export function useTheme() {
   }, []);
 
   const toggleTheme = useCallback(() => {
-    const themes: ThemeMode[] = ['dark', 'light', 'bazimazi', 'cato', 'pizza', 'ghast', 'buzzy', 'custom'];
-    const currentIndex = themes.indexOf(theme);
-    const nextIndex = (currentIndex + 1) % themes.length;
-    setTheme(themes[nextIndex]);
+    const currentIndex = AVAILABLE_THEMES.indexOf(theme);
+    const nextIndex = (currentIndex + 1) % AVAILABLE_THEMES.length;
+    setTheme(AVAILABLE_THEMES[nextIndex]);
   }, [theme, setTheme]);
 
   return {
@@ -320,6 +319,7 @@ export function useTheme() {
     isDark: theme === 'dark',
     isLight: theme === 'light',
     isBaziMazi: theme === 'bazimazi',
+    isMint: theme === 'mint',
     isCato: theme === 'cato',
     isPizza: theme === 'pizza',
     isGhast: theme === 'ghast',
