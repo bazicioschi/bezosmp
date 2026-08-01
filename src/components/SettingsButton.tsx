@@ -70,24 +70,16 @@ export function SettingsButton() {
 
   const getThemeIcon = () => {
     if (isCustom) return <Palette className="h-4 w-4 text-primary" />;
-    if (isDark) return <Moon className="h-4 w-4 text-primary" />;
+    if (isMint) return <Monitor className="h-4 w-4 text-primary" />;
     if (isBaziMazi) return <Bug className="h-4 w-4 text-primary" />;
-    if (isCato) return <Rat className="h-4 w-4 text-primary" />;
-    if (isPizza) return <Pizza className="h-4 w-4 text-primary" />;
-    if (isGhast) return <Ghost className="h-4 w-4 text-primary" />;
-    if (isBuzzy) return <Flower className="h-4 w-4 text-primary" />;
-    return <Sun className="h-4 w-4 text-primary" />;
+    return <Moon className="h-4 w-4 text-primary" />;
   };
 
   const getThemeName = () => {
     if (isCustom) return 'Custom Color';
-    if (isDark) return 'Red & Black (Minecraft)';
+    if (isMint) return 'Linux Mint (2000s)';
     if (isBaziMazi) return 'BaziMazi (Ladybug)';
-    if (isCato) return 'Rat';
-    if (isPizza) return 'Pizza (Green)';
-    if (isGhast) return 'Ghast (Minecraft)';
-    if (isBuzzy) return 'Buzzy (Bee)';
-    return 'Red & White (Clean)';
+    return 'Red & Black (Minecraft)';
   };
 
   return (
