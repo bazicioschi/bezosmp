@@ -207,6 +207,33 @@ export default function Login() {
             </Button>
           </form>
 
+          <div className="flex items-center gap-3 my-6">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground font-display">OR</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full h-12 font-display tracking-wide minecraft-border gap-2"
+            onClick={async () => {
+              const result = await lovable.auth.signInWithOAuth('google', {
+                redirect_uri: window.location.origin,
+              });
+              if (result.error) {
+                toast({ title: 'Google sign-in failed', description: result.error.message, variant: 'destructive' });
+                return;
+              }
+              if (result.redirected) return;
+              navigate('/');
+            }}
+          >
+            <GoogleIcon />
+            CONTINUE WITH GOOGLE
+          </Button>
+
+
           <p className="text-center text-sm text-muted-foreground mt-6">
             Don't have an account?{' '}
             <Link to="/signup" className="text-primary hover:underline font-display font-medium">
