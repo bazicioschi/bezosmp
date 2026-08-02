@@ -74,14 +74,6 @@ export function Footer() {
             >
               r/bezocomunity
             </a>
-            <a
-              href="https://pueios.lovable.app"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block text-xs text-muted-foreground hover:text-primary transition-colors mt-1"
-            >
-              pueios.lovable.app
-            </a>
           </div>
         </div>
 
