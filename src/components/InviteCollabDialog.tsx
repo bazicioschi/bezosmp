@@ -74,8 +74,8 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
     const file = e.target.files?.[0];
     if (!file || !user) return;
     if (!file.type.startsWith('video/')) return;
-    if (file.size > 5 * 1024 * 1024 * 1024) {
-      toast({ title: 'File too large', description: 'Video must be under 5GB', variant: 'destructive' });
+    if (file.size > 10 * 1024 * 1024 * 1024) {
+      toast({ title: 'File too large', description: 'Video must be under 10GB', variant: 'destructive' });
       return;
     }
     setUploading(true);

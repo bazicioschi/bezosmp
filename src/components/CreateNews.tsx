@@ -90,8 +90,8 @@ export function CreateNews({ onNewsCreated }: CreateNewsProps) {
       toast({ title: 'Error', description: 'Please select a valid video file', variant: 'destructive' });
       return;
     }
-    if (file.size > 5 * 1024 * 1024 * 1024) {
-      toast({ title: 'Error', description: 'Video must be less than 5GB', variant: 'destructive' });
+    if (file.size > 10 * 1024 * 1024 * 1024) {
+      toast({ title: 'Error', description: 'Video must be less than 10GB', variant: 'destructive' });
       return;
     }
 
