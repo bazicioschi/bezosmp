@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { User, Loader2, MessageCircle, ArrowLeft, UserPlus, CalendarDays, Crown, Shield, Pencil, Lock, Link2 } from 'lucide-react';
+import { User, Loader2, MessageCircle, ArrowLeft, UserPlus, CalendarDays, Crown, Shield, Pencil, Lock, Link2, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -354,6 +354,18 @@ export default function UserProfile() {
           
           {profile.bio && !isPrivate && (
             <p className={`text-sm mt-2 ${theme === 'bazimazi' ? 'text-black' : 'text-foreground'}`}>{profile.bio}</p>
+          )}
+
+          {profile.username.toLowerCase().replace(/\s+/g, '') === 'pueioficial' && (
+            <a
+              href="https://pueipedia.camdvr.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 border border-primary/30 hover:bg-primary/20 hover:border-primary/50 transition-colors text-sm font-medium text-primary"
+            >
+              <ExternalLink className="h-4 w-4" />
+              wanna pueificate your day? visit us at pueipedia.camdvr.org
+            </a>
           )}
 
           <div className={`flex items-center gap-1 mt-2 ${theme === 'bazimazi' ? 'text-black' : 'text-white'}`}>
