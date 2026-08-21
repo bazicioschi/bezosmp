@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { User, Loader2, MessageCircle, ArrowLeft, UserPlus, CalendarDays, Crown, Shield, Pencil, Lock, Link2 } from 'lucide-react';
+import { User, Loader2, MessageCircle, ArrowLeft, UserPlus, CalendarDays, Crown, Shield, Pencil, Lock, Link2, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
