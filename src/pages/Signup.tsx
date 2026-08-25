@@ -6,8 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
-import { lovable } from '@/integrations/lovable/index';
-import { GoogleIcon } from '@/components/GoogleIcon';
 
 export default function Signup() {
   const navigate = useNavigate();
