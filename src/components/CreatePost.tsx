@@ -9,7 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Progress } from '@/components/ui/progress';
 import { MentionInput } from './MentionInput';
 import { useRestrictions } from '@/hooks/useRestrictions';
-import { runAutomod } from '@/lib/automod';
+import { runPostSwearCheck } from '@/lib/automod';
 
 interface CreatePostProps {
   onPostCreated: () => void;
@@ -307,6 +307,30 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     if (!content.trim() && !hasMedia) return;
 
     setLoading(true);
+
+    // Swearing check BEFORE posting — warnings first, ban on 5th offence
+    if (content.trim()) {
+      const swear = await runPostSwearCheck(user.id, content.trim());
+      if (swear.flagged) {
+        if (swear.banned) {
+          toast({
+            title: '⛔ Too much swearing! To bad mate !',
+            description: 'You are banned for 1 hour.',
+            variant: 'destructive',
+          });
+          setTimeout(() => window.location.reload(), 1500);
+        } else {
+          toast({
+            title: `⚠️ Warning ${swear.strikes}/5 — watch your language`,
+            description: `Your post was not published. ${swear.remaining} more and you get banned for 1 hour.`,
+            variant: 'destructive',
+          });
+        }
+        setLoading(false);
+        return;
+      }
+    }
+
     // Store first image in image_url for backward compatibility, store all as JSON if multiple
     const { data: newPost, error } = await supabase.from('posts').insert({
       user_id: user.id,
