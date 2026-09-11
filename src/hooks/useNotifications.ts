@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { getNotificationPrefs } from '@/hooks/useNotificationPrefs';
@@ -16,8 +16,26 @@ interface Notification {
   requestId?: string;
 }
 
+const dismissedKey = (uid: string) => `bezosmp:dismissed_notifs:${uid}`;
+
+function loadDismissed(uid: string): Set<string> {
+  try {
+    const raw = localStorage.getItem(dismissedKey(uid));
+    return new Set<string>(raw ? JSON.parse(raw) : []);
+  } catch {
+    return new Set<string>();
+  }
+}
+
+function saveDismissed(uid: string, set: Set<string>) {
+  try {
+    localStorage.setItem(dismissedKey(uid), JSON.stringify([...set].slice(-300)));
+  } catch {}
+}
+
 export function useNotifications() {
   const { user } = useAuth();
+  const dismissedRef = useRef<Set<string>>(new Set());
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadInbox, setUnreadInbox] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -29,6 +47,7 @@ export function useNotifications() {
       setNotifications([]);
       return;
     }
+    dismissedRef.current = loadDismissed(user.id);
     fetchUnreadCount();
     setupRealtimeSubscription();
     return () => { supabase.channel('notifications').unsubscribe(); };
@@ -51,6 +70,14 @@ export function useNotifications() {
     setUnreadInbox(inboxCount || 0);
   };
 
+  const addNotification = (notification: Notification) => {
+    if (dismissedRef.current.has(notification.id)) return;
+    setNotifications((prev) => {
+      if (prev.some((n) => n.id === notification.id)) return prev;
+      return [notification, ...prev].slice(0, 10);
+    });
+  };
+
   const setupRealtimeSubscription = () => {
     if (!user) return;
     supabase
@@ -58,7 +85,7 @@ export function useNotifications() {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` }, (payload) => {
         if (!getNotificationPrefs().message) return;
         setUnreadMessages((prev) => prev + 1);
-        fetchSenderInfo(payload.new as { sender_id: string; content: string; created_at: string });
+        fetchSenderInfo(payload.new as { id: string; sender_id: string; content: string; created_at: string });
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` }, (payload) => {
         const oldMsg = payload.old as { read: boolean };
@@ -111,7 +138,7 @@ export function useNotifications() {
     const { data: profile } = await supabase.from('profiles').select('username').eq('user_id', like.user_id).maybeSingle();
     const snippet = (post.content || '').substring(0, 40);
     const notification: Notification = {
-      id: `like-${like.post_id}-${like.user_id}-${Date.now()}`,
+      id: `like-${like.post_id}-${like.user_id}`,
       type: 'like',
       senderId: like.user_id,
       senderName: profile?.username || 'Someone',
@@ -120,7 +147,7 @@ export function useNotifications() {
       read: false,
       postId: like.post_id,
     };
-    setNotifications((prev) => [notification, ...prev].slice(0, 10));
+    addNotification(notification);
   };
 
   const handleAccessRequestNotification = async (req: { id: string; requester_id: string; created_at: string }) => {
@@ -135,7 +162,7 @@ export function useNotifications() {
       read: false,
       requestId: req.id,
     };
-    setNotifications((prev) => [notification, ...prev].slice(0, 10));
+    addNotification(notification);
   };
 
   const handlePostBlockedNotification = (post: { id: string; content?: string; created_at: string }) => {
@@ -150,7 +177,7 @@ export function useNotifications() {
       read: false,
       postId: post.id,
     };
-    setNotifications((prev) => [notification, ...prev].slice(0, 10));
+    addNotification(notification);
   };
 
   const handleNewsNotification = async (news: { id: string; user_id: string; title: string; created_at: string }) => {
@@ -164,7 +191,7 @@ export function useNotifications() {
       createdAt: news.created_at,
       read: false,
     };
-    setNotifications((prev) => [notification, ...prev].slice(0, 10));
+    addNotification(notification);
   };
 
   const handleNewTicketNotification = async (ticket: { user_id: string; id: string; subject: string; message: string; created_at: string }) => {
@@ -173,7 +200,7 @@ export function useNotifications() {
     if (!userRoles.includes('admin') && !userRoles.includes('moderator')) return;
     const { data: profile } = await supabase.from('profiles').select('username').eq('user_id', ticket.user_id).maybeSingle();
     const notification: Notification = {
-      id: `new-ticket-${Date.now()}`,
+      id: `new-ticket-${ticket.id}`,
       type: 'new_ticket',
       senderId: ticket.user_id,
       senderName: profile?.username || 'Unknown',
@@ -183,7 +210,7 @@ export function useNotifications() {
       ticketId: ticket.id,
     };
     setUnreadMessages((prev) => prev + 1);
-    setNotifications((prev) => [notification, ...prev].slice(0, 10));
+    addNotification(notification);
   };
 
   const handleTicketReplyNotification = async (reply: { user_id: string; ticket_id: string; message: string; created_at: string }) => {
@@ -191,7 +218,7 @@ export function useNotifications() {
     if (!ticket || ticket.user_id !== user?.id) return;
     const { data: profile } = await supabase.from('profiles').select('username').eq('user_id', reply.user_id).maybeSingle();
     const notification: Notification = {
-      id: `ticket-${Date.now()}`,
+      id: `ticket-reply-${reply.ticket_id}-${reply.created_at}`,
       type: 'ticket_reply',
       senderId: reply.user_id,
       senderName: profile?.username || 'Staff',
@@ -201,14 +228,14 @@ export function useNotifications() {
       ticketId: reply.ticket_id,
     };
     setUnreadMessages((prev) => prev + 1);
-    setNotifications((prev) => [notification, ...prev].slice(0, 10));
+    addNotification(notification);
   };
 
-  const fetchSenderInfo = async (msg: { sender_id: string; content: string; created_at: string }) => {
+  const fetchSenderInfo = async (msg: { id?: string; sender_id: string; content: string; created_at: string }) => {
     const { data: profile } = await supabase.from('profiles').select('username').eq('user_id', msg.sender_id).maybeSingle();
     if (profile) {
       const notification: Notification = {
-        id: `msg-${Date.now()}`,
+        id: `msg-${msg.id ?? msg.created_at}`,
         type: 'message',
         senderId: msg.sender_id,
         senderName: profile.username,
@@ -216,7 +243,7 @@ export function useNotifications() {
         createdAt: msg.created_at,
         read: false,
       };
-      setNotifications((prev) => [notification, ...prev].slice(0, 10));
+      addNotification(notification);
     }
   };
 
@@ -234,6 +261,8 @@ export function useNotifications() {
   };
 
   const clearNotification = (id: string) => {
+    dismissedRef.current.add(id);
+    if (user) saveDismissed(user.id, dismissedRef.current);
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
