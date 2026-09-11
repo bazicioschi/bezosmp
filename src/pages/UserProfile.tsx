@@ -356,6 +356,15 @@ export default function UserProfile() {
             <p className={`text-sm mt-2 ${theme === 'bazimazi' ? 'text-black' : 'text-foreground'}`}>{profile.bio}</p>
           )}
 
+          {profile.username?.toLowerCase().replace(/\s+/g, '') === 'pueioficial' && (
+            <p
+              className="mc-text text-base mt-2 text-[#f5deb3]"
+              style={{ textShadow: '0 0 6px #f5deb3, 0 0 14px rgba(245,222,179,0.7)' }}
+            >
+              puei a stricat filmarea !
+            </p>
+          )}
+
 
           <div className={`flex items-center gap-1 mt-2 ${theme === 'bazimazi' ? 'text-black' : 'text-white'}`}>
             <CalendarDays className="h-4 w-4" />

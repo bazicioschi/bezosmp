@@ -77,7 +77,7 @@ export function SettingsButton() {
 
   const getThemeName = () => {
     if (isCustom) return 'Custom Color';
-    if (isMint) return 'Linux Mint (2000s)';
+    if (isMint) return 'Old bezoSMP';
     if (isBaziMazi) return 'BaziMazi (Ladybug)';
     return 'Red & Black (Minecraft)';
   };
