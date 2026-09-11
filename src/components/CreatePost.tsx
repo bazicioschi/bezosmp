@@ -340,22 +340,6 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     }).select('id').single();
 
     if (!error) {
-      // Run automod on post content — ban if flagged
-      if (content.trim()) {
-        const banned = await runAutomod(user.id, content.trim());
-        if (banned) {
-          toast({ title: '⚠️ Post blocked', description: 'Your post contained inappropriate language. You have been temporarily banned.', variant: 'destructive' });
-          // Delete the post that was just created
-          if (newPost?.id) await supabase.from('posts').delete().eq('id', newPost.id);
-          setContent('');
-          setImageUrls([]);
-          setImagePreviews([]);
-          setVideoUrl('');
-          setVideoPreview('');
-          setLoading(false);
-          return;
-        }
-      }
       const postInvitees = [...invitees];
       const handle = inviteUsername.replace(/^@/, '').trim();
       if (handle && !postInvitees.some(i => i.username.toLowerCase() === handle.toLowerCase())) {
