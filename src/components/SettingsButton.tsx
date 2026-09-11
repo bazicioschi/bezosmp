@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Palette, User, Bell, Monitor } from 'lucide-react';
-import { useNotificationPrefs, NOTIF_CATEGORY_LABELS, type NotifCategory } from '@/hooks/useNotificationPrefs';
+import { Settings, Volume2, VolumeX, Sun, Moon, Bug, Rat, Pizza, Ghost, Flower, Palette, User, Globe, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -20,7 +19,6 @@ export function SettingsButton() {
   const { theme, setTheme, setCustomColor, isDark, isLight, isBaziMazi, isMint, isCato, isPizza, isGhast, isBuzzy, isCustom } = useTheme();
   const [soundsEnabled, setSoundsEnabled] = useState(true);
   const { isEnabled, setEnabled } = useSoundEffects();
-  const { prefs: notifPrefs, setPref: setNotifPref } = useNotificationPrefs();
   const { user } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [username, setUsername] = useState<string>('');
@@ -132,7 +130,7 @@ export function SettingsButton() {
           {/* Language */}
           <div className="flex items-center gap-3 border-t-2 border-border pt-3">
             <div className="mc-slot h-9 w-9 flex items-center justify-center">
-              <Bell className="h-4 w-4 text-primary" />
+              <Globe className="h-4 w-4 text-primary" />
             </div>
             <div>
               <p className="mc-text text-sm text-foreground">LANGUAGE</p>
@@ -183,7 +181,7 @@ export function SettingsButton() {
                 }`}
               >
                 <Monitor className="h-4 w-4" />
-                <span className="text-xs mc-text">Mint 2000s</span>
+                <span className="text-xs mc-text">Old bezoSMP</span>
               </button>
 
               <button
@@ -295,7 +293,7 @@ export function SettingsButton() {
 
           <div className="pt-2 border-t border-border">
             <p className="text-xs text-muted-foreground text-center mc-text">
-              bezoSMP 2.9
+              bezoSMP 3.0
             </p>
           </div>
         </div>
