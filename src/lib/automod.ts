@@ -131,3 +131,77 @@ export async function runAutomod(userId: string, content: string): Promise<boole
 
   return true;
 }
+
+// ─── Swearing strike system for posts ───────────────────────────────────────
+// 1st–4th swear → warning only. 5th → 1 hour ban.
+const MAX_STRIKES = 5;
+
+export type SwearResult = {
+  flagged: boolean;
+  banned: boolean;
+  strikes: number;
+  remaining: number;
+};
+
+export async function runPostSwearCheck(userId: string, content: string): Promise<SwearResult> {
+  const result = checkContent(content);
+  if (!result.flagged) return { flagged: false, banned: false, strikes: 0, remaining: MAX_STRIKES };
+
+  // Never punish the owner
+  const { data: ownerRole } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', userId)
+    .eq('role', 'owner')
+    .maybeSingle();
+  if (ownerRole) return { flagged: false, banned: false, strikes: 0, remaining: MAX_STRIKES };
+
+  const key = `automod_strikes_${userId}`;
+  const strikes = (parseInt(localStorage.getItem(key) || '0', 10) || 0) + 1;
+
+  if (strikes < MAX_STRIKES) {
+    localStorage.setItem(key, String(strikes));
+    await supabase.from('inbox_messages').insert({
+      user_id: userId,
+      type: 'bot_warning',
+      subject: `⚠️ Warning ${strikes}/${MAX_STRIKES} — watch your language`,
+      body: `Your post contained swearing and was not published. ${MAX_STRIKES - strikes} more and you get banned for 1 hour.`,
+      data: { bot: 'bezosmp', bot_name: BOT_NAME, bot_avatar: BOT_AVATAR, strikes },
+    });
+    return { flagged: true, banned: false, strikes, remaining: MAX_STRIKES - strikes };
+  }
+
+  // 5th strike → 1 hour ban
+  localStorage.removeItem(key);
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+  await supabase
+    .from('profiles')
+    .update({ automod_banned_until: expiresAt.toISOString() })
+    .eq('user_id', userId);
+
+  localStorage.setItem(
+    `automod_ban_${userId}`,
+    JSON.stringify({ expires_at: expiresAt.toISOString(), reason: 'Too much swearing! To bad mate!' })
+  );
+
+  supabase.functions.invoke('automod-ban', {
+    body: { user_id: userId, reason: 'Too much swearing! To bad mate!', expires_at: expiresAt.toISOString() },
+  }).catch(() => {});
+
+  await supabase.from('inbox_messages').insert({
+    user_id: userId,
+    type: 'bot_ban',
+    subject: '⛔ Banned for 1 hour — Too much swearing! To bad mate!',
+    body: 'You were warned 5 times about swearing. You are banned for 1 hour.',
+    data: {
+      bot: 'bezosmp',
+      bot_name: BOT_NAME,
+      bot_avatar: BOT_AVATAR,
+      ban_hours: 1,
+      expires_at: expiresAt.toISOString(),
+    },
+  });
+
+  return { flagged: true, banned: true, strikes: MAX_STRIKES, remaining: 0 };
+}
