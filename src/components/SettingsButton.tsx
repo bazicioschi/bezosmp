@@ -129,32 +129,18 @@ export function SettingsButton() {
             />
           </div>
 
-          {/* Notification Preferences */}
-          <div className="space-y-2 border-t-2 border-border pt-3">
-            <div className="flex items-center gap-3">
-              <div className="mc-slot h-9 w-9 flex items-center justify-center">
-                <Bell className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <p className="mc-text text-sm text-foreground">NOTIFICATIONS</p>
-                <p className="text-xs text-muted-foreground">Pick what alerts you</p>
-              </div>
+          {/* Language */}
+          <div className="flex items-center gap-3 border-t-2 border-border pt-3">
+            <div className="mc-slot h-9 w-9 flex items-center justify-center">
+              <Bell className="h-4 w-4 text-primary" />
             </div>
-            <div className="space-y-1.5 pl-1">
-              {(Object.keys(NOTIF_CATEGORY_LABELS) as NotifCategory[]).map((cat) => (
-                <div key={cat} className="flex items-center justify-between gap-2 py-1">
-                  <span className="text-xs text-foreground">{NOTIF_CATEGORY_LABELS[cat]}</span>
-                  <Switch
-                    checked={notifPrefs[cat]}
-                    onCheckedChange={(v) => { setNotifPref(cat, v); playClick(); }}
-                    className="data-[state=checked]:bg-primary"
-                  />
-                </div>
-              ))}
+            <div>
+              <p className="mc-text text-sm text-foreground">LANGUAGE</p>
+              <p className="text-xs text-muted-foreground">
+                Follows your device language ({(typeof navigator !== 'undefined' && navigator.language) || 'en'})
+              </p>
             </div>
           </div>
-
-
 
           {/* Theme Selection */}
           <div className="space-y-3">
