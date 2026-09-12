@@ -14,7 +14,7 @@ import { formatDistanceToNow } from 'date-fns';
 
 export function NotificationBell() {
   const navigate = useNavigate();
-  const { unreadMessages, notifications, clearNotification, markAllMessagesAsRead } = useNotifications();
+  const { unreadMessages, notifications, clearNotification, markAllMessagesAsRead, clearAllNotifications } = useNotifications();
   const { playClick, playNotification } = useSoundEffects();
   const [open, setOpen] = useState(false);
   const prevUnreadRef = useRef(unreadMessages);
