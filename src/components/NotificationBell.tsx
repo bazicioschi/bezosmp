@@ -173,18 +173,17 @@ export function NotificationBell() {
               <span className="mc-text">VIEW ALL ({unreadMessages})</span>
             </Button>
           )}
-          {notifications.length > 0 && (
-            <Button
-              variant="outline"
-              className="w-full mc-btn"
-              onClick={() => {
-                playClick();
-                clearAllNotifications();
-              }}
-            >
-              <span className="mc-text">MARK ALL AS READ</span>
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            className="w-full mc-btn"
+            disabled={notifications.length === 0}
+            onClick={() => {
+              playClick();
+              clearAllNotifications();
+            }}
+          >
+            <span className="mc-text">MARK ALL AS READ</span>
+          </Button>
           {unreadMessages > 0 && (
             <Button
               variant="outline"
