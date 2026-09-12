@@ -266,10 +266,16 @@ export function useNotifications() {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
-  const clearAllNotifications = () => {
+  const clearAllNotifications = async () => {
     notifications.forEach((n) => dismissedRef.current.add(n.id));
-    if (user) saveDismissed(user.id, dismissedRef.current);
+    if (user) {
+      saveDismissed(user.id, dismissedRef.current);
+      await supabase.from('messages').update({ read: true }).eq('receiver_id', user.id).eq('read', false);
+      await supabase.from('inbox_messages').update({ read: true }).eq('user_id', user.id).eq('read', false);
+    }
     setNotifications([]);
+    setUnreadMessages(0);
+    setUnreadInbox(0);
   };
 
   return { unreadMessages, unreadInbox, notifications, markMessagesAsRead, markAllMessagesAsRead, clearNotification, clearAllNotifications, refreshCount: fetchUnreadCount };
