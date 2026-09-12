@@ -266,5 +266,11 @@ export function useNotifications() {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
-  return { unreadMessages, unreadInbox, notifications, markMessagesAsRead, markAllMessagesAsRead, clearNotification, refreshCount: fetchUnreadCount };
+  const clearAllNotifications = () => {
+    notifications.forEach((n) => dismissedRef.current.add(n.id));
+    if (user) saveDismissed(user.id, dismissedRef.current);
+    setNotifications([]);
+  };
+
+  return { unreadMessages, unreadInbox, notifications, markMessagesAsRead, markAllMessagesAsRead, clearNotification, clearAllNotifications, refreshCount: fetchUnreadCount };
 }

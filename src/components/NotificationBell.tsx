@@ -14,7 +14,7 @@ import { formatDistanceToNow } from 'date-fns';
 
 export function NotificationBell() {
   const navigate = useNavigate();
-  const { unreadMessages, notifications, clearNotification, markAllMessagesAsRead } = useNotifications();
+  const { unreadMessages, notifications, clearNotification, markAllMessagesAsRead, clearAllNotifications } = useNotifications();
   const { playClick, playNotification } = useSoundEffects();
   const [open, setOpen] = useState(false);
   const prevUnreadRef = useRef(unreadMessages);
@@ -160,8 +160,8 @@ export function NotificationBell() {
           )}
         </div>
 
-        {unreadMessages > 0 && (
-          <div className="p-3 border-t-2 border-border space-y-2">
+        <div className="p-3 border-t-2 border-border space-y-2">
+          {unreadMessages > 0 && (
             <Button
               className="w-full mc-btn-primary"
               onClick={() => {
@@ -172,6 +172,20 @@ export function NotificationBell() {
             >
               <span className="mc-text">VIEW ALL ({unreadMessages})</span>
             </Button>
+          )}
+          {notifications.length > 0 && (
+            <Button
+              variant="outline"
+              className="w-full mc-btn"
+              onClick={() => {
+                playClick();
+                clearAllNotifications();
+              }}
+            >
+              <span className="mc-text">MARK ALL AS READ</span>
+            </Button>
+          )}
+          {unreadMessages > 0 && (
             <Button
               variant="outline"
               className="w-full mc-btn"
@@ -180,10 +194,10 @@ export function NotificationBell() {
                 markAllMessagesAsRead();
               }}
             >
-              <span className="mc-text">MARK ALL AS READ</span>
+              <span className="mc-text">MARK ALL MESSAGES AS READ</span>
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </PopoverContent>
     </Popover>
   );
