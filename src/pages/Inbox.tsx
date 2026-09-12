@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, Mail, MailOpen, Trash2, Check, X, Inbox as InboxIcon, PenSquare, Reply, Send } from 'lucide-react';
+import { Loader2, Mail, MailOpen, Trash2, Check, CheckCheck, X, Inbox as InboxIcon, PenSquare, Reply, Send } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -138,6 +138,29 @@ export default function Inbox() {
   const markRead = async (m: InboxMessage) => {
     if (m.read) return;
     await supabase.from('inbox_messages').update({ read: true }).eq('id', m.id);
+  };
+
+  const markAllRead = async () => {
+    if (!user) return;
+    const unreadMessages = messages.filter(message => !message.read);
+    if (unreadMessages.length === 0) return;
+
+    setMessages(previous => previous.map(message => ({ ...message, read: true })));
+    const { error } = await supabase
+      .from('inbox_messages')
+      .update({ read: true })
+      .eq('user_id', user.id)
+      .eq('read', false);
+
+    if (error) {
+      setMessages(previous => previous.map(message => (
+        unreadMessages.some(unread => unread.id === message.id) ? { ...message, read: false } : message
+      )));
+      toast({ title: 'Could not mark messages as read', description: error.message, variant: 'destructive' });
+      return;
+    }
+
+    toast({ title: 'All inbox notifications marked as read' });
   };
 
   const remove = async (m: InboxMessage) => {
@@ -293,13 +316,24 @@ export default function Inbox() {
     <div className={`min-h-screen ${inboxBg}`}>
       <Header />
       <main className="max-w-2xl mx-auto px-4 py-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <h1 className="mc-text text-2xl text-foreground glow-text flex items-center gap-2">
             <InboxIcon className="h-6 w-6 text-primary" /> BEZO INBOX
           </h1>
-          <Button onClick={() => setComposeOpen(true)} size="sm" className="gap-1">
-            <PenSquare className="h-4 w-4" /> Compose
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              onClick={markAllRead}
+              disabled={!messages.some(message => !message.read)}
+              variant="outline"
+              size="sm"
+              className="gap-1 mc-text"
+            >
+              <CheckCheck className="h-4 w-4" /> MARK ALL AS READ
+            </Button>
+            <Button onClick={() => setComposeOpen(true)} size="sm" className="gap-1">
+              <PenSquare className="h-4 w-4" /> Compose
+            </Button>
+          </div>
         </div>
         {messages.length === 0 ? (
           <div className="minecraft-card p-8 text-center text-muted-foreground">
