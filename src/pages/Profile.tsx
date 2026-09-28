@@ -524,6 +524,7 @@ export default function Profile() {
                   <option value="twitter">Twitter / X</option>
                   <option value="twitch">Twitch</option>
                   <option value="github">GitHub</option>
+                  <option value="gitlab">GitLab</option>
                   <option value="discord">Discord</option>
                   <option value="reddit">Reddit</option>
                   <option value="other">Other</option>

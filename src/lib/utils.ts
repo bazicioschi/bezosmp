@@ -9,7 +9,7 @@ export function cn(...inputs: ClassValue[]) {
 const PRIV_SEP = '|||BEZOSMP_PRIV|||';
 
 export type SocialLink = {
-  platform: 'youtube' | 'tiktok' | 'instagram' | 'twitter' | 'twitch' | 'github' | 'discord' | 'reddit' | 'other';
+  platform: 'youtube' | 'tiktok' | 'instagram' | 'twitter' | 'twitch' | 'github' | 'gitlab' | 'discord' | 'reddit' | 'other';
   url: string;
   label?: string;
 };
