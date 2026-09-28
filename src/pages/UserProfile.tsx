@@ -358,12 +358,25 @@ export default function UserProfile() {
           )}
 
           {profile.username?.toLowerCase().replace(/\s+/g, '') === 'pueioficial' && (
-            <p
-              className="mc-text text-base mt-2 text-[#f5deb3]"
-              style={{ textShadow: '0 0 6px #f5deb3, 0 0 14px rgba(245,222,179,0.7)' }}
-            >
-              puei a stricat filmarea !
-            </p>
+            <>
+              <p
+                className="mc-text text-base mt-2 text-[#f5deb3]"
+                style={{ textShadow: '0 0 6px #f5deb3, 0 0 14px rgba(245,222,179,0.7)' }}
+              >
+                puei a stricat filmarea !
+              </p>
+              <p className={`text-sm mt-1 ${theme === 'bazimazi' ? 'text-black' : 'text-foreground'}`}>
+                wanna pueificate your day? visit us at{' '}
+                <a
+                  href="https://pueipedia.gleeze.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline font-semibold"
+                >
+                  pueipedia.gleeze.com
+                </a>
+              </p>
+            </>
           )}
 
 
