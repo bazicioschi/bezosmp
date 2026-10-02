@@ -376,6 +376,10 @@ export default function UserProfile() {
                   pueipedia.gleeze.com
                 </a>
               </p>
+              <details className="mt-1 text-sm">
+                <summary className="cursor-pointer text-primary font-semibold hover:underline">puei document</summary>
+                <p className={theme === 'bazimazi' ? 'text-black' : 'text-foreground'}>document of the puei</p>
+              </details>
             </>
           )}
 
