@@ -551,6 +551,50 @@ export type Database = {
           },
         ]
       }
+      user_badge_selections: {
+        Row: {
+          badge_key: string
+          user_id: string
+        }
+        Insert: {
+          badge_key: string
+          user_id: string
+        }
+        Update: {
+          badge_key?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badge_selections_user_id_badge_key_fkey"
+            columns: ["user_id", "badge_key"]
+            isOneToOne: false
+            referencedRelation: "user_badges"
+            referencedColumns: ["user_id", "badge_key"]
+          },
+        ]
+      }
+      user_badges: {
+        Row: {
+          badge_key: string
+          created_at: string
+          granted_by: string | null
+          user_id: string
+        }
+        Insert: {
+          badge_key: string
+          created_at?: string
+          granted_by?: string | null
+          user_id: string
+        }
+        Update: {
+          badge_key?: string
+          created_at?: string
+          granted_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_restrictions: {
         Row: {
           created_at: string
