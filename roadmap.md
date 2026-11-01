@@ -1,0 +1,4 @@
+- [x] Add collectible Party/Winter badges with automatic Party awards and secure owner grants.
+- [x] Add profile badge selection while preserving existing verification badges.
+- [x] Add annual January 25–February 1 celebrations in every theme.
+- [x] Test badge selection and celebration dates; inspect applied award permissions.

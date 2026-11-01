@@ -10,6 +10,7 @@ import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/Header';
+import { BadgeCollection } from '@/components/BadgeCollection';
 import { useTheme } from '@/hooks/useTheme';
 import { parseBioPrivacy, encodeBioPrivacy, type SocialLink } from '@/lib/utils';
 import {
@@ -308,6 +309,7 @@ export default function Profile() {
           </div>
 
           <div className="space-y-6">
+            {user && <BadgeCollection userId={user.id} />}
             <div className="space-y-2">
               <Label htmlFor="username" className="mc-text text-sm">USERNAME</Label>
               <Input

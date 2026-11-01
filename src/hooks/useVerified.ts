@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { resolveActiveBadge } from '@/lib/anniversary';
 
 export type BadgeColor =
   | 'default'
@@ -7,7 +8,7 @@ export type BadgeColor =
   | 'orange' | 'lime' | 'teal' | 'indigo' | 'rose' | 'amber' | 'emerald'
   | 'sky' | 'fuchsia' | 'violet' | 'slate' | 'white' | 'black'
   | 'magenta' | 'crimson' | 'mint' | 'coral' | 'lavender' | 'neon' | 'bronze'
-  | 'rainbow' | 'ladybug' | 'rat';
+  | 'rainbow' | 'ladybug' | 'rat' | 'party' | 'winter';
 
 type VerifMap = Map<string, BadgeColor>;
 
@@ -19,10 +20,23 @@ async function loadVerified(): Promise<VerifMap> {
   if (cache) return cache;
   if (pending) return pending;
   pending = (async () => {
-    const { data } = await supabase.from('user_verifications').select('user_id, badge_color');
+    const [{ data }, { data: badges }, { data: selections }] = await Promise.all([
+      supabase.from('user_verifications').select('user_id, badge_color'),
+      supabase.from('user_badges').select('user_id, badge_key'),
+      supabase.from('user_badge_selections').select('user_id, badge_key'),
+    ]);
     const map: VerifMap = new Map();
     (data || []).forEach((r: any) => {
       map.set(r.user_id, (r.badge_color as BadgeColor) || 'default');
+    });
+    const collections = new Map<string, BadgeColor[]>();
+    (badges ?? []).forEach(row => {
+      collections.set(row.user_id, [...(collections.get(row.user_id) ?? []), row.badge_key as BadgeColor]);
+    });
+    const selected = new Map((selections ?? []).map(row => [row.user_id, row.badge_key as BadgeColor]));
+    collections.forEach((owned, userId) => {
+      const active = resolveActiveBadge(owned, selected.get(userId), map.get(userId));
+      if (active) map.set(userId, active);
     });
     cache = map;
     pending = null;

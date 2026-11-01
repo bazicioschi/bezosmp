@@ -37,6 +37,13 @@
     --ring: 0 72% 51%;
 
     --radius: 0.25rem;
+    --party-gold: 43 95% 55%;
+    --party-red: 350 85% 60%;
+    --party-green: 155 65% 43%;
+    --party-blue: 200 85% 58%;
+    --party-ink: 0 0% 8%;
+    --winter-ice: 195 85% 48%;
+    --badge-shadow: 0 0% 5% / 0.5;
 
     /* Minecraft tokens */
     --mc-dirt: 25 30% 15%;
@@ -2143,3 +2150,41 @@ html.mint-mode body {
   box-shadow: none !important;
   image-rendering: auto;
 }
+
+/* Shared seasonal layer; theme colors remain untouched. */
+.party-badge-icon { color: hsl(var(--party-gold)); filter: drop-shadow(0 1px 1px hsl(var(--badge-shadow))); }
+.winter-badge-icon { color: hsl(var(--winter-ice)); filter: drop-shadow(0 1px 1px hsl(var(--badge-shadow))); }
+.anniversary-banner { position: relative; z-index: 20; display: flex; justify-content: center; align-items: center; gap: 12px; min-height: 44px; padding: 8px 16px; background: hsl(var(--party-gold)); color: hsl(var(--party-ink)); font-weight: 700; text-align: center; border-bottom: 3px solid hsl(var(--party-red)); }
+.anniversary-banner::before, .anniversary-banner::after { content: ''; width: 40px; height: 18px; background: hsl(var(--party-red)); clip-path: polygon(0 0, 25% 100%, 50% 0, 75% 100%, 100% 0); }
+.anniversary-confetti { position: fixed; inset: 0; z-index: 40; pointer-events: none; overflow: hidden; }
+.anniversary-confetti i { position: absolute; top: -20px; width: 7px; height: 12px; background: hsl(var(--party-gold)); animation: anniversary-fall 12s linear infinite; }
+.anniversary-confetti i:nth-child(4n + 1) { background: hsl(var(--party-red)); }
+.anniversary-confetti i:nth-child(4n + 2) { background: hsl(var(--party-green)); }
+.anniversary-confetti i:nth-child(4n + 3) { background: hsl(var(--party-blue)); }
+@keyframes anniversary-fall { to { transform: translateY(105vh) rotate(540deg); } }
+@media (max-width: 480px) { .anniversary-banner::before, .anniversary-banner::after { width: 18px; } .anniversary-confetti i:nth-child(even) { display: none; } }
+@media (prefers-reduced-motion: reduce) { .anniversary-confetti i { animation: none; top: 5px; } }
+.anniversary-confetti i:nth-child(1) { left: 2%; animation-delay: -0s; animation-duration: 10s; }
+.anniversary-confetti i:nth-child(2) { left: 6%; animation-delay: -1s; animation-duration: 11s; }
+.anniversary-confetti i:nth-child(3) { left: 10%; animation-delay: -2s; animation-duration: 12s; }
+.anniversary-confetti i:nth-child(4) { left: 14%; animation-delay: -3s; animation-duration: 13s; }
+.anniversary-confetti i:nth-child(5) { left: 18%; animation-delay: -4s; animation-duration: 14s; }
+.anniversary-confetti i:nth-child(6) { left: 22%; animation-delay: -5s; animation-duration: 10s; }
+.anniversary-confetti i:nth-child(7) { left: 26%; animation-delay: -6s; animation-duration: 11s; }
+.anniversary-confetti i:nth-child(8) { left: 30%; animation-delay: -7s; animation-duration: 12s; }
+.anniversary-confetti i:nth-child(9) { left: 34%; animation-delay: -8s; animation-duration: 13s; }
+.anniversary-confetti i:nth-child(10) { left: 38%; animation-delay: -9s; animation-duration: 14s; }
+.anniversary-confetti i:nth-child(11) { left: 42%; animation-delay: -10s; animation-duration: 10s; }
+.anniversary-confetti i:nth-child(12) { left: 46%; animation-delay: -11s; animation-duration: 11s; }
+.anniversary-confetti i:nth-child(13) { left: 50%; animation-delay: -0s; animation-duration: 12s; }
+.anniversary-confetti i:nth-child(14) { left: 54%; animation-delay: -1s; animation-duration: 13s; }
+.anniversary-confetti i:nth-child(15) { left: 58%; animation-delay: -2s; animation-duration: 14s; }
+.anniversary-confetti i:nth-child(16) { left: 62%; animation-delay: -3s; animation-duration: 10s; }
+.anniversary-confetti i:nth-child(17) { left: 66%; animation-delay: -4s; animation-duration: 11s; }
+.anniversary-confetti i:nth-child(18) { left: 70%; animation-delay: -5s; animation-duration: 12s; }
+.anniversary-confetti i:nth-child(19) { left: 74%; animation-delay: -6s; animation-duration: 13s; }
+.anniversary-confetti i:nth-child(20) { left: 78%; animation-delay: -7s; animation-duration: 14s; }
+.anniversary-confetti i:nth-child(21) { left: 82%; animation-delay: -8s; animation-duration: 10s; }
+.anniversary-confetti i:nth-child(22) { left: 86%; animation-delay: -9s; animation-duration: 11s; }
+.anniversary-confetti i:nth-child(23) { left: 90%; animation-delay: -10s; animation-duration: 12s; }
+.anniversary-confetti i:nth-child(24) { left: 94%; animation-delay: -11s; animation-duration: 13s; }
