@@ -1,4 +1,5 @@
-import { BadgeCheck } from 'lucide-react';
+import { BadgeCheck, PartyPopper, Snowflake } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useVerifiedColor, type BadgeColor } from '@/hooks/useVerified';
 import { useTheme } from '@/hooks/useTheme';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -47,7 +48,7 @@ const COLOR_LABELS: Record<string, string> = {
   sky: 'Sky', fuchsia: 'Fuchsia', violet: 'Violet', slate: 'Slate',
   white: 'White', black: 'Black', magenta: 'Magenta', crimson: 'Crimson',
   mint: 'Mint', coral: 'Coral', lavender: 'Lavender', neon: 'Neon Green',
-  bronze: 'Bronze', rainbow: 'Rainbow', ladybug: 'Ladybug', rat: 'Rat',
+  bronze: 'Bronze', rainbow: 'Rainbow', ladybug: 'Ladybug', rat: 'Rat', party: 'Party · 1 year', winter: 'Winter',
 };
 
 function themeDefaultClass(theme: string): string {
@@ -118,7 +119,9 @@ export function VerifiedBadge({ userId, className }: VerifiedBadgeProps) {
   const isRainbow = color === 'rainbow';
   const isLadybug = color === 'ladybug';
   const isRat = color === 'rat';
-  const isCustom = isRainbow || isLadybug || isRat;
+  const isParty = color === 'party';
+  const isWinter = color === 'winter';
+  const isCustom = isRainbow || isLadybug || isRat || isParty || isWinter;
   const colorClass =
     color === 'default' || (!isCustom && !COLOR_CLASSES[color])
       ? themeDefaultClass(theme)
@@ -131,13 +134,18 @@ export function VerifiedBadge({ userId, className }: VerifiedBadgeProps) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button
+        <Button
+          variant="ghost"
           type="button"
           onClick={(e) => e.stopPropagation()}
-          className={cn('inline-flex items-center cursor-pointer', className)}
+          className={cn('inline-flex h-auto p-0 items-center cursor-pointer hover:bg-transparent', className)}
           aria-label={`Verified — ${label}`}
         >
-          {isLadybug ? (
+          {isParty ? (
+            <PartyPopper className="h-4 w-4 party-badge-icon" />
+          ) : isWinter ? (
+            <Snowflake className="h-4 w-4 winter-badge-icon" />
+          ) : isLadybug ? (
             <LadybugIcon className="h-4 w-4" />
           ) : isRat ? (
             <RatIcon className="h-4 w-4" />
@@ -164,7 +172,7 @@ export function VerifiedBadge({ userId, className }: VerifiedBadgeProps) {
               </defs>
             </svg>
           )}
-        </button>
+        </Button>
       </PopoverTrigger>
       <PopoverContent className="w-64 text-xs leading-relaxed space-y-1">
         <div className="font-display text-sm font-semibold flex items-center gap-1.5">
@@ -172,7 +180,11 @@ export function VerifiedBadge({ userId, className }: VerifiedBadgeProps) {
           {isRat && <RatIcon className="h-3.5 w-3.5" />}
           {label} verification badge
         </div>
-        {isLadybug ? (
+        {isParty ? (
+          <p>Awarded to every bezoSMP account to celebrate our first anniversary. Happy bezoSMP day!</p>
+        ) : isWinter ? (
+          <p>The Winter verification badge was awarded to this account by Bazicioschi.</p>
+        ) : isLadybug ? (
           <p>
             The <span className="font-semibold">Ladybug</span> verification badge is a unique custom badge
             given exclusively to <span className="text-primary font-medium">@Bazicioschi</span> — the founder of bezoSMP.

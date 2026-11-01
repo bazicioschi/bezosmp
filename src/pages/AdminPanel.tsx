@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Shield, Ban, UserX, MessageSquareOff, PenOff, Loader2, Crown, ShieldCheck, RefreshCw, Clock, BadgeCheck } from 'lucide-react';
 import { Header } from '@/components/Header';
+import { BadgeCollection } from '@/components/BadgeCollection';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -437,6 +438,7 @@ export default function AdminPanel() {
               {/* Role management — only visible to Bazicioschi */}
               {isBazicioschi && (
               <div className="mb-3">
+                <BadgeCollection userId={u.user_id} canGrant />
                 <p className="text-xs text-muted-foreground mb-1.5 font-semibold uppercase">Roles</p>
                 <div className="flex flex-wrap gap-2">
                   <Button

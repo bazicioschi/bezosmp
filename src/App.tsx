@@ -21,6 +21,7 @@ import BezoFiles from "./pages/BezoFiles";
 import Inbox from "./pages/Inbox";
 import CollabPost from "./pages/CollabPost";
 import SavedPosts from "./pages/SavedPosts";
+import { AnniversaryCelebration } from '@/components/AnniversaryCelebration';
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <AnniversaryCelebration />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />

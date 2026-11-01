@@ -37,6 +37,13 @@
     --ring: 0 72% 51%;
 
     --radius: 0.25rem;
+    --party-gold: 43 95% 55%;
+    --party-red: 350 85% 60%;
+    --party-green: 155 65% 43%;
+    --party-blue: 200 85% 58%;
+    --party-ink: 0 0% 8%;
+    --winter-ice: 195 85% 48%;
+    --badge-shadow: 0 0% 5% / 0.5;
 
     /* Minecraft tokens */
     --mc-dirt: 25 30% 15%;
