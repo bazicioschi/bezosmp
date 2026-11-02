@@ -142,7 +142,10 @@ export function VerifiedBadge({ userId, className }: VerifiedBadgeProps) {
           aria-label={`Verified — ${label}`}
         >
           {isParty ? (
-            <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-current party-badge-icon"><PartyPopper className="h-3 w-3" /></span>
+            <span className="relative inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-current party-badge-icon">
+              <PartyPopper className="h-3 w-3" />
+              <span className="party-badge-confetti" aria-hidden="true"><i /><i /><i /><i /></span>
+            </span>
           ) : isWinter ? (
             <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-current winter-badge-icon"><Snowflake className="h-3 w-3" /></span>
           ) : isLadybug ? (
