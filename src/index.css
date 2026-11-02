@@ -2153,14 +2153,14 @@ html.mint-mode body {
 
 /* Shared seasonal layer; theme colors remain untouched. */
 .party-badge-icon { color: hsl(var(--party-gold)); filter: drop-shadow(0 1px 1px hsl(var(--badge-shadow))); }
-.party-badge-confetti { position: absolute; inset: -3px; pointer-events: none; }
-.party-badge-confetti i { position: absolute; width: 3px; height: 4px; background: hsl(var(--party-red)); animation: badge-confetti-flutter 2.8s ease-in-out infinite; }
-.party-badge-confetti i:nth-child(1) { top: 0; left: 3px; rotate: -25deg; }
-.party-badge-confetti i:nth-child(2) { top: 2px; right: 1px; background: hsl(var(--party-blue)); rotate: 30deg; animation-delay: -0.7s; }
-.party-badge-confetti i:nth-child(3) { bottom: 2px; left: 0; background: hsl(var(--party-green)); rotate: 20deg; animation-delay: -1.4s; }
-.party-badge-confetti i:nth-child(4) { bottom: 0; right: 3px; background: hsl(var(--party-gold)); rotate: -30deg; animation-delay: -2.1s; }
+.party-badge-ring { stroke: hsl(var(--party-ink)); opacity: 0.3; }
+.party-badge-check { stroke: hsl(var(--party-ink)); }
+.party-badge-drawn-confetti { stroke: hsl(var(--party-gold)); transform-origin: center; animation: badge-confetti-flutter 2.8s ease-in-out infinite; }
+.party-confetti-red { stroke: hsl(var(--party-red)); }
+.party-confetti-blue { stroke: hsl(var(--party-blue)); }
+.party-confetti-green { stroke: hsl(var(--party-green)); }
 @keyframes badge-confetti-flutter { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-2px) rotate(35deg); } }
-@media (prefers-reduced-motion: reduce) { .party-badge-confetti i { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .party-badge-drawn-confetti { animation: none; } }
 .winter-badge-icon { color: hsl(var(--winter-ice)); filter: drop-shadow(0 1px 1px hsl(var(--badge-shadow))); }
 .anniversary-banner { position: relative; z-index: 20; display: flex; justify-content: center; align-items: center; gap: 12px; min-height: 44px; padding: 8px 16px; background: hsl(var(--party-gold)); color: hsl(var(--party-ink)); font-weight: 700; text-align: center; border-bottom: 3px solid hsl(var(--party-red)); }
 .anniversary-banner::before, .anniversary-banner::after { content: ''; width: 40px; height: 18px; background: hsl(var(--party-red)); clip-path: polygon(0 0, 25% 100%, 50% 0, 75% 100%, 100% 0); }
