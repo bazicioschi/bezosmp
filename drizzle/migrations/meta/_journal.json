@@ -8,6 +8,13 @@
       "when": 1793519130050,
       "tag": "0000_collectible_anniversary_badges",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793607048521,
+      "tag": "0001_exclusive_winter_and_badge_revocation",
+      "breakpoints": true
     }
   ]
 }
