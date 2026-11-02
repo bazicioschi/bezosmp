@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { normalizeUsername, uniqueUsernameMatch, usernameSearchPattern } from './username.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,26 +12,28 @@ serve(async (req) => {
 
   try {
     const { username } = await req.json();
-    if (!username || typeof username !== "string") {
+    if (typeof username !== "string" || !normalizeUsername(username)) {
       return new Response(JSON.stringify({ error: "Username required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseUrl || !serviceRoleKey) throw new Error('Missing service configuration');
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     // Look up profile by username
-    const { data: profile } = await supabase
+    const { data: profiles, error: lookupError } = await supabase
       .from("profiles")
-      .select("user_id")
-      .eq("username", username)
-      .maybeSingle();
+      .select("user_id, username")
+      .ilike("username", usernameSearchPattern(username));
+    if (lookupError) throw lookupError;
+    const profile = uniqueUsernameMatch(profiles ?? [], username);
 
     if (!profile) {
       return new Response(JSON.stringify({ error: "User not found" }), {
-        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -39,7 +42,7 @@ serve(async (req) => {
 
     if (!user?.email) {
       return new Response(JSON.stringify({ error: "User not found" }), {
-        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
