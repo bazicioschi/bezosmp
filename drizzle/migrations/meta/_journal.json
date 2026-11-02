@@ -15,6 +15,13 @@
       "when": 1793607048521,
       "tag": "0001_exclusive_winter_and_badge_revocation",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793607097954,
+      "tag": "0002_validate_exclusive_winter_recipients",
+      "breakpoints": true
     }
   ]
 }
