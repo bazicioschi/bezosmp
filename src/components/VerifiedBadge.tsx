@@ -1,4 +1,4 @@
-import { BadgeCheck, PartyPopper, Snowflake } from 'lucide-react';
+import { BadgeCheck, Snowflake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useVerifiedColor, type BadgeColor } from '@/hooks/useVerified';
 import { useTheme } from '@/hooks/useTheme';
@@ -142,10 +142,17 @@ export function VerifiedBadge({ userId, className }: VerifiedBadgeProps) {
           aria-label={`Verified — ${label}`}
         >
           {isParty ? (
-            <span className="relative inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-current party-badge-icon">
-              <PartyPopper className="h-3 w-3" />
-              <span className="party-badge-confetti" aria-hidden="true"><i /><i /><i /><i /></span>
-            </span>
+            <svg viewBox="0 0 32 32" className="h-6 w-6 shrink-0 party-badge-icon" aria-hidden="true">
+              <circle cx="16" cy="16" r="10" fill="currentColor" />
+              <circle cx="16" cy="16" r="8" className="party-badge-ring" fill="none" strokeWidth="0.8" />
+              <path d="m11.5 16 3 3 6-6" className="party-badge-check" fill="none" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+              <g className="party-badge-drawn-confetti" fill="none" strokeWidth="2" strokeLinecap="round">
+                <path d="m4 5 1 2m23 17 1 2" className="party-confetti-red" />
+                <path d="m24 3-1 3M5 23l-2 1" className="party-confetti-blue" />
+                <path d="m13 2 1 2m10 25 1 3" className="party-confetti-green" />
+                <path d="m29 10-2 1M10 28l-2 1" />
+              </g>
+            </svg>
           ) : isWinter ? (
             <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-current winter-badge-icon"><Snowflake className="h-3 w-3" /></span>
           ) : isLadybug ? (
