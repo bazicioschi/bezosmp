@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { BadgeCheck, Check, Loader2, PartyPopper, Snowflake } from 'lucide-react';
+import { BadgeCheck, Check, Loader2, PartyPopper, Snowflake, X } from 'lucide-react';
+import { canReceiveWinterBadge } from '@/lib/anniversary';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { refreshVerified, useVerifiedColor, type BadgeColor } from '@/hooks/useVerified';
@@ -36,7 +37,15 @@ export function BadgeCollection({ userId, canGrant = false }: { userId: string; 
     setBusy(false);
   };
 
-  const choices: BadgeColor[] = canGrant ? ['party', 'winter'] : owned;
+  const revoke = async (badge: BadgeColor) => {
+    setBusy(true);
+    const { error } = await supabase.rpc('revoke_user_badge', { target_user_id: userId, target_badge: badge });
+    if (error) toast({ title: 'Could not remove badge', description: error.message, variant: 'destructive' });
+    else { toast({ title: 'Badge removed' }); await load(); await refreshVerified(); }
+    setBusy(false);
+  };
+
+  const choices: BadgeColor[] = canGrant ? [...new Set<BadgeColor>([...owned, 'party', ...(canReceiveWinterBadge(userId) ? ['winter' as BadgeColor] : [])])] : owned;
   return (
     <section className="space-y-3 py-3 border-t border-border" aria-label={canGrant ? 'Award badges' : 'Profile badge'}>
       <h2 className="mc-text text-sm font-semibold">{canGrant ? 'Award badges' : 'Profile badge'}</h2>
@@ -47,13 +56,16 @@ export function BadgeCollection({ userId, canGrant = false }: { userId: string; 
             const selected = active === badge;
             const Icon = badge === 'party' ? PartyPopper : badge === 'winter' ? Snowflake : BadgeCheck;
             return (
-              <Button key={badge} size="sm" variant={!canGrant && selected ? 'default' : 'outline'}
+              <div key={badge} className="flex items-center gap-1">
+              <Button size="sm" variant={!canGrant && selected ? 'default' : 'outline'}
                 disabled={busy || (canGrant && awarded)} onClick={() => void chooseOrGrant(badge)}
                 aria-pressed={!canGrant ? selected : undefined} className="gap-2">
                 <Icon className={`h-4 w-4 ${badge === 'party' ? 'party-badge-icon' : badge === 'winter' ? 'winter-badge-icon' : ''}`} />
                 {badge === 'party' ? 'Party · 1 year' : badge === 'winter' ? 'Winter' : badge.charAt(0).toUpperCase() + badge.slice(1)}
                 {(canGrant ? awarded : selected) && <Check className="h-3 w-3" />}
               </Button>
+              {canGrant && awarded && <Button size="icon" variant="ghost" disabled={busy} title={`Remove ${badge} badge`} aria-label={`Remove ${badge} badge`} onClick={() => void revoke(badge)}><X className="h-4 w-4" /></Button>}
+              </div>
             );
           })}
         </div>

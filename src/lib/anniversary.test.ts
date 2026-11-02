@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { isAnniversarySeason, resolveActiveBadge } from './anniversary';
+import { canReceiveWinterBadge, isAnniversarySeason, resolveActiveBadge } from './anniversary';
+
+describe('exclusive Winter awards', () => {
+  it('allows BsBosso', () => expect(canReceiveWinterBadge('4c6f9f37-7af7-42f4-9f66-102306f47609')).toBe(true));
+  it('allows Vacescu', () => expect(canReceiveWinterBadge('da6d228d-9e1f-486a-8cb5-c31176989fa6')).toBe(true));
+  it('allows Waitescu', () => expect(canReceiveWinterBadge('88be6d44-e200-433e-a6bd-f9b3af59e4b7')).toBe(true));
+  it('rejects other users', () => expect(canReceiveWinterBadge('1c2fd2f9-d5d2-4a3b-bd6a-b735200b7200')).toBe(false));
+});
 
 describe('annual celebration dates', () => {
   it('starts on January 25 each year', () => {

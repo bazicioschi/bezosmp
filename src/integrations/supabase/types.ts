@@ -688,6 +688,10 @@ export type Database = {
         Returns: boolean
       }
       is_user_suspended: { Args: { target_user_id: string }; Returns: boolean }
+      revoke_user_badge: {
+        Args: { target_badge: string; target_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "owner"

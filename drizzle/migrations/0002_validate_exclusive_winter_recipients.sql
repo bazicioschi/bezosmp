@@ -1,0 +1,1 @@
+ALTER TABLE public.user_badges VALIDATE CONSTRAINT winter_exclusive_recipients; ALTER TABLE public.user_verifications VALIDATE CONSTRAINT legacy_winter_exclusive;

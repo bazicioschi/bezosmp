@@ -2,3 +2,6 @@
 - [x] Add profile badge selection while preserving existing verification badges.
 - [x] Add annual January 25–February 1 celebrations in every theme.
 - [x] Test badge selection and celebration dates; inspect applied award permissions.
+- [x] Restrict Winter badges to the three requested accounts and add badge revocation.
+- [x] Use uploaded app icon and finish round Party/Winter badges.
+- [x] Delete Dragos1003 account; confirmed login and profile removed.
