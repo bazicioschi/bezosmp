@@ -554,14 +554,17 @@ export type Database = {
       user_badge_selections: {
         Row: {
           badge_key: string
+          hidden: boolean
           user_id: string
         }
         Insert: {
           badge_key: string
+          hidden?: boolean
           user_id: string
         }
         Update: {
           badge_key?: string
+          hidden?: boolean
           user_id?: string
         }
         Relationships: [

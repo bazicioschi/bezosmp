@@ -23,6 +23,12 @@ describe('annual celebration dates', () => {
   });
 });
 describe('owned badge choices', () => {
+  it('lets users hide all badges without losing ownership or falling back to legacy verification', () => {
+    const owned = ['party', 'ladybug'];
+    expect(resolveActiveBadge(owned, 'party', 'ladybug', true)).toBeNull();
+    expect(owned).toEqual(['party', 'ladybug']);
+    expect(resolveActiveBadge(owned, 'party', 'ladybug', false)).toBe('party');
+  });
   it('lets users select an awarded Winter badge', () => {
     expect(resolveActiveBadge(['party', 'winter'], 'winter', 'ladybug')).toBe('winter');
   });
