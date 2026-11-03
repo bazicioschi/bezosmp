@@ -23,7 +23,7 @@ async function loadVerified(): Promise<VerifMap> {
     const [{ data }, { data: badges }, { data: selections }] = await Promise.all([
       supabase.from('user_verifications').select('user_id, badge_color'),
       supabase.from('user_badges').select('user_id, badge_key'),
-      supabase.from('user_badge_selections').select('user_id, badge_key'),
+      supabase.from('user_badge_selections').select('user_id, badge_key, hidden'),
     ]);
     const map: VerifMap = new Map();
     (data || []).forEach((r: any) => {
@@ -33,10 +33,14 @@ async function loadVerified(): Promise<VerifMap> {
     (badges ?? []).forEach(row => {
       collections.set(row.user_id, [...(collections.get(row.user_id) ?? []), row.badge_key as BadgeColor]);
     });
-    const selected = new Map((selections ?? []).map(row => [row.user_id, row.badge_key as BadgeColor]));
+    const selected = new Map((selections ?? []).map(row => [row.user_id, row]));
     collections.forEach((owned, userId) => {
-      const active = resolveActiveBadge(owned, selected.get(userId), map.get(userId));
+      const choice = selected.get(userId);
+      const active = resolveActiveBadge(owned, choice?.badge_key as BadgeColor | undefined, map.get(userId), choice?.hidden);
       if (active) map.set(userId, active);
+    });
+    selected.forEach((choice, userId) => {
+      if (choice.hidden) map.delete(userId);
     });
     cache = map;
     pending = null;

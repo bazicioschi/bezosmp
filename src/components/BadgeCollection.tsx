@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { BadgeCheck, Check, Loader2, PartyPopper, Snowflake, X } from 'lucide-react';
+import { BadgeCheck, Check, Loader2, PartyPopper, Snowflake, X, CircleOff } from 'lucide-react';
 import { canReceiveWinterBadge } from '@/lib/anniversary';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -29,11 +29,21 @@ export function BadgeCollection({ userId, canGrant = false }: { userId: string; 
       if (error) toast({ title: 'Could not award badge', description: error.message, variant: 'destructive' });
       else { toast({ title: `${badge === 'winter' ? 'Winter' : 'Party'} badge awarded!` }); await load(); }
     } else {
-      const { error } = await supabase.from('user_badge_selections').upsert({ user_id: userId, badge_key: badge });
+      const { error } = await supabase.from('user_badge_selections').upsert({ user_id: userId, badge_key: badge, hidden: false });
       if (error) toast({ title: 'Could not change badge', description: error.message, variant: 'destructive' });
       else toast({ title: 'Profile badge updated!' });
     }
     await refreshVerified();
+    setBusy(false);
+  };
+
+  const hideBadge = async () => {
+    const badge = active ?? owned[0];
+    if (!badge) return;
+    setBusy(true);
+    const { error } = await supabase.from('user_badge_selections').upsert({ user_id: userId, badge_key: badge, hidden: true });
+    if (error) toast({ title: 'Could not change badge', description: error.message, variant: 'destructive' });
+    else { await refreshVerified(); toast({ title: 'Profile badge hidden' }); }
     setBusy(false);
   };
 
@@ -51,6 +61,10 @@ export function BadgeCollection({ userId, canGrant = false }: { userId: string; 
       <h2 className="mc-text text-sm font-semibold">{canGrant ? 'Award badges' : 'Profile badge'}</h2>
       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (
         <div className="flex flex-wrap gap-2">
+          {!canGrant && <Button size="sm" variant={active === null ? 'default' : 'outline'}
+            disabled={busy || active === null} onClick={() => void hideBadge()} aria-pressed={active === null} className="gap-2">
+            <CircleOff className="h-4 w-4" />No badge{active === null && <Check className="h-3 w-3" />}
+          </Button>}
           {choices.map(badge => {
             const awarded = owned.includes(badge);
             const selected = active === badge;
