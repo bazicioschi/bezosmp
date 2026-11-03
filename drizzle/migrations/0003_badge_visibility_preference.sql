@@ -1,0 +1,1 @@
+ALTER TABLE public.user_badge_selections ADD COLUMN hidden boolean NOT NULL DEFAULT false;
