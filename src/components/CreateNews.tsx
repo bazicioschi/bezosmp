@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAdmin } from '@/hooks/useAdmin';
 import { BOT_NAME, BOT_AVATAR } from '@/lib/automod';
+import { isImageSizeAllowed } from '@/lib/image-upload';
 
 interface CreateNewsProps {
   onNewsCreated: () => void;
@@ -55,14 +56,13 @@ export function CreateNews({ onNewsCreated }: CreateNewsProps) {
 
     for (const file of filesToUpload) {
       if (!file.type.startsWith('image/')) { toast({ title: 'Error', description: `${file.name} is not an image file`, variant: 'destructive' }); continue; }
-      if (file.size > 5 * 1024 * 1024) { toast({ title: 'Error', description: `${file.name} must be less than 5MB`, variant: 'destructive' }); continue; }
+      if (!isImageSizeAllowed(file.size)) { toast({ title: 'Error', description: `${file.name} must be 5 GB or smaller`, variant: 'destructive' }); continue; }
 
       clearVideo();
       setUploading(true);
 
-      const reader = new FileReader();
-      reader.onload = (e) => setImagePreviews(prev => [...prev, e.target?.result as string]);
-      reader.readAsDataURL(file);
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreviews(prev => [...prev, previewUrl]);
 
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
@@ -72,6 +72,7 @@ export function CreateNews({ onNewsCreated }: CreateNewsProps) {
       if (uploadError) {
         toast({ title: 'Upload failed', description: uploadError.message, variant: 'destructive' });
         setImagePreviews(prev => prev.slice(0, -1));
+        URL.revokeObjectURL(previewUrl);
       } else {
         const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(fileName);
         setImageUrls(prev => [...prev, urlData.publicUrl]);
