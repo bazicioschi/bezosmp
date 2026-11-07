@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Share image-size validation across post, news and collaboration uploads, and use blob previews instead of base64 to avoid copying large files into memory.
+
 - Store collectible badge ownership in `user_badges` and active choices in `user_badge_selections`; the composite foreign key prevents selecting unowned badges.
 - Keep legacy verification records compatible and synchronize their awards into collections; centralized `useVerified` resolves the badge across every existing display.
 - Store badge visibility in `user_badge_selections.hidden` and apply it in centralized resolution so hiding never revokes ownership or restores a legacy badge.

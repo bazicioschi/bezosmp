@@ -16,6 +16,7 @@ import {
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { isImageSizeAllowed } from '@/lib/image-upload';
 
 interface InviteCollabDialogProps {
   inviteeId: string;
@@ -46,20 +47,23 @@ export function InviteCollabDialog({ inviteeId, inviteeUsername }: InviteCollabD
     const toUpload = Array.from(files).slice(0, remaining);
     for (const file of toUpload) {
       if (!file.type.startsWith('image/')) continue;
-      if (file.size > 5 * 1024 * 1024) {
-        toast({ title: 'File too large', description: `${file.name} must be under 5MB`, variant: 'destructive' });
+      if (!isImageSizeAllowed(file.size)) {
+        toast({ title: 'File too large', description: `${file.name} must be 5 GB or smaller`, variant: 'destructive' });
         continue;
       }
       setUploading(true);
       const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const reader = new FileReader();
-      reader.onloadend = () => setImagePreviews(prev => [...prev, reader.result as string]);
-      reader.readAsDataURL(file);
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreviews(prev => [...prev, previewUrl]);
       const { error } = await supabase.storage.from('post-images').upload(fileName, file);
       if (!error) {
         const { data } = supabase.storage.from('post-images').getPublicUrl(fileName);
         setImageUrls(prev => [...prev, data.publicUrl]);
+      } else {
+        toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
+        setImagePreviews(prev => prev.filter(preview => preview !== previewUrl));
+        URL.revokeObjectURL(previewUrl);
       }
       setUploading(false);
     }
