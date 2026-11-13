@@ -324,11 +324,11 @@ export function PostCard({
       <div className="flex gap-3">
         {/* Minecraft-style avatar */}
         <div 
-          className="mc-slot h-11 w-11 p-0.5 cursor-pointer hover:mc-slot-active transition-all shrink-0"
+          className="mc-slot h-11 w-11 p-0 overflow-hidden rounded-none cursor-pointer hover:mc-slot-active transition-all shrink-0"
           onClick={handleProfileClick}
         >
           <Avatar className="h-full w-full rounded-none">
-            <AvatarImage src={avatarUrl || undefined} className="object-cover" style={{ imageRendering: 'pixelated' }} />
+            <AvatarImage src={avatarUrl || undefined} className="rounded-none object-cover" style={{ imageRendering: 'pixelated' }} />
             <AvatarFallback className="bg-secondary text-primary mc-text text-lg rounded-none">
               {username.slice(0, 2).toUpperCase()}
             </AvatarFallback>
@@ -355,7 +355,7 @@ export function PostCard({
                   <img
                     src={avatarUrl ?? `https://api.dicebear.com/7.x/pixel-art/svg?seed=${username}`}
                     alt={username}
-                    className="h-5 w-5 rounded-full object-cover inline-block"
+                    className="h-5 w-5 shrink-0 rounded-none object-cover inline-block"
                     style={{ imageRendering: 'pixelated' }}
                   />
                   <span className="font-semibold text-foreground">@{username}</span>
@@ -371,7 +371,7 @@ export function PostCard({
                       <img
                         src={coAuthorAvatarUrl ?? `https://api.dicebear.com/7.x/pixel-art/svg?seed=${coAuthorUsername}`}
                         alt={coAuthorUsername}
-                        className="h-5 w-5 rounded-full object-cover inline-block"
+                        className="h-5 w-5 shrink-0 rounded-none object-cover inline-block"
                         style={{ imageRendering: 'pixelated' }}
                       />
                       <span className="font-semibold text-foreground">@{coAuthorUsername}</span>
@@ -390,7 +390,7 @@ export function PostCard({
                       <img
                         src={c.avatar_url ?? `https://api.dicebear.com/7.x/pixel-art/svg?seed=${c.username}`}
                         alt={c.username}
-                        className="h-5 w-5 rounded-full object-cover inline-block"
+                        className="h-5 w-5 shrink-0 rounded-none object-cover inline-block"
                         style={{ imageRendering: 'pixelated' }}
                       />
                       <span className="font-semibold text-foreground">@{c.username}</span>
