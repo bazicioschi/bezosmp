@@ -506,10 +506,10 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
   return (
     <form onSubmit={handleSubmit} className="px-4 py-4 border-b-2 border-border">
       <div className="flex gap-3">
-        <div className="mc-slot h-11 w-11 p-0.5 shrink-0">
-          <Avatar className="h-full w-full rounded-none">
-            <AvatarImage src={profile?.avatar_url || undefined} style={{ imageRendering: 'pixelated' }} />
-            <AvatarFallback className="bg-secondary text-primary mc-text text-lg rounded-none">
+        <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full">
+          <Avatar className="h-full w-full rounded-full">
+            <AvatarImage src={profile?.avatar_url || undefined} className="h-full w-full object-cover" style={{ imageRendering: 'pixelated' }} />
+            <AvatarFallback className="bg-secondary text-primary mc-text text-lg rounded-full">
               {profile?.username?.slice(0, 2).toUpperCase() || 'U'}
             </AvatarFallback>
           </Avatar>
