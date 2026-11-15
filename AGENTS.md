@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Submit and review verification requests through atomic database RPCs; trusted follower counts gate eligibility, only the founder owner can decide, and request approvals award default badges without changing active choices.
+
 - Bind every client video-upload policy to the authenticated user's first path segment; an unscoped permissive policy would override folder-scoped protection.
 
 - Enforce natural image rendering in the shared avatar image component so legacy pixel-effect styles cannot degrade profile pictures across screens.

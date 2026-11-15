@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Shield, Ban, UserX, MessageSquareOff, PenOff, Loader2, Crown, ShieldCheck, RefreshCw, Clock, BadgeCheck } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BadgeCollection } from '@/components/BadgeCollection';
+import { BadgeRequests } from '@/components/BadgeRequests';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -383,6 +384,7 @@ export default function AdminPanel() {
     <div className="min-h-screen bg-background mc-bedrock">
       <Header />
       <main className="max-w-2xl mx-auto p-4 relative z-10">
+        {user && isOwner && user.id === BAZICIOSCHI_ID && <BadgeRequests userId={user.id} review />}
         <div className="minecraft-card p-6 mb-6">
           <h1 className="mc-text text-2xl text-primary glow-text mb-2 flex items-center gap-2">
             <Shield className="h-6 w-6" />
