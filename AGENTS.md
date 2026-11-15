@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Enforce natural image rendering in the shared avatar image component so legacy pixel-effect styles cannot degrade profile pictures across screens.
+
 - Share image-size validation across post, news and collaboration uploads, and use blob previews instead of base64 to avoid copying large files into memory.
 
 - Store collectible badge ownership in `user_badges` and active choices in `user_badge_selections`; the composite foreign key prevents selecting unowned badges.
