@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Bind every client video-upload policy to the authenticated user's first path segment; an unscoped permissive policy would override folder-scoped protection.
+
 - Enforce natural image rendering in the shared avatar image component so legacy pixel-effect styles cannot degrade profile pictures across screens.
 
 - Share image-size validation across post, news and collaboration uploads, and use blob previews instead of base64 to avoid copying large files into memory.
