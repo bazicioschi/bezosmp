@@ -191,7 +191,7 @@ export function VerifiedBadge({ userId, className }: VerifiedBadgeProps) {
           {label} verification badge
         </div>
         {isParty ? (
-          <p>Awarded to every bezoSMP account to celebrate our first anniversary. Happy bezoSMP day!</p>
+          <p>This anniversary badge was given to every user who was on bezoSMP at that time. Happy bezoSMP day!</p>
         ) : isWinter ? (
           <p>The Winter verification badge was awarded to this account by Bazicioschi.</p>
         ) : isLadybug ? (
