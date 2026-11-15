@@ -5,3 +5,6 @@
 - [x] Restrict Winter badges to the three requested accounts and add badge revocation.
 - [x] Use uploaded app icon and finish round Party/Winter badges.
 - [x] Delete Dragos1003 account; confirmed login and profile removed.
+- [ ] Add member badge requests and founder-only pending approval/rejection queue.
+- [ ] Automatically reject requests below 1,000 followers; award only standard default verification.
+- [ ] Update anniversary badge description and verify request permissions and flows.
