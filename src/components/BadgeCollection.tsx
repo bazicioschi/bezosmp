@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { refreshVerified, useVerifiedColor, type BadgeColor } from '@/hooks/useVerified';
 import { Button } from '@/components/ui/button';
+import { BadgeRequests } from '@/components/BadgeRequests';
 
 export function BadgeCollection({ userId, canGrant = false }: { userId: string; canGrant?: boolean }) {
   const [owned, setOwned] = useState<BadgeColor[]>([]);
@@ -84,6 +85,7 @@ export function BadgeCollection({ userId, canGrant = false }: { userId: string; 
           })}
         </div>
       )}
+      {!canGrant && <BadgeRequests userId={userId} />}
     </section>
   );
 }
