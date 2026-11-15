@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      badge_requests: {
+        Row: {
+          badge_key: string
+          created_at: string
+          follower_count: number
+          id: string
+          reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          badge_key?: string
+          created_at?: string
+          follower_count?: number
+          id?: string
+          reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          badge_key?: string
+          created_at?: string
+          follower_count?: number
+          id?: string
+          reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "badge_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       collab_invites: {
         Row: {
           created_at: string
@@ -691,9 +735,49 @@ export type Database = {
         Returns: boolean
       }
       is_user_suspended: { Args: { target_user_id: string }; Returns: boolean }
+      review_badge_request: {
+        Args: { approve: boolean; request_id: string }
+        Returns: {
+          badge_key: string
+          created_at: string
+          follower_count: number
+          id: string
+          reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "badge_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       revoke_user_badge: {
         Args: { target_badge: string; target_user_id: string }
         Returns: undefined
+      }
+      submit_badge_request: {
+        Args: never
+        Returns: {
+          badge_key: string
+          created_at: string
+          follower_count: number
+          id: string
+          reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "badge_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
     }
     Enums: {

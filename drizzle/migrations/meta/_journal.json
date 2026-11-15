@@ -36,6 +36,13 @@
       "when": 1794754589759,
       "tag": "0004_bind_selected_video_upload_policy_to_user_folder",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794754711918,
+      "tag": "0005_verification_request_queue",
+      "breakpoints": true
     }
   ]
 }
