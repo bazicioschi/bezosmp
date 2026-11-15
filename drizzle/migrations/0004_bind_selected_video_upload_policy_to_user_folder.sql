@@ -1,0 +1,1 @@
+ALTER POLICY "Authenticated users can upload videos" ON storage.objects TO authenticated WITH CHECK (bucket_id = 'post-videos' AND (storage.foldername(name))[1] = (SELECT auth.uid()::text));
