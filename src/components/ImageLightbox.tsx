@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import { downloadMedia } from '@/lib/media-download';
 import { Button } from '@/components/ui/button';
@@ -55,9 +56,9 @@ export function ImageLightbox({ images, initialIndex = 0, isOpen, onClose }: Ima
     setCurrentIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
   };
 
-  return (
+  return createPortal(
     <div 
-      className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center"
+      className="fixed inset-0 z-[1000] bg-black/90 flex items-center justify-center"
       onClick={onClose}
     >
       <Button
@@ -136,6 +137,7 @@ export function ImageLightbox({ images, initialIndex = 0, isOpen, onClose }: Ima
           ))}
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 }
