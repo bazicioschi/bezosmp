@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Trash2, Share, Bookmark, BookmarkCheck, Pencil, X, Check, Ban , Download, Pin, PinOff } from 'lucide-react';
+import { Heart, MessageCircle, Trash2, Share, Bookmark, BookmarkCheck, Pencil, X, Check, Ban, Pin, PinOff } from 'lucide-react';
 import { canPinPost } from '@/lib/post-pinning';
-import { downloadMedia } from '@/lib/media-download';
+import { PostVideo } from '@/components/PostVideo';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -643,35 +643,7 @@ export function PostCard({
           })()}
 
           {videoUrl && (
-            <div className="mt-3 minecraft-card overflow-hidden">
-              <video 
-                src={videoUrl} 
-                className="w-full max-h-[400px] object-contain bg-black"
-                controls
-                playsInline
-                webkit-playsinline="true"
-                x-webkit-airplay="allow"
-                preload="metadata"
-                style={{ WebkitTransform: 'translateZ(0)' }}
-              >
-                <source src={videoUrl} type="video/mp4; codecs=avc1.42E01E,mp4a.40.2" />
-                <source src={videoUrl} type="video/mp4; codecs=avc1.64001E,mp4a.40.2" />
-                <source src={videoUrl} type="video/mp4; codecs=hvc1" />
-                <source src={videoUrl} type="video/mp4" />
-                <source src={videoUrl} type="video/webm; codecs=vp9,opus" />
-                <source src={videoUrl} type="video/webm; codecs=vp8,vorbis" />
-                <source src={videoUrl} type="video/webm" />
-                <source src={videoUrl} type="video/quicktime" />
-                <source src={videoUrl} type="video/ogg" />
-                <source src={videoUrl} type="video/3gpp" />
-                <source src={videoUrl} type="video/3gpp2" />
-                <source src={videoUrl} type="video/x-matroska" />
-                Your browser does not support the video tag.
-              </video>
-                  <Button variant="ghost" size="sm" className="w-full gap-2 mc-text" onClick={() => downloadMedia(videoUrl, 'video')}>
-                    <Download className="h-4 w-4" /> Download video
-                  </Button>
-            </div>
+            <PostVideo src={videoUrl} onShare={() => { playClick(); setShareOpen(true); }} />
           )}
 
           {/* Action Buttons */}
@@ -764,6 +736,7 @@ export function PostCard({
               postUsername={username}
               postSnippet={content}
               postImageUrl={imageUrl || null}
+              postVideoUrl={videoUrl || null}
             />
           </div>
 

@@ -15,6 +15,12 @@ interface SharePostDialogProps {
   postUsername: string;
   postSnippet: string;
   postImageUrl?: string | null;
+  /** Video link included in the shared message. */
+  postVideoUrl?: string | null;
+  /** Link appended to the message; defaults to the post link, null sends no link. */
+  shareUrl?: string | null;
+  /** How the shared item is described, e.g. "a post" or "news". */
+  itemLabel?: string;
 }
 
 interface UserRow {
@@ -23,7 +29,7 @@ interface UserRow {
   avatar_url: string | null;
 }
 
-export function SharePostDialog({ open, onOpenChange, postId, postUsername, postSnippet, postImageUrl }: SharePostDialogProps) {
+export function SharePostDialog({ open, onOpenChange, postId, postUsername, postSnippet, postImageUrl, postVideoUrl, shareUrl, itemLabel = 'a post' }: SharePostDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [search, setSearch] = useState('');
@@ -85,7 +91,7 @@ export function SharePostDialog({ open, onOpenChange, postId, postUsername, post
   const sharePost = async (recipient: UserRow) => {
     if (!user) return;
     setSending(recipient.user_id);
-    const url = `${window.location.origin}/?post=${postId}`;
+    const url = shareUrl === undefined ? `${window.location.origin}/?post=${postId}` : shareUrl;
     let firstImage: string | null = null;
     if (postImageUrl) {
       try {
@@ -99,7 +105,7 @@ export function SharePostDialog({ open, onOpenChange, postId, postUsername, post
         firstImage = postImageUrl;
       }
     }
-    const content = `📤 Shared a post by @${postUsername}:\n"${postSnippet.slice(0, 120)}${postSnippet.length > 120 ? '…' : ''}"\n${firstImage ? firstImage + '\n' : ''}${url}`;
+    const content = `📤 Shared ${itemLabel} by @${postUsername}:\n"${postSnippet.slice(0, 120)}${postSnippet.length > 120 ? '…' : ''}"\n${firstImage ? firstImage + '\n' : ''}${postVideoUrl ? postVideoUrl + '\n' : ''}${url ?? ''}`.trimEnd();
     const { error } = await supabase.from('messages').insert({
       sender_id: user.id,
       receiver_id: recipient.user_id,

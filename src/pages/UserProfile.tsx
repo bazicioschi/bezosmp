@@ -34,6 +34,7 @@ interface Post {
   pinned: boolean;
   content: string;
   image_url: string | null;
+  video_url: string | null;
   created_at: string;
   user_id: string;
   likes_count: number;
@@ -559,6 +560,7 @@ export default function UserProfile() {
                 onPinChange={fetchProfileAndPosts}
                 content={post.content}
                 imageUrl={post.image_url}
+                videoUrl={post.video_url}
                 createdAt={post.created_at}
                 userId={post.user_id}
                 username={profile.username}
