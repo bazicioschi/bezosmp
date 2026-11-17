@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { downloadMedia } from '@/lib/media-download';
 import { Button } from '@/components/ui/button';
 
 interface ImageLightboxProps {
@@ -59,6 +60,16 @@ export function ImageLightbox({ images, initialIndex = 0, isOpen, onClose }: Ima
       className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center"
       onClick={onClose}
     >
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label="Download image"
+        onClick={(e) => { e.stopPropagation(); downloadMedia(images[currentIndex], 'image'); }}
+        className="absolute top-4 right-16 h-10 w-10 text-white hover:bg-white/20 z-10"
+      >
+        <Download className="h-6 w-6" />
+      </Button>
+
       {/* Close button */}
       <Button
         variant="ghost"

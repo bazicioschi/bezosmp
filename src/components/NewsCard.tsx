@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trash2, Pencil, X, Check } from 'lucide-react';
+import { Trash2, Pencil, X, Check , Download } from 'lucide-react';
+import { downloadMedia } from '@/lib/media-download';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -312,7 +313,6 @@ export function NewsCard({
                     webkit-playsinline="true"
                     x-webkit-airplay="allow"
                     preload="metadata"
-                    controlsList="nodownload"
                     style={{ WebkitTransform: 'translateZ(0)' }}
                   >
                     <source src={imageUrl} type="video/mp4; codecs=avc1.42E01E,mp4a.40.2" />
@@ -329,6 +329,9 @@ export function NewsCard({
                     <source src={imageUrl} type="video/x-matroska" />
                     Your browser does not support the video tag.
                   </video>
+                  <Button variant="ghost" size="sm" className="w-full gap-2 mc-text" onClick={() => downloadMedia(imageUrl, 'video')}>
+                    <Download className="h-4 w-4" /> Download video
+                  </Button>
                 </div>
               );
             }
