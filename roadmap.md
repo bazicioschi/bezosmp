@@ -9,3 +9,4 @@
 - [x] Automatically reject requests below 1,000 followers; award only standard default verification.
 - [x] Update anniversary badge description and test eligibility rules.
 - [ ] Verify signed-in request and founder review end-to-end; blocked by unavailable authenticated preview account.
+- [ ] Add owner-only post pinning and pinned-first profile ordering; test pin/unpin persistence.

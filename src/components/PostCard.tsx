@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Trash2, Share, Bookmark, BookmarkCheck, Pencil, X, Check, Ban , Download } from 'lucide-react';
+import { Heart, MessageCircle, Trash2, Share, Bookmark, BookmarkCheck, Pencil, X, Check, Ban , Download, Pin, PinOff } from 'lucide-react';
+import { canPinPost } from '@/lib/post-pinning';
 import { downloadMedia } from '@/lib/media-download';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
@@ -48,6 +49,8 @@ interface PostCardProps {
   onLikeToggle: () => void;
   onDelete: () => void;
   onEdit?: () => void;
+  pinned?: boolean;
+  onPinChange?: () => void;
   coAuthorId?: string | null;
   coAuthorUsername?: string | null;
   coAuthorAvatarUrl?: string | null;
@@ -68,6 +71,8 @@ export function PostCard({
   onLikeToggle,
   onDelete,
   onEdit,
+  pinned,
+  onPinChange,
   coAuthorId,
   coAuthorUsername,
   coAuthorAvatarUrl,
@@ -90,8 +95,35 @@ export function PostCard({
   const [shareOpen, setShareOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
+  const [isPinned, setIsPinned] = useState(pinned ?? false);
+  const [isPinning, setIsPinning] = useState(false);
   const [collaborators, setCollaborators] = useState<{ user_id: string; username: string; avatar_url: string | null }[]>([]);
   const [commenters, setCommenters] = useState<{ user_id: string; username: string; avatar_url: string | null }[]>([]);
+
+  useEffect(() => {
+    if (pinned !== undefined) { setIsPinned(pinned); return; }
+    let cancelled = false;
+    supabase.from('posts').select('pinned').eq('id', id).maybeSingle().then(({ data }) => {
+      if (!cancelled && data) setIsPinned(data.pinned);
+    });
+    return () => { cancelled = true; };
+  }, [id, pinned]);
+
+  const handlePin = async () => {
+    if (!canPinPost(user?.id, userId) || !user || isPinning || isBanned || isSuspended) return;
+    setIsPinning(true);
+    const nextPinned = !isPinned;
+    const { data, error } = await supabase.from('posts')
+      .update({ pinned: nextPinned }).eq('id', id).eq('user_id', user.id).select('id').maybeSingle();
+    setIsPinning(false);
+    if (error || !data) {
+      toast({ title: 'Unable to update pin', description: error?.message ?? 'The post could not be updated.', variant: 'destructive' });
+      return;
+    }
+    setIsPinned(nextPinned);
+    toast({ title: nextPinned ? 'Pinned to your profile' : 'Post unpinned' });
+    onPinChange?.();
+  };
 
   useEffect(() => {
     if (user) {
@@ -322,6 +354,7 @@ export function PostCard({
 
   return (
     <article className="px-4 py-3 border-b-2 border-border hover:bg-secondary/20 transition-colors">
+      {isPinned && <div className="mb-2 flex items-center gap-1.5 text-xs text-muted-foreground"><Pin className="h-3.5 w-3.5" />Pinned</div>}
       <div className="flex gap-3">
         {/* Full-frame circular author picture */}
         <div 
@@ -411,6 +444,19 @@ export function PostCard({
               <div className="flex items-center gap-1 ml-auto">
                 {user?.id === userId && (
                   <>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" aria-label={isPinned ? 'Unpin post' : 'Pin to profile'}
+                            disabled={isPinning || isBanned || isSuspended}
+                            onClick={(e) => { e.stopPropagation(); handlePin(); }}
+                            className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/20">
+                            {isPinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>{isPinned ? 'Unpin post' : 'Pin to profile'}</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                     <Button 
                       variant="ghost" 
                       size="icon" 

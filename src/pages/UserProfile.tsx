@@ -16,6 +16,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useAdmin } from '@/hooks/useAdmin';
 import { parseBioPrivacy, type SocialLink } from '@/lib/utils';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
+import { sortProfilePosts } from '@/lib/post-pinning';
 
 interface Profile {
   id: string;
@@ -30,6 +31,7 @@ interface Profile {
 
 interface Post {
   id: string;
+  pinned: boolean;
   content: string;
   image_url: string | null;
   created_at: string;
@@ -175,7 +177,7 @@ export default function UserProfile() {
           };
         })
       );
-      setPosts(postsWithCounts);
+      setPosts(sortProfilePosts(postsWithCounts));
     }
     setLoading(false);
   };
@@ -553,6 +555,8 @@ export default function UserProfile() {
               <PostCard
                 key={post.id}
                 id={post.id}
+                pinned={post.pinned}
+                onPinChange={fetchProfileAndPosts}
                 content={post.content}
                 imageUrl={post.image_url}
                 createdAt={post.created_at}

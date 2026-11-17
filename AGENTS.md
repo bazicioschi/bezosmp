@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Store post pin state on posts, guard changes with an author-only database trigger, and sort pins first only on profiles so the main feed remains chronological.
+
 - Submit and review verification requests through atomic database RPCs; trusted follower counts gate eligibility, only the founder owner can decide, and request approvals award default badges without changing active choices.
 
 - Bind every client video-upload policy to the authenticated user's first path segment; an unscoped permissive policy would override folder-scoped protection.

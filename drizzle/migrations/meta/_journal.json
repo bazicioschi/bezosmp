@@ -50,6 +50,13 @@
       "when": 1794902017102,
       "tag": "0006_restrict_selected_reads_to_signed_in",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794931365229,
+      "tag": "0007_add_author_owned_post_pins",
+      "breakpoints": true
     }
   ]
 }
