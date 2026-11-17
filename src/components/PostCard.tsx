@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Trash2, Share, Bookmark, BookmarkCheck, Pencil, X, Check, Ban } from 'lucide-react';
+import { Heart, MessageCircle, Trash2, Share, Bookmark, BookmarkCheck, Pencil, X, Check, Ban , Download } from 'lucide-react';
+import { downloadMedia } from '@/lib/media-download';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -605,7 +606,6 @@ export function PostCard({
                 webkit-playsinline="true"
                 x-webkit-airplay="allow"
                 preload="metadata"
-                controlsList="nodownload"
                 style={{ WebkitTransform: 'translateZ(0)' }}
               >
                 <source src={videoUrl} type="video/mp4; codecs=avc1.42E01E,mp4a.40.2" />
@@ -622,6 +622,9 @@ export function PostCard({
                 <source src={videoUrl} type="video/x-matroska" />
                 Your browser does not support the video tag.
               </video>
+                  <Button variant="ghost" size="sm" className="w-full gap-2 mc-text" onClick={() => downloadMedia(videoUrl, 'video')}>
+                    <Download className="h-4 w-4" /> Download video
+                  </Button>
             </div>
           )}
 

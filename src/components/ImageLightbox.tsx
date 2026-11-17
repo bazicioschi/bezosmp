@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { X, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { downloadMedia } from '@/lib/media-download';
 import { Button } from '@/components/ui/button';
 
 interface ImageLightboxProps {
@@ -54,11 +56,21 @@ export function ImageLightbox({ images, initialIndex = 0, isOpen, onClose }: Ima
     setCurrentIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
   };
 
-  return (
+  return createPortal(
     <div 
-      className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center"
+      className="fixed inset-0 z-[1000] bg-black/90 flex items-center justify-center"
       onClick={onClose}
     >
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label="Download image"
+        onClick={(e) => { e.stopPropagation(); downloadMedia(images[currentIndex], 'image'); }}
+        className="absolute top-4 right-16 h-10 w-10 text-white hover:bg-white/20 z-10"
+      >
+        <Download className="h-6 w-6" />
+      </Button>
+
       {/* Close button */}
       <Button
         variant="ghost"
@@ -125,6 +137,7 @@ export function ImageLightbox({ images, initialIndex = 0, isOpen, onClose }: Ima
           ))}
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 }
