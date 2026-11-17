@@ -43,6 +43,13 @@
       "when": 1794754711918,
       "tag": "0005_verification_request_queue",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794902017102,
+      "tag": "0006_restrict_selected_reads_to_signed_in",
+      "breakpoints": true
     }
   ]
 }
